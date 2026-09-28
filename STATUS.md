@@ -90,13 +90,20 @@ and `WORKBOARD.md`. This page is the short version.
 - **F-08b:** timing flags are no longer experimental. The recurring-error rule is narrowed to wrong
   pitches that pass the expert filter.
 
+- **R-08d (Romantic repertoire): fragile GO, Confirmed with caveats.**
+  - LLM 0.737 (t [0.44, 1.04]), against the detector's 0.389. Paired difference +0.348.
+  - 0 of 10 runs recognised a piece.
+  - Licensed at the mean level for Romantic character pieces in simple meters. Per-piece risk is
+    real, and the LLM segments more finely than DCML.
+  - Across the four R-08 tests the LLM holds at about 0.74-0.82, while the detector falls from 0.57
+    to 0.39.
+
 ## In flight
 
 - F-07: separating intent from noise across repeated takes (H5).
 - R-08b: memorisation control for the LLM phrase analysis (disguised scores, reruns).
 - F-08b: report fixes (timing-flag provenance check, recurring-error tiering).
 - F-05d: coherence minimum-length fix.
-- R-08d (Romantic repertoire) is next for the LLM phrase analysis.
 - R-09: coherence vs skill (H4), with recording context controlled.
 
 ## Waiting on Henry (OWNER)

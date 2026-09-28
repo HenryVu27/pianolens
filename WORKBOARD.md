@@ -216,6 +216,12 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   - Result: R-04 11 timing-coherence rows -> NaN, H3 verdicts unchanged; R-09 23-24 analysis rows
     per channel -> NaN, verdicts unchanged (velocity secondary effect 0.142 -> 0.019). Details in
     `.claude/agent-memory/feature-engineer/coherence-f05d.md`. `takes.py` n_blocks not changed.
+- **F-05e Phrase measures with LLM boundaries** (M). blocked_by: R-08d.
+  - Validate `phrase_tempo_shaping` (`concave_excess`) and phrase-aware coherence using LLM
+    boundaries against DCML boundaries on Batik, J.C. Bach and the Romantic corpora where
+    performances exist (MazurkaBL / PianoCoRe mazurkas).
+  - Make the measures robust to over-segmentation (merge nested phrases). See DECISIONS 2026-09-28
+    (R-08d).
 - **F-06 Tier D interpretation** (M). blocked_by: F-03, D-03. owner: feature-engineer. status: done (2026-09-27). paths: `src/pianolens/features/interpretation.py`, `tests/features/test_interpretation.py`. Per-piece PCA of expert curves;
   likelihood under the expert distribution; per-bar out-of-band flags.
   - Add reference-based features (R-04's S1 set; DECISIONS 2026-09-27): distance of this

@@ -402,3 +402,14 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - A (R1-R5): af78638f3a2b4fa6f, a4bfa3db1fc3ceac5, a3f3d81e34ce7789b, a78c9c4c81d0ef593, a73e4b56f8720e63c
   - B (R1-R5): a02e231e05addd526, ae2c980f51a63ff30, a1e990af1d9d0e583, ac8bb7be350e0ca55, af372660bf2fcce3e
   - The pre-registration dropped the period wording from INSTRUCTIONS, which is accepted.
+- **2026-09-28, lead: R-08d is Confirmed with caveats.**
+  - **Scope:** "GO by point estimate, fragile. Licensed for Romantic character pieces in simple
+    meters at the mean level, with per-piece risk (0.33-0.94) and finer-than-DCML segmentation.
+    It beats the detector clearly (+0.35)."
+  - Not licensed: per-composer claims, compound meters, long Chopin forms, or transcribed-MIDI input.
+  - **Consequence for H4/R-09:** any phrase-based measure fed by LLM boundaries must be robust to
+    over-segmentation. For example, compute `concave_excess` on merged adjacent phrases, or require
+    nested-boundary robustness. The per-phrase arc measure must be re-validated with LLM boundaries
+    (ticket F-05e) before use.
+  - **The LLM phrase line (R-08a-d) is closed for now.** A larger follow-up (mazurkas only, more
+    movements, compound meters, or post-cutoff OWNER labels) is BL-17.

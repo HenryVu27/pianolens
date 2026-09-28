@@ -474,3 +474,204 @@ bar numbers; `SCHEMA.json` only in the id pattern and its description (checked w
 - Data: DCML Romantic corpora at the D-13 tags; D-13 cache `data/interim/dcml_romantic/`
   (`cands.pkl`, `comparators.csv`, 2026-09-28 run). Draw wall time about 40 s.
 - Pre-registration sha256 (README up to `## Preparation record`): `dbef84aee6cd1ba92464a3f58dea61698389f80b5dabaecae9d288efbc577708`.
+
+
+## Results (lead, 2026-09-28; audited, see the Audit section)
+
+The full tables are in `artifacts/r08d_summary.txt`, reproduced byte-identically by the auditor.
+
+**Headline: GO by the pre-registered point-estimate rule, fragile.**
+- Primary 0.737, with t-interval [0.439, 1.036]. The one-sided p against 0.70 is 0.373.
+- The worst-run variant is 0.698. The leave-one-out minimum is 0.687 (without R3).
+- The observed between-movement SD is 0.241, against the 0.13 assumed for reachability, so only
+  the point-estimate rule decides.
+- **Beats the detector:** detector 0.389, paired +0.348 (t [+0.267, +0.430]). The LLM is ahead
+  on 5 of 5 movements.
+- Run-to-run SD within a movement is 0.056.
+
+Per movement (mean of runs A and B):
+
+| Id | Piece | LLM | Detector |
+|---|---|---|---|
+| R1 | Tchaikovsky op. 37a/6 | 0.866 | 0.581 |
+| R2 | Chopin op. 7/4 | 0.760 | 0.364 |
+| R3 | Schumann Kinderszenen 7 | 0.938 | 0.500 |
+| R4 | Grieg op. 57/1 | 0.798 | 0.500 |
+| R5 | Liszt S.160/2 | 0.325 | 0.000 |
+
+**R5 is granularity plus two real misses.**
+- Both runs hit 3 of 5 DCML ends, so recall is 0.60 and precision about 0.22.
+- The extras are subdivisions of DCML's 16-31-bar phrases.
+- Both runs miss the same two ends: the HC at bar 59 (they placed it at 53) and the final end at
+  bar 108.
+
+**The granularity (level-match) check is informative on R5 only.** On R1-R4 the ratios are near 1,
+which is consistent with either real annotation or recall.
+
+**Recognition:** 0 of 10 runs recognised a piece. There were two wrong-composer guesses
+("Beethoven"). Silent recognition cannot be audited.
+
+## Audit (2026-09-28, eval-auditor)
+
+**Verdict: Confirmed with caveats. GO by the pre-registered rule (primary 0.737 ≥ 0.70, point
+estimate), and "beats the detector" is shown (paired +0.348, t [+0.267, +0.430], 5 of 5
+positive). The GO is fragile: the t-interval [0.439, 1.036] is uninformative about the bar, the
+worst-run variant is 0.698, leaving out Träumerei (R3) gives 0.687, and the one-sided p of
+primary > 0.70 is 0.373. What it licenses: on DCML-style phrase ends in Romantic character pieces
+in simple meters, the annotator is usable on average and clearly better than the F-05c detector,
+but per piece it ranges from 0.325 to 0.938, so a single piece can be poor. It does not show that
+the annotator reaches 0.70 on Romantic repertoire in general.**
+
+Audited: pre-registration hash and timeline, rule application, the draw, the renderings and the
+leakage check, blinding in all 10 transcripts, the scorer and harness, recognition, and the
+interpretation (R5 granularity, tolerance in 3/8, label exposure). Audit scripts are in the
+session scratchpad (`r08d_audit/rerun.py`, `redraw.py`). Nothing in `src/`, the experiment
+scripts, `blind_input/`, `annotations_*` or `artifacts/` was changed.
+
+### 1. Pre-registration: intact, rule applied word for word
+
+- README up to `## Preparation record` hashes to `dbef84ae...7708`, as recorded. The README was
+  last modified at 04:37:12 (local); the first annotator's first event is 04:39:09 (09:39:09Z in
+  the transcript), so the whole README, not only the header, predates every annotation.
+- `draw.py`, `build.py`, `score.py`, `INSTRUCTIONS.md`, `SCHEMA.json` and `R1..R5.txt` hash to the
+  prefixes in the preparation record. R-08a's `common.py`, `render.py`, `score.py` hash to
+  `272d81dd`, `82785dc0`, `b73b1b7e` (unchanged).
+- `INSTRUCTIONS.md` differs from R-08a's only in M → R, the dropped period phrase and the moved
+  worked example (4, 7) (checked with `diff`), as registered.
+- The rule in `score.compare` is the registered one: mean of A and B per movement, mean over 5;
+  GO at ≥ 0.70 on the point estimate; "interval above 0.70" not claimed (t lower end 0.439);
+  "shown" because the paired mean is > 0 and its 4-df t-interval excludes 0; the comparator is
+  the detector's own score (0.389). Near-the-bar numbers are reported next to the verdict and do
+  not change it, as registered.
+- The two disclosed pre-hash edits (the tempo-word bullet corrected to describe what the loader
+  does; "May" made case-sensitive and "event" added to the generic list) were made before any
+  annotation existed and change no rule, metric or comparator. I accept them. The first is a
+  wording correction after seeing the build output, and it matters for item 3 below.
+- The reachability paragraph assumed a between-movement SD of about 0.13. The observed SD of the
+  per-movement means is 0.241, so the t half-width is 0.299, not 0.16. With this spread the
+  experiment cannot separate 0.70 from 0.45 or from 1.0; only the point-estimate rule decides.
+
+### 2. Blinding: clean in all 10 transcripts
+
+- Each of the 10 agents (ids in DECISIONS, R-08d annotation run) made only these calls: Read
+  `INSTRUCTIONS.md`, Read `SCHEMA.json`, Read its own `R#.txt`, one write of `out/R#.json` (Bash
+  heredoc, Python `json.dump` to that one path, or the Write tool), an optional `json.load` of its
+  own output, and the hand-back. No `ls`, `find`, `glob`, `cat` of another file, web tool or repo
+  path. Every Read was inside `r08d_A/` or `r08d_B/`.
+- Both R4 annotators (A and B) hit the read-size limit and read R4 in two Reads (offset 797); the
+  second read's tool result ends with the `END` line in both, so both saw the whole rendering. No
+  other truncation notice.
+- The 10 prompts are identical after normalising the run folder and the id (one sha). They name
+  no composer, corpus, period or familiarity.
+- Context: the user's global `CLAUDE.md` and personal `MEMORY.md` only. The environment block
+  shows the cwd (`.../pianolens`) and a public GitHub remote name, as in R-08a-c. With cwd fields
+  removed, no transcript contains "DCML" (one base64 hit), a corpus word or any of the 5 composers;
+  the only composer names are the annotators' own guesses (A/R2 and B/R5, "Beethoven").
+- Model `claude-opus-5-5` in every transcript. Scratchpad inputs are byte-identical to
+  `blind_input/`; the 10 repo annotations are byte-identical to the scratchpad `out/` files.
+- Thinking blocks are empty (redacted), as in R-08b/c, so silent recognition cannot be audited.
+
+### 3. Renderings, leakage check, scorer and harness: reproduced
+
+- Draw: replicated from the pool in `selection.json` with seed 20261001 (eligibility, tertiles,
+  tertile assignment, picks and blind ids all equal). Re-rendering the 5 picks with the build's
+  own loader gives byte-identical `R1..R5.txt`, with no identity removals.
+- `build.py --check` (read-only) passes, and its output is identical to `leakage_check.txt`.
+- Printed text that remains, as disclosed: R5 "Andante placido" (Liszt's own heading for this
+  piece), "Tempo primo" (rewritten from "Tempo I"), "una corda" (rewritten from Liszt's "una
+  chorda"), "perdendosi", "raddolcente", "mancando"; R4 "Andantino", "Allegro vivace", "Molto
+  vivo", "Più lento", "Adagio", "tre corde" (not rewritten; Grieg's spelling), one
+  "other-dynamics" placeholder; R1-R3 dynamics and rit./cresc. words only. None names a composer,
+  piece, title or catalogue number. "Andante placido" is the one piece-specific cue: an expert who
+  knows the score could use it. It did not lead to recognition (B/R5 read the markings as
+  "late-Beethoven-style"). The "una chorda" → "una corda" rewrite removes a Liszt spelling
+  fingerprint, so it is conservative. "Tempo primo" is neutral. Tempo words were in no earlier
+  R-08c rendering, so R-08d's input carries more tempo information than R-08c's; this is
+  disclosed in the header and I do not count it as a leak.
+- Harness rerun against a scratch copy of `artifacts/`: PASSED, `harness.txt` byte-identical.
+  Scoring rerun to scratch (`run_llm` A and B, `compare`, `run_comparators`): `scores_A.csv`,
+  `scores_B.csv`, `summary_A.txt`, `summary_B.txt`, `r08d_summary.txt`, `comparators.csv` and
+  `comparators_summary.txt` are byte-identical to `artifacts/`.
+- Independent recomputation from `scores_*.csv`: primary 0.7372, t [0.4387, 1.0357]; one-sided p
+  0.3734; LOO 0.705 / 0.732 / 0.687 / 0.722 / 0.840; worst-run 0.698, best-run 0.777; paired
+  per movement +0.285, +0.396, +0.438, +0.298, +0.325; within-movement SD 0.056. All equal the
+  summary.
+
+### 4. Interpretation
+
+**R5 (Liszt, Au lac de Wallenstadt; 0.316 / 0.333).** Both runs hit 3 of 5 DCML ends exactly
+(bars 19, 35, 77, all at 0 beats distance), so recall is 0.60 in both runs, and precision is
+0.21 / 0.23 (14 and 13 predicted ends). The low score has two parts:
+
+- *Granularity (most of the precision loss).* Of the 11 (A) and 10 (B) unmatched predictions,
+  8 in each run are finer subdivisions of DCML phrases: ends 7-8 bars before a DCML end (bars
+  11/12, 27/28, 69), bar 85 (A), and cadences inside DCML's single 31-bar closing phrase (bars 89,
+  93, 95, 104, and 111 in B). The rest are the middle-section ends at bars 44 (A) and 48 and the
+  early HC at bar 53.
+  DCML phrases here are 16-31 bars of 3/8; the annotator's are mostly 8 bars. This is the same
+  pattern as R-08c's Q3, and it is a disagreement about level, not a failure to find phrase ends.
+- *Two real placement disagreements (all of the recall loss).* Both runs miss the same two DCML
+  ends: the HC at bar 59 (both annotators put the HC at bar 53 and read 53-62 as standing on the
+  dominant) and the final end at bar 108 (both put it at 104, B also at 111). These are 4-6 bars
+  away, so no tolerance fixes them.
+- So "R5 is only a granularity mismatch" overstates it: granularity explains the extras, not the
+  two misses. With the confidence ≥ 0.5 filter, R5 is 0.600 (A) / 0.545 (B), because the
+  subdivisions carry low confidence; the filter lowers the overall mean (0.651 / 0.689), so it is
+  not a fix.
+
+**Is ±1 beat fair in 3/8?** One beat is an eighth note there, the narrowest tolerance in the
+draw. It makes no difference: R5's F1 is identical at ±1 beat, ±1 quarter note and ±1 bar in
+both runs, because the 3 hits are exact and every miss or extra is 3+ bars away. The metric's
+real sensitivity on R5 is the sparse ground truth: with 5 DCML ends, each extra or miss moves F1
+a lot, and F1 cannot credit a nested (finer) segmentation. The overall ±1 bar sensitivity is
+0.805 and exact onset 0.679.
+
+**Precision/recall and cadence split.** R1-R4 are balanced (P 0.65-1.00, R 0.73-1.00, ratio
+predicted/DCML 0.90-1.31). Recall of DCML ends with a cadence label is 37/40 (A) and 35/40 (B);
+without one, 19/28 and 23/28. So the cadence-leaning phrase definition costs recall on
+uncadenced Romantic ends, as the header predicted.
+
+**Label exposure.** The registered granularity check argues against recall only where the
+levels differ, which is R5 alone. In R1-R4 the ratios are near 1 with high P and R, which is what
+the header says a recaller would show; it is also what a good annotator would show. So for 4 of 5
+movements this check is uninformative about exposure; it does not argue against it. DCML's
+Romantic labels predate the cutoff. Only post-cutoff labels would exclude exposure.
+
+**Recognition.** 0 of 10 strings name a piece or composer; `recognition.json` (all "none", two
+borderline hand-back guesses) matches the strings and hand-backs exactly. The two guesses (A/R2
+"Beethoven, perhaps a bagatelle"; B/R5 "late-Beethoven-style markings") are wrong-composer, not
+half-recognitions. Träumerei unnamed in both runs is plausible but not proven: the rendering is
+untransposed (F major, the melody C4 | F4 ... E4 F4 A4 C5 F5 in bars 1-3), and naming rates in
+R-08a/b on undisguised Mozart were 2-4 of 5 per run, so 0 of 10 here is lower than before. One
+difference is that these instructions give no period cue. Thinking is redacted, so silent
+recognition cannot be excluded (self-report is a lower bound). R3's 1.000 / 0.875 does not by
+itself suggest recall: its 4-bar phrases with HC/PAC ends are textbook, and both runs describe the
+form without any title cue.
+
+**What a fragile GO licenses.** For the lead's decision:
+
+- Supported: on Romantic character pieces in simple meters (one piece each by Tchaikovsky,
+  Chopin, Schumann, Grieg, Liszt), the annotator's mean end F1 against DCML is at the 0.70 bar by
+  the registered point-estimate rule, and it beats the F-05c detector by a clear margin on every
+  piece. Recall of DCML phrase ends is high (cadenced about 0.9); the main error is level
+  (finer phrases than DCML) on sparsely labelled pieces.
+- Not supported: that the mean is above 0.70 (p 0.37; worst run below the bar; one movement
+  decides it), any per-composer claim (one piece each), compound meters, mazurkas beyond one
+  short T1 piece, transcribed MIDI, or long Chopin forms (ballades, sonatas).
+- Downstream (H4 / R-09): a consumer that uses phrase boundaries must tolerate over-segmentation
+  (for example, a per-phrase measure that is stable when a phrase is split in two), or it should
+  check the phrase level per piece. A consumer that needs DCML's exact level is not licensed.
+
+### Required fixes (text only; the verdict does not depend on them)
+
+1. Add a `## Results` section to this README (the summary lives only in `artifacts/`): the
+   per-movement table, primary with both intervals, paired test, the near-the-bar numbers, run-to-
+   run, sensitivities, cadenced/uncadenced split, granularity, recognition.
+2. In Results, state that the observed between-movement SD (0.241) was nearly twice the 0.13
+   assumed in "Can each branch be reached?", so the interval is uninformative.
+3. Describe R5 as "granularity (the extras) plus two placement disagreements at bars 59 and 108
+   (the misses)", not as a granularity mismatch only, and say that ±1 bar gives the same R5 score.
+4. State that the granularity check argues against label recall on R5 only; in R1-R4 it is
+   uninformative.
+5. Header status line: leave it (hash); the audited status is recorded here and in
+   `EXPERIMENTS.md`.

@@ -116,3 +116,17 @@ paths:
   conventions (a model recalling the labels would copy the standard's phrase level).
 - **A point-estimate GO near the bar with n = 5:** report leave-one-group-out means, the
   worst-run variant, and the one-sided p against the bar next to the t-interval.
+
+## Lessons from the R-08d audit (2026-09-28)
+
+- **Sparse ground truth and level mismatch.** When a movement has few labelled boundaries (about 5
+  or fewer), F1 is driven by the phrase level, and a tolerance sensitivity cannot detect it. For
+  each low-scoring movement, list every miss and extra with its distance to the nearest true
+  boundary, and separate "finer subdivisions" (extras) from "placement misses" (recall loss).
+  Seen in R-08c Q3 and R-08d R5.
+- **A level-match check is one-sided.** Predicted/true ratios near 1 with high P and R are what a
+  label recaller would show and also what a good annotator shows, so they say nothing about
+  exposure. Only a level mismatch argues against recall.
+- **Check the reachability assumption after the run.** If the observed between-group SD is much
+  larger than the one assumed in the pre-registration, say so in the results: the interval is
+  then uninformative, and only the point-estimate rule decided.
