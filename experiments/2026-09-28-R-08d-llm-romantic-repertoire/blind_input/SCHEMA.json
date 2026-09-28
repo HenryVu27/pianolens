@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Annotation of one movement",
+  "type": "object",
+  "required": [
+    "movement",
+    "recognised_piece",
+    "events"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "movement": {
+      "type": "string",
+      "pattern": "^R[1-9]$",
+      "description": "The id in the rendering's first line, e.g. R1."
+    },
+    "recognised_piece": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "If you recognised the piece, name it; otherwise null."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free comments (at most a few sentences)."
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "bar",
+          "beat",
+          "type",
+          "cadence",
+          "confidence"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "bar": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Running bar number as printed after BAR in the rendering."
+          },
+          "beat": {
+            "type": [
+              "number",
+              "string"
+            ],
+            "description": "Beat position exactly as printed on the onset line, e.g. 1, 2.5 or \"2+1/2\"."
+          },
+          "type": {
+            "enum": [
+              "phrase_end",
+              "phrase_start",
+              "cadence"
+            ],
+            "description": "cadence = a cadence that does not end a phrase (the phrase continues)."
+          },
+          "cadence": {
+            "enum": [
+              "PAC",
+              "IAC",
+              "HC",
+              "EC",
+              "DC",
+              "none"
+            ],
+            "description": "For phrase_end: the cadence that closes the phrase (or none). For cadence events: the cadence type (not none). For phrase_start: always \"none\"."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    }
+  }
+}

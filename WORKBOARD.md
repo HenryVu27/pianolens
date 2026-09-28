@@ -398,7 +398,7 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   - Keep the label-free path, and re-run the leakage test per corpus.
   - Register in DATASETS.md.
   - Compute detector comparators per movement.
-- **R-08d LLM phrase analysis on Romantic repertoire** (S). blocked_by: R-08c. status: step 1 done 2026-09-28 (lit-scout): 9 DCML Romantic piano corpora carry `}` phrase ends and cadences, all released 2025-04-27 (pre-cutoff), CC BY-NC-SA 4.0; none post-cutoff. Recommended pool and draw: `docs/research/2026-09-27-landscape.md` section 2.1.
+- **R-08d LLM phrase analysis on Romantic repertoire** (S). blocked_by: R-08c. owner: ml-researcher. status: in progress (preparation done 2026-09-28: pre-registered, sha256 dbef84ae...; blind inputs R1-R5 in `blind_input/` pass the leakage and identity check; `score.py --harness` PASSED. Waiting for the lead to run 2 x 5 blind annotators (runs A and B) from copies of `blind_input/` outside the repo, then `score.py --llm-dir ... --run A|B`, `recognition.json`, `score.py --compare`). paths: `experiments/2026-09-28-R-08d-llm-romantic-repertoire/`. step 1 done 2026-09-28 (lit-scout): 9 DCML Romantic piano corpora carry `}` phrase ends and cadences, all released 2025-04-27 (pre-cutoff), CC BY-NC-SA 4.0; none post-cutoff. Recommended pool and draw: `docs/research/2026-09-27-landscape.md` section 2.1.
   - First, lit-scout / data-engineer checks which DCML (or other) Romantic corpora carry phrase
     labels.
   - If none do, labels made after the cutoff are an OWNER task.

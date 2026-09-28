@@ -397,3 +397,8 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - Disclose the "Tempo primo" / "una corda" text rewrites and the 4 hand-unfolded mazurkas
     (`unfold_validated=False`). Those 4 mazurkas are excluded from the draw.
   - Two annotator runs per movement, as in R-08c.
+- **2026-09-28, lead: R-08d annotation run.** 10 blind annotators were launched from `r08d_A` / `r08d_B`
+  in the scratchpad, outside the repo. Agent ids:
+  - A (R1-R5): af78638f3a2b4fa6f, a4bfa3db1fc3ceac5, a3f3d81e34ce7789b, a78c9c4c81d0ef593, a73e4b56f8720e63c
+  - B (R1-R5): a02e231e05addd526, ae2c980f51a63ff30, a1e990af1d9d0e583, ac8bb7be350e0ca55, af372660bf2fcce3e
+  - The pre-registration dropped the period wording from INSTRUCTIONS, which is accepted.
