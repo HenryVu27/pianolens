@@ -363,7 +363,7 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
     Transformer), measure the held-out variance of expert curves that the model explains, on
     unseen pieces.
   - Split it into the part shared across performers and the individual part.
-- **A-01 Transcription baseline on phone-like audio** (M). Transkun vs Aria-AMT, on rendered +
+- **A-01 Transcription baseline on phone-like audio** (M). owner: audio-engineer. status: in progress (2026-09-28; centred on Henry's 5 phone takes, O-01). Transkun vs Aria-AMT, on rendered +
   convolved MIDI.
 - **A-02 Synthetic phone-audio augmentation + fine-tune** (L). blocked_by: A-01, O-03.
 - **A-03 Loudness calibration protocol** (M).
@@ -626,3 +626,7 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
 - 2026-09-28: R-08c preparation (ml-researcher). Pre-registered (README hash ef243096...7796). 21 eligible J. C. Bach movements (op. 5 nos. 2-4 excluded), 5 rendered-size strata, seeded draw 20260930: Q1 wa06op05no6a, Q2 wa06op05no6b, Q3 wa07op17no1a, Q4 wa10op17no4a, Q5 wa12op17no6a. Renderings via R-08a `common.render` on `load_score(tempo_word=False)`; INSTRUCTIONS/SCHEMA = R-08a's with ids M->Q and the worked example moved to bars 25/28 (pre-registered collision rule; 'Classical period' wording kept). Leakage + identity check PASSED (planted cues fire); harness PASSED (oracle 1.000; detector via events = D-12 rows; dry run). Detector on the 5: 0.437. Finding: the detector is not pass-consistent on Q4/Q5, so it scores 0.560/0.522 through the annotation path vs 0.541/0.527 on its own; comparator stays its own score. Not committed.
 - 2026-09-28: F-07 post-audit corrections (feature-engineer), text only. README: new "Post-audit corrections (2026-09-28)" section; flagged in-place edits: cross-pianist control table in Results (delta same 0.121 vs different 0.097; R²(diff) 0.011 vs 0.049; paired gap 0.038 [0.030, 0.046]), verdict reworded per DECISIONS (pre-registered H5 passes; take-consistent = piece-shared timing, not intent; supported: take-to-take variation mostly unstructured), "a fifth" -> about 0.16, smoke run disclosed, ASAP/PianoCoRe score-basis threat. Header hash b1f57ae2... unchanged. `takes.py` docstring reworded (no logic change; 10 tests pass, ruff clean). EXPERIMENTS row updated.
 - 2026-09-28: D-13 (data-engineer). DCML Romantic corpora downloaded (chopin_mazurkas v3.2, grieg / tchaikovsky / schumann / liszt v2.3; CC BY-NC-SA 4.0) and loaded through the new shared `pianolens.data.dcml` (jc_bach wrapper, outputs identical). 166 movements; notes = ms3 n_onsets in 162/166 after merging gap ties; unfolding = metadata 162/166 (4 mazurkas where ms3 is wrong or empty, hand-checked). LEAKAGE CHECK PASSED on 165 renderings; eligibility and detector comparators per movement in `data/interim/dcml_romantic/`. Piece ids added to `piece_ids.parquet` (all 46 MazurkaBL mazurkas map). pytest 430 passed, 1 skipped; ruff clean. Not committed.
+- 2026-09-28: lead. **A-01 PAUSED at Henry's request.** The audio-engineer was stopped mid-run while
+  writing the report script. Resume by re-dispatching A-01 with "check existing work first". Look in
+  `data/interim/henry_takes/` and any new scripts or `src/pianolens/audio/` files. No other agents
+  are running.

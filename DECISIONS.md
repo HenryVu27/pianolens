@@ -413,3 +413,10 @@ Append only. Each entry records the date, the decision, the reason, and who deci
     (ticket F-05e) before use.
   - **The LLM phrase line (R-08a-d) is closed for now.** A larger follow-up (mazurkas only, more
     movements, compound meters, or post-cutoff OWNER labels) is BL-17.
+- **2026-09-28, lead: Henry's recordings (O-01, first instalment).**
+  - 5 Chopin pieces played on a Kawai SK-7 grand, recorded by phone, from Henry's YouTube playlist.
+  - Audio is in `data/raw/henry_takes/` (gitignored). **Personal data: never commit it, never upload
+    it anywhere, and never include audio or MIDI derived from it in the repo.**
+  - Reports built from it stay in `data/interim/`.
+  - All 5 pieces have large PianoCoRe tier A reference sets, 221 to 1,631 performances each.
+  - There is one take per piece, so the repeated-take features (F-07) are not available yet.
