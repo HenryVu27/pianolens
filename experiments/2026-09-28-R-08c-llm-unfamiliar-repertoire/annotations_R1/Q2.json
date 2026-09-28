@@ -1,0 +1,336 @@
+{
+ "movement": "Q2",
+ "recognised_piece": null,
+ "notes": "C minor, 4/4, no written repeats. Second-theme material in Eb (from 16.4+1/2, returning at 58.4+1/2); G minor cadences at 11, 14, 30, 36; return of the opening figure around 48-54; coda from 71. Several local cadences inside sequences (e.g. 20-25, 42-47) were judged by local key and are low confidence.",
+ "events": [
+  {
+   "bar": 1,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.9
+  },
+  {
+   "bar": 4,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 4,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 7,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 7,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 9,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 9,
+   "beat": "3+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 11,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 11,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 14,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 14,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 16,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 16,
+   "beat": "4+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 19,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.25
+  },
+  {
+   "bar": 19,
+   "beat": "4+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 22,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 22,
+   "beat": "4+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 26,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 26,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 30,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 30,
+   "beat": "4+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 33,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 33,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 36,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 36,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 39,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 39,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 42,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 42,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.25
+  },
+  {
+   "bar": 44,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.25
+  },
+  {
+   "bar": 44,
+   "beat": "3+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.25
+  },
+  {
+   "bar": 48,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 48,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 53,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 53,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 58,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 58,
+   "beat": "4+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 62,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 62,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 66,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 66,
+   "beat": "1+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.25
+  },
+  {
+   "bar": 68,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 68,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 70,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 71,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 75,
+   "beat": 3,
+   "type": "cadence",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 77,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.8
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+{
+ "R1": {
+  "Q1": "none",
+  "Q2": "none",
+  "Q3": "none",
+  "Q4": "none",
+  "Q5": "none"
+ },
+ "R2": {
+  "Q1": "none",
+  "Q2": "none",
+  "Q3": "none",
+  "Q4": "none",
+  "Q5": "none"
+ },
+ "borderline": {
+  "R2/Q4": "hand-back: sounds like Haydn or early Mozart (wrong composer; string null)",
+  "R1/Q2": "hand-back: Haydn- or Mozart-like (string null)"
+ }
+}
