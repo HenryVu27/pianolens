@@ -9,3 +9,4 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [corrections-2026-09-27.md](corrections-2026-09-27.md): load-bearing corrections from L-01 that the plan must absorb
 - [motor-control-sources.md](motor-control-sources.md): L-04 evenness, pedal and asynchrony sources; which are open (Europe PMC), which are paywalled; unresolved Jabusch n; SKY-Piano as a validation set
 - [methods-refs.md](methods-refs.md): L-03 methods pass; Crossref for metadata, the CJ comparisons-per-item trap (N_CR vs CPR), Woods PMC access, docstring gaps
+- [dcml-corpora.md](dcml-corpora.md): DCML repo survey recipe, `}` vs deprecated `\\` phrase symbol, Romantic phrase counts (R-08d), none post-cutoff

@@ -380,3 +380,11 @@ Append only. Each entry records the date, the decision, the reason, and who deci
     1. DCML Romantic corpora with phrase labels, if any exist;
     2. phrase labels made after the model's cutoff (OWNER: Henry or a teacher annotates about 5
        passages).
+- **2026-09-28, lead: the R-08d design.**
+  - **Pool:** a 5-corpus mix (chopin_mazurkas, grieg_lyric_pieces, tchaikovsky_seasons,
+    schumann_kinderszenen, liszt_pelerinage). One movement per corpus by seeded draw, stratified by
+    rendered size; exclude movements with fewer than 5 phrase ends. This favours breadth over depth.
+    A mazurkas-only follow-up is optional.
+  - **Pre-cutoff DCML labels are acceptable, with the same caveat as R-08c** (exposure not excluded).
+  - Henry's post-cutoff labels (OWNER) remain the gold-standard option. They are not a blocker.
+  - Meters: simple meters preferred. Any compound meter is disclosed and analysed separately.

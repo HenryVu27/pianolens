@@ -17,6 +17,8 @@ verify the [U] items is L-01.
   F-04 citation map.
 - L-03 additions are tagged "(L-03 2026-09-27)" in sections 2, 3.3 and 3.4.
 
+**R-08d corpus check, 2026-09-28 (lit-scout).** Section 2.1 is new: Romantic phrase-labelled corpora (DCML and others) and a recommended R-08d draw.
+
 **L-03 methods pass, 2026-09-28 (lit-scout).**
 - Section 6 is new: primary sources for the statistical and psychophysical methods used in code
   and in `study/protocol-S03.md`.
@@ -410,6 +412,108 @@ See `DATASETS.md` for what is downloaded. Candidate list:
 | PianoVAM, PISA, YCU-PPE-III, ICPC-2015 | Multimodal / skill / competition sets | various (PianoVAM: CC BY-NC-SA 4.0, checked 2026-09-27 by D-10) | see agent report |
 | Mistake sets | MAESTRO-E, Burgmüller mistakes, Polytune data | various | Polytune repo |
 | CIPI / PSyllabus | Difficulty labels | CC | zenodo 8037327 / 14794592 |
+
+### 2.1 Romantic phrase-labelled corpora for R-08d (lit-scout, 2026-09-28)
+
+**Question.** Which Romantic piano scores carry expert phrase-boundary labels (ideally also
+cadences) at onset level, usable like DCML's `phraseend` column?
+
+**Method [V 2026-09-28].**
+- I listed all 127 DCMLab repos through the GitHub API.
+- For every 19th-century corpus I downloaded all `harmonies/*.tsv` files from the default
+  branch. These are small TSVs, kept in the session scratchpad only, not in `data/`.
+- "Ends" counts `}` (so `}{` counts once as an end and once as a start), as R-08b did.
+- Version and license come from `.zenodo.json` and the latest GitHub release.
+- Overlap with performance data comes from the local `data/raw/pianocore/metadata.csv` (tier A
+  only), ASAP folders and MazurkaBL `beat_time/`.
+
+**Main finding: DCML has no post-cutoff Romantic labels.** Every Romantic DCML corpus was last
+pushed on 2025-04-27/28 (releases v2.3 to v3.2). `pushed_at` covers all branches. The labels
+were also published earlier, in "An Annotated Corpus of Tonal Piano Music from the Long 19th
+Century" (the `romantic_piano_corpus` meta-repo, v2.1, 2023-12-05), and they are rendered on
+public GitHub Pages. So R-08d on DCML carries the same caveat as R-08c: exposure of DCML labels
+in training is not excluded. **Only the OWNER route (option 2 in DECISIONS) gives labels made
+after the cutoff.**
+
+**Second finding: the old phrase symbol.** DCML's current standard marks phrase ends with `}`.
+The deprecated symbol `\\` marks the old kind of phrase ending, with no start marks. Several
+corpora use only `\\` and have no cadence labels, so the R-08a scorer cannot read them as they
+stand.
+
+| Rank | Repo (DCMLab) | Music | Pieces | Ends (`}`) | Cadence labels | Version, release | Performances on the same pieces |
+|---|---|---|---|---|---|---|---|
+| 1 | `chopin_mazurkas` | Chopin, Mazurkas (all 3/4) | 55 | 606 (median 10 per piece, range 2-24) | 344 (PAC 212, HC 64, IAC 56) | v3.2, 2025-04-27 | **PianoCoRe tier A: 33 mazurkas, 2,712 perfs; MazurkaBL: 45 of its 46** |
+| 2 | `grieg_lyric_pieces` | Grieg, Lyric Pieces (10 books) | 66 | 559 (1-25) | 433 (HC 148, PAC 193) | v2.3, 2025-04-27 | PianoCoRe A: 12 pieces, 1,178 perfs |
+| 3 | `tchaikovsky_seasons` | Tchaikovsky, The Seasons op. 37a | 12 | 298 (10-51) | 185 | v2.3, 2025-04-27 | PianoCoRe A: 10 of 12, 1,818 perfs |
+| 4 | `schumann_kinderszenen` | Schumann, Kinderszenen op. 15 | 13 | 87 (3-12) | 79 | v2.3, 2025-04-27 | PianoCoRe A: 4 movements plus whole-work rows, 1,576 perfs |
+| 5 | `liszt_pelerinage` | Liszt, Années de pèlerinage S.160-162 | 19 | 277 (5-47) | 272 | v2.3, 2025-04-27 | ASAP: Gondoliera (162.01); PianoCoRe A: Gondoliera 47, Tarantella 187 |
+| 6 | `dvorak_silhouettes` | Dvořák, Silhouettes op. 8 | 12 | 169 (3-29) | 139 | v2.3, 2025-04-27 | none in tier A (66 lower-tier rows) |
+| 7 | `medtner_tales` | Medtner, Tales (early 20th c.) | 19 | 287 (5-45) | 233 | v2.3, 2025-04-27 | none in tier A |
+| 8 | `debussy_suite_bergamasque` | Debussy, Suite bergamasque | 4 | 25 (3-10) | 29 | v2.3, 2025-04-27 | PianoCoRe A: 4 movements, 2,534 perfs |
+| 9 | `rachmaninoff_piano` | Rachmaninoff, Corelli Variations op. 42 | 22 | 80 (1-10) | 49 | v2.4, 2025-04-27 | none in tier A |
+| - | `beethoven_piano_sonatas` | Beethoven, 32 sonatas (Classical to early Romantic) | 64 | 1,387 (3-47) | 1,370 | v2.5, 2025-04-27 | many (ASAP, PianoCoRe); famous, so a memorisation risk |
+| - | `mahler_kindertotenlieder` | voice and orchestra | 5 | 30 | 30 | v3.2 | not piano |
+
+No usable phrase ends:
+
+| Repo | What is there |
+|---|---|
+| `schubert_winterreise` (v2.4, 2025-04-27) | 24 songs (voice and piano), 414 old-style `\\` ends, no `{`, no cadence labels. Vocal. Lower priority. |
+| `schumann_liederkreis` (v2.5) | songs, 86 `\\`, no cadences |
+| `mendelssohn_quartets` (v2.4) | string quartets, 451 `\\`, no cadences |
+| `ravel_piano` (v2.6), `wagner_overtures` (v2.6) | 39 and 13 `\\`, no cadences |
+| `c_schumann_lieder` (v2.4) | MuseScore files only, no TSVs |
+| `debussy_piano` (v0.9.1), `debussy_*` sub-repos | no harmony TSVs (pitch-class data only) |
+| `romantic_piano_corpus`, `distant_listening_corpus` | meta-repos (submodules) of the corpora above; no new data |
+
+**Does not exist on DCMLab (2026-09-28):** no Schubert piano corpus, no
+`mendelssohn_lieder_ohne_worte`, and no other Chopin set (for example Preludes or Nocturnes).
+Repos pushed after June 2026 (`choro`, `corpusinterface`, `data_reports`, `dimcat`,
+`haskell-musicology`, `reductive_analysis_app`, `short_phrase_collections`, `coup`) hold no
+Romantic piano phrase labels. `short_phrase_collections` (Feb-Aug 2026) is 8 short polyphonic
+phrases chosen as experiment stimuli, not a labelled corpus.
+
+**Non-DCML resources [mostly U].**
+- **Batik-plays-Mozart** (Classical) is still the only corpus that links DCML phrase labels to
+  note-aligned performances. The TISMIR 2026 multi-corpus timing study ("Revisiting Expressive Timing in Piano Performance at Scale", published
+  2026-07-17, tismir.317) [V 2026-09-28, article page] adds no Romantic phrase labels. Its
+  Magaloff/Chopin data are proprietary.
+- **MazurkaBL** (local) has beat times and dynamics for about 2,000 recordings of 46 mazurkas,
+  but no phrase labels. Joined with `chopin_mazurkas` it gives phrase labels on performed pieces
+  at beat level, for 45 mazurkas.
+- **GTTM database** (Hamanaka, Hirata, Tojo): 300 grouping-structure analyses, reportedly
+  CC BY 4.0 [U]. They are mostly short monophonic excerpts, so a weak fit for polyphonic
+  onset-level phrase ends.
+- **Schubert Winterreise Dataset** (Weiss et al.): harmony and form annotations for a vocal
+  cycle [U]. Form is coarser than phrase.
+- **JKU-PDD**: 5 pieces with pattern and phrase annotations, one Chopin (a mazurka) [U]. Too
+  small.
+- An arXiv API sweep ("phrase AND cadence", "phrase segmentation symbolic", sorted by date) and
+  web searches found **no new 2026 Romantic phrase dataset**.
+
+**Recommendation for the R-08d 5-movement draw.**
+1. **Pool:** DCML Romantic corpora that have PianoCoRe/ASAP performances: `chopin_mazurkas`,
+   `grieg_lyric_pieces`, `tchaikovsky_seasons`, `schumann_kinderszenen` and `liszt_pelerinage`.
+   Draw **one movement per corpus with a seed**, stratified as in R-08c by rendered size within
+   each corpus. This covers 5 composers.
+   - Exclude movements with fewer than 5 ends (some Grieg and Rachmaninoff pieces have 1).
+   - Exclude pieces in compound or changing meter, to keep R-08c's "simple meters" scope, or
+     disclose them.
+2. **If the lead wants target composers only:** draw 5 mazurkas from the 33 that are in
+   PianoCoRe tier A. The cost is less stylistic breadth: all are in 3/4 and use the same dance
+   genre.
+3. **Recognition risk:** Kinderszenen (Träumerei) and the best-known mazurkas are as famous as
+   the Batik Mozart pieces. Keep the R-08b-style within-piece recognition analysis. If a clean
+   control is wanted, Dvořák's Silhouettes (rank 6) is the unfamiliar Romantic control. It has
+   no performances, which does not matter for an LLM label test.
+4. **Loader:** D-12's `dcml_jc_bach` loader reads the same MS3 `.mscx` plus TSV layout. The
+   Romantic TSVs add columns (for example `special`), so a `data-engineer` ticket is needed to
+   generalise it and re-run the leakage check. The MuseScore files embed the labels.
+5. **All candidates are CC BY-NC-SA 4.0** (`.zenodo.json`). Register them in DATASETS.md
+   before use.
+6. **Pre-cutoff caveat:** DCML labels predate the model cutoff by more than a year. If R-08d
+   must rule out label exposure, the OWNER task (Henry or a teacher labels about 5 passages)
+   is the only option. A mazurka or a MAJEPPA practice piece would suit it best.
 
 ## 3. Models and tools
 
