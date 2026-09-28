@@ -152,6 +152,24 @@ This is the most direct test of the original idea that current LLMs can help.
 - **Caveat:** the expert labels were published before the model's training cutoff, so exposure to
   them cannot be fully excluded.
 
+### A-01. Phone recordings of a real learner (Henry, 5 Chopin pieces, Kawai grand)
+- **The pipeline:** phone audio is transcribed to notes by two models (Transkun and Aria-AMT) and
+  aligned to the score. The report card then compares it with hundreds of expert performances of the
+  same piece.
+- **Controlled check:** expert recordings played through a simulated phone and then transcribed.
+  - 98-99% of notes are recovered, with about 2 ms timing error.
+  - Transcription adds only about 2 points of apparent error.
+- **On the real phone recordings:**
+  - The two models agree closely (note F1 0.91-0.97).
+  - Wrong and missed notes sit near the transcription floor.
+  - Three recordings show 15-29% "extra" notes. Many are on a few fixed high pitches, with no
+    plausible source note, and the simulation does not reproduce them.
+- **Lesson:** phone-based feedback can trust timing and tempo. Extra notes, dynamics and pedal are
+  low confidence until a filter is validated on real rooms with ground truth.
+- **Example of trustworthy feedback:** in Nocturne Op. 27 No. 2, both transcription models flag the
+  same bars (43 and 60) for timing, including rushing bar 60 about 14% faster than the typical
+  expert shape.
+
 ## 5. Supporting checks (not headline experiments)
 
 - **D-10:** expert vs amateur control features.
@@ -198,7 +216,8 @@ auditor caught it every time.
 - **H6:** which flaws do listeners actually mind most? The study is built, with no listeners yet.
 - **H7:** what explains preference among good performances? This needs the pairwise listening study.
 - **H8:** do audio skill models cheat on recording quality? This is planned.
-- **Phone audio front end:** the transcription pipeline is not built yet.
+- **Phone audio:** the baseline is built (A-01). Filtering spurious extra notes from real-room
+  recordings is in progress (A-01b).
 
 ## 8. Reproducing anything
 
