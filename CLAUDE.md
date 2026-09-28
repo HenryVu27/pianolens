@@ -31,6 +31,7 @@ structure. Details and caveats are in the plan, section 1.
 | Every experiment: hypothesis, result, verdict | `EXPERIMENTS.md` plus `experiments/<id>/README.md` |
 | Decisions and why | `DECISIONS.md` |
 | One-page summary of results and blockers | `STATUS.md` (the lead updates it) |
+| Plain-language research log (blog source) | `docs/RESEARCH_LOG.md`. The lead updates it whenever an experiment is audited. |
 | Deferred work / known bugs | `BACKLOG.md`, `DEFECTS.md` |
 | Path-scoped rules (load automatically) | `.claude/rules/*.md`: `data`, `features`, `experiments`, `audio`, `study` |
 | Procedures | `.claude/skills/`: `run-experiment`, `fetch-dataset`, `gpu-job` |
