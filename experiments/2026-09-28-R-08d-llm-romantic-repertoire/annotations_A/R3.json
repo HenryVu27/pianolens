@@ -1,0 +1,19 @@
+{
+  "movement": "R3",
+  "recognised_piece": null,
+  "notes": "F major. A (score 1-8, repeated): antecedent to HC, consequent modulating to C with PAC. B (score 9-16): two 4-bar phrases ending in G minor and D minor (both arrive over the fifth in the bass after V7). A' (score 17-24): antecedent to HC, final phrase extended by ii6-V/ii-ii-V7 to PAC in F. Events in bars 3-9 are copied to 11-17.",
+  "events": [
+    {"bar": 1, "beat": 4, "type": "phrase_start", "cadence": "none", "confidence": 0.95},
+    {"bar": 5, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.75},
+    {"bar": 5, "beat": 4, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 9, "beat": 3, "type": "phrase_end", "cadence": "PAC", "confidence": 0.7},
+    {"bar": 9, "beat": "4+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 21, "beat": 3, "type": "phrase_end", "cadence": "IAC", "confidence": 0.4},
+    {"bar": 21, "beat": "4+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.55},
+    {"bar": 25, "beat": 3, "type": "phrase_end", "cadence": "IAC", "confidence": 0.35},
+    {"bar": 25, "beat": 4, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 29, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.75},
+    {"bar": 29, "beat": 4, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 33, "beat": 3, "type": "phrase_end", "cadence": "PAC", "confidence": 0.85}
+  ]
+}

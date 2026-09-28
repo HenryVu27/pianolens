@@ -1,0 +1,19 @@
+{
+  "movement": "R3",
+  "recognised_piece": null,
+  "notes": "F major, binary-like form: A (bars 1-9, repeated as 10-17), B section modulating to g minor then Bb/d minor (bars 18-25), reprise of the opening (26-33) ending on a PAC in F. Bar 9 beat 3 read as a PAC in C (modulating consequent); it could also be heard as an HC in F. Bar 25 HC in d minor placed on the V7 after the cadential 6/4.",
+  "events": [
+    {"bar": 1, "beat": 4, "type": "phrase_start", "cadence": "none", "confidence": 0.95},
+    {"bar": 5, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.75},
+    {"bar": 5, "beat": 4, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 9, "beat": 3, "type": "phrase_end", "cadence": "PAC", "confidence": 0.5},
+    {"bar": 9, "beat": "4+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 21, "beat": 3, "type": "phrase_end", "cadence": "IAC", "confidence": 0.4},
+    {"bar": 21, "beat": "4+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.55},
+    {"bar": 25, "beat": "2+1/2", "type": "phrase_end", "cadence": "HC", "confidence": 0.4},
+    {"bar": 25, "beat": 4, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 29, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.75},
+    {"bar": 29, "beat": 4, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 33, "beat": 3, "type": "phrase_end", "cadence": "PAC", "confidence": 0.85}
+  ]
+}

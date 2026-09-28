@@ -1,0 +1,20 @@
+{
+ "A": {
+  "R1": "none",
+  "R2": "none",
+  "R3": "none",
+  "R4": "none",
+  "R5": "none"
+ },
+ "B": {
+  "R1": "none",
+  "R2": "none",
+  "R3": "none",
+  "R4": "none",
+  "R5": "none"
+ },
+ "borderline": {
+  "A/R2": "hand-back: sounds like Beethoven, perhaps a bagatelle (wrong composer; string null)",
+  "B/R5": "hand-back: late-Beethoven-style markings noted, not named (string null)"
+ }
+}
