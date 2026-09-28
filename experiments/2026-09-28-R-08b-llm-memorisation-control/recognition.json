@@ -1,0 +1,30 @@
+{
+ "A": {
+  "D1": "none",
+  "D2": "none",
+  "D3": "none",
+  "D4": "none",
+  "D5": "none"
+ },
+ "B1": {
+  "M1": "none",
+  "M2": "correct",
+  "M3": "correct",
+  "M4": "correct",
+  "M5": "none"
+ },
+ "B2": {
+  "M1": "none",
+  "M2": "correct",
+  "M3": "correct",
+  "M4": "none",
+  "M5": "none"
+ },
+ "R08a": {
+  "M1": "none",
+  "M2": "correct",
+  "M3": "correct",
+  "M4": "correct",
+  "M5": "correct"
+ }
+}

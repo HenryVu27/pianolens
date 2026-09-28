@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv add:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(ls:*)",
+      "Bash(du:*)",
+      "Bash(df:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(curl -L:*)",
+      "Bash(wget:*)",
+      "Bash(unzip:*)",
+      "Bash(tar:*)",
+      "Bash(git clone:*)",
+      "Bash(sha256sum:*)",
+      "Bash(shasum:*)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Read(./.env)"
+    ]
+  }
+}

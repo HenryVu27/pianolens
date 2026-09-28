@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piano Listening Study</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app" aria-live="polite">
+
+  <section id="screen-loading" class="screen active">
+    <h1>Piano listening study</h1>
+    <p id="loading-msg">Loading the study...</p>
+  </section>
+
+  <section id="screen-resume" class="screen">
+    <h1>Welcome back</h1>
+    <p>An unfinished session was found in this browser (code <strong id="resume-code"></strong>).</p>
+    <div class="row">
+      <button id="btn-resume" class="primary">Continue where I stopped</button>
+      <button id="btn-restart">Start a new session</button>
+    </div>
+  </section>
+
+  <section id="screen-consent" class="screen">
+    <p class="draft-banner">DRAFT consent text for review. Not approved for use with participants.</p>
+    <h1>Piano listening study</h1>
+    <div id="consent-text" class="consent">
+      <h2>What this study is about</h2>
+      <p>We want to learn which changes to a piano performance listeners can hear, and which
+      changes make a performance less enjoyable. You will hear short recordings of piano music.
+      All recordings use the same computer piano sound.</p>
+      <h2>What you will do</h2>
+      <ul>
+        <li>Answer five short questions about your musical background and your headphones.</li>
+        <li>Do a short headphone check.</li>
+        <li>Part A: hear a clip and then two more clips, and say which of the two differs from the first.</li>
+        <li>Part B: hear two versions of a clip and say which one you prefer.</li>
+      </ul>
+      <p>The session takes about <span id="consent-minutes">45</span> minutes, with breaks.
+      Please use headphones in a quiet place.</p>
+      <h2>Your data</h2>
+      <ul>
+        <li>We do not ask for your name, email, age or any contact details.</li>
+        <li>Your answers are saved under a random code, for example P7K2QX. The file stays on
+        this computer until you or the researcher sends it.</li>
+        <li>We record: your answers to the background questions, your choices, and how long
+        each choice took. Nothing else.</li>
+        <li>The anonymous results may be published for research.</li>
+      </ul>
+      <h2>Your rights</h2>
+      <ul>
+        <li>Taking part is voluntary. You can stop at any time by closing this page. Nothing is sent anywhere.</li>
+        <li>If you want your data removed after you sent it, give the researcher your code.</li>
+        <li>Stop if the sound is uncomfortable. Keep the volume at a comfortable level.</li>
+      </ul>
+      <h2>Contact</h2>
+      <p>Researcher: <span class="placeholder">[name and contact to be added by the study owner]</span></p>
+      <p>Payment: <span class="placeholder">[to be decided by the study owner]</span></p>
+    </div>
+    <label class="check"><input type="checkbox" id="consent-age"> I am 18 or older.</label>
+    <label class="check"><input type="checkbox" id="consent-agree"> I have read the information above and I agree to take part.</label>
+    <div class="row">
+      <button id="btn-consent" class="primary" disabled>Continue</button>
+      <button id="btn-decline">I do not want to take part</button>
+    </div>
+  </section>
+
+  <section id="screen-declined" class="screen">
+    <h1>Thank you</h1>
+    <p>You chose not to take part. Nothing was saved. You can close this page.</p>
+  </section>
+
+  <section id="screen-background" class="screen">
+    <h1>About you</h1>
+    <p>Five questions. They help us compare listeners with and without musical training.</p>
+    <form id="bg-form">
+      <fieldset>
+        <legend>Do you consider yourself a musician?</legend>
+        <label><input type="radio" name="musician" value="yes" required> Yes</label>
+        <label><input type="radio" name="musician" value="no"> No</label>
+      </fieldset>
+      <fieldset>
+        <legend>How many years of formal music training (lessons, music school) have you had, on any instrument or voice?</legend>
+        <label><input type="radio" name="training_years" value="0" required> None</label>
+        <label><input type="radio" name="training_years" value="1-2"> 1 to 2</label>
+        <label><input type="radio" name="training_years" value="3-5"> 3 to 5</label>
+        <label><input type="radio" name="training_years" value="6-10"> 6 to 10</label>
+        <label><input type="radio" name="training_years" value="10+"> More than 10</label>
+      </fieldset>
+      <fieldset>
+        <legend>Do you play the piano?</legend>
+        <label><input type="radio" name="plays_piano" value="no" required> No</label>
+        <label><input type="radio" name="plays_piano" value="a-little"> A little</label>
+        <label><input type="radio" name="plays_piano" value="yes"> Yes, regularly</label>
+      </fieldset>
+      <fieldset>
+        <legend>Do you know of any hearing difficulty?</legend>
+        <label><input type="radio" name="hearing" value="no" required> No</label>
+        <label><input type="radio" name="hearing" value="yes"> Yes</label>
+        <label><input type="radio" name="hearing" value="prefer-not"> Prefer not to say</label>
+      </fieldset>
+      <fieldset>
+        <legend>What are you listening with?</legend>
+        <label><input type="radio" name="device" value="over-ear" required> Over-ear or on-ear headphones</label>
+        <label><input type="radio" name="device" value="earbuds"> Earbuds</label>
+        <label><input type="radio" name="device" value="speakers"> Loudspeakers</label>
+      </fieldset>
+      <button type="submit" class="primary">Continue</button>
+    </form>
+  </section>
+
+  <section id="screen-volume" class="screen">
+    <h1>Set your volume</h1>
+    <p>Press Play. Set your volume so the piano is clear and comfortable. Do not change it after this.</p>
+    <div class="row">
+      <button id="btn-volume-play">Play</button>
+      <button id="btn-volume-done" class="primary">The volume is comfortable</button>
+    </div>
+  </section>
+
+  <section id="screen-headphone" class="screen">
+    <h1>Headphone check</h1>
+    <p>You will hear three tones. Which tone is the <strong>quietest</strong>? There are
+    <span id="hp-total">6</span> questions.</p>
+    <p class="progress" id="hp-progress"></p>
+    <div class="row">
+      <button id="btn-hp-play" class="primary">Play the tones</button>
+    </div>
+    <div class="row answer" id="hp-answers" hidden>
+      <button data-hp="1">First</button>
+      <button data-hp="2">Second</button>
+      <button data-hp="3">Third</button>
+    </div>
+  </section>
+
+  <section id="screen-hp-fail" class="screen">
+    <h1>Please check your headphones</h1>
+    <p>The check suggests the sound is not coming through headphones, or both ears do not
+    get the same sound. Please put on headphones (both sides) and try once more.</p>
+    <button id="btn-hp-retry" class="primary">Try again</button>
+  </section>
+
+  <section id="screen-instructions" class="screen">
+    <h1 id="instr-title"></h1>
+    <div id="instr-body"></div>
+    <button id="btn-instr" class="primary">Start</button>
+  </section>
+
+  <section id="screen-trial" class="screen">
+    <p class="progress" id="trial-progress"></p>
+    <div class="clips" id="clips"></div>
+    <p class="question" id="trial-question"></p>
+    <div class="row answer">
+      <button id="btn-ans-a" class="choice" disabled><span class="key">1</span> A</button>
+      <button id="btn-ans-b" class="choice" disabled><span class="key">2</span> B</button>
+    </div>
+    <p class="feedback" id="trial-feedback"></p>
+  </section>
+
+  <section id="screen-break" class="screen">
+    <h1>Break</h1>
+    <p>Take a short rest. Continue when you are ready.</p>
+    <button id="btn-break" class="primary">Continue</button>
+  </section>
+
+  <section id="screen-end" class="screen">
+    <h1>Thank you</h1>
+    <p>You have finished. Your code is <strong id="end-code"></strong>.</p>
+    <p>Please download your answers and send the file to the researcher as agreed.</p>
+    <button id="btn-download" class="primary">Download my answers (JSON)</button>
+    <h2>What the study was about</h2>
+    <p>Some clips were changed on purpose: timing, loudness, balance between melody and
+    accompaniment, pedal, note lengths, or wrong notes. We want to know how large each change
+    must be before listeners hear it, and how much each change costs in preference.</p>
+  </section>
+
+  <section id="screen-error" class="screen">
+    <h1>Something went wrong</h1>
+    <p id="error-msg"></p>
+  </section>
+
+</main>
+<pre id="autotest-result" hidden></pre>
+<script src="design.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

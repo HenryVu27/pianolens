@@ -1,0 +1,546 @@
+{
+ "movement": "M3",
+ "recognised_piece": "Probably Mozart, Piano Sonata in F major K. 533/494, first movement (Allegro)",
+ "notes": "Annotated from the rendering only. Events in bars 1-91 and 93-99 are copied to the repeated exposition bars; bar 203 (printed separately) gets its own PAC. Implied unaccompanied cadences inside the opening sentence (bars 5, 13) treated as sub-phrase arrivals and not marked. Tonic codetta after the last PAC of each section left unmarked.",
+ "events": [
+  {
+   "bar": 1,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.95
+  },
+  {
+   "bar": 9,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 9,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 23,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "DC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 30,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 30,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 32,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 33,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 42,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 42,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 46,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 46,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 50,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 50,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 54,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 54,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 58,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 58,
+   "beat": "1+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 62,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 62,
+   "beat": "1+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 67,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 67,
+   "beat": "1+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 83,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "EC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 90,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 90,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 93,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 93,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 96,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 96,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 98,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 98,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 100,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 203,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 207,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 214,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 214,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 220,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "IAC",
+   "confidence": 0.25
+  },
+  {
+   "bar": 221,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 221,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 230,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 230,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 234,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 234,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 238,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 238,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 250,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 250,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 258,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 258,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 262,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 262,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 269,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 273,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 273,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 277,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 277,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 281,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 281,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 285,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 285,
+   "beat": 2,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 289,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 289,
+   "beat": "1+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 293,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 293,
+   "beat": "1+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 298,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 298,
+   "beat": "1+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 320,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "EC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 324,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "EC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 331,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 331,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 334,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 334,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 337,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 337,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 339,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 339,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 341,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.45
+  }
+ ]
+}

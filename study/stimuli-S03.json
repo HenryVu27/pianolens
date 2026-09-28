@@ -1,0 +1,53 @@
+{
+  "study": "S-03",
+  "spec_version": "0.1-pilot",
+  "comment": "x = the analysis level of a stimulus: 'phys:<key>' is a value measured on the degraded clip (DegradeResult.physical), 'rubato_removed_log' = tempo_log_sd_before - tempo_log_sd_after, 'log2_inverse_level' = log2(1 / factor). 'main' (null until the pilot) holds {dimension: {'det': [x targets], 'pref': [x targets]}}; build --ladder main then solves the control level per excerpt that reaches each x target. Excerpt and ladder spec for scripts/build_study_s03.py. Bar ranges are measure ROW indices (0-based, unfolded order; row 0 is the pickup where there is one), inclusive. Excerpt ids are neutral codes: the app never shows composer, piece or performer. 'performance' = 'median_tempo' picks, among the source's performances of the piece, the one with the median overall tempo (F-03 tempo_bpm_overall; the lower one on a tie).",
+  "excerpts": [
+    {"id": "E1", "source": "vienna4x22", "piece": "vienna4x22:Chopin_op10_no3", "performance": "median_tempo",
+     "pref_bars": [0, 4], "det_bars": [0, 1]},
+    {"id": "E2", "source": "vienna4x22", "piece": "vienna4x22:Chopin_op38", "performance": "median_tempo",
+     "pref_bars": [0, 4], "det_bars": [0, 1]},
+    {"id": "E3", "source": "vienna4x22", "piece": "vienna4x22:Mozart_K331_1st-mov", "performance": "median_tempo",
+     "pref_bars": [0, 3], "det_bars": [0, 1]},
+    {"id": "E4", "source": "vienna4x22", "piece": "vienna4x22:Schubert_D783_no15", "performance": "median_tempo",
+     "pref_bars": [0, 8], "det_bars": [0, 4]},
+    {"id": "E5", "source": "batik_mozart", "piece": "kv330_1", "performance": "only",
+     "pref_bars": [0, 7], "det_bars": [0, 2]},
+    {"id": "E6", "source": "batik_mozart", "piece": "kv333_2", "performance": "only",
+     "pref_bars": [0, 3], "det_bars": [0, 1]},
+    {"id": "E7", "source": "asap", "piece": "Schubert/Impromptu_op.90_D.899/3", "performance": "median_tempo",
+     "pref_bars": [0, 2], "det_bars": [0, 0]},
+    {"id": "E8", "source": "asap", "piece": "Bach/Prelude/bwv_848", "performance": "median_tempo",
+     "pref_bars": [0, 15], "det_bars": [0, 7]}
+  ],
+  "dimensions": {
+    "timing_jitter":    {"param": "cv",       "options": {"unit": "cv"},             "x": "phys:added_ioi_cv",
+                         "pilot_levels": [0.0125, 0.025, 0.05, 0.1, 0.2],
+                         "note": "onset s.d. / local IOI; added IOI CV = sqrt(2) x this; van Vugt 2013 threshold IOI CV about 0.08 -> onset CV about 0.057"},
+    "tempo_flatten":    {"param": "alpha",    "options": {},                          "x": "rubato_removed_log",
+                         "pilot_levels": [0.125, 0.25, 0.5, 0.75, 1.0]},
+    "dynamics_flatten": {"param": "alpha",    "options": {},                          "x": "phys:velocity_change_rms_midi",
+                         "pilot_levels": [0.125, 0.25, 0.5, 0.75, 1.0]},
+    "voicing":          {"param": "k",        "options": {},                          "x": "phys:gap_change_midi",
+                         "pilot_levels": [0.75, 0.5, 0.0, -0.5, -1.0]},
+    "pedal_blur":       {"param": "hold_beats", "options": {"relative_to": "clean", "grade": "hold", "fraction": 1.0},
+                         "x": "phys:added_hold_mean_beats",
+                         "pilot_levels": [0.6, 0.85, 1.25, 2.0, 3.0],
+                         "note": "every cleanly pedalled harmony change is blurred by a late pedal change this many beats after it (capped at the next change); graded by lateness because the clips have only 1-11 detected changes"},
+    "articulation":     {"param": "factor",   "options": {},                          "x": "log2_inverse_level",
+                         "pilot_levels": [0.84, 0.71, 0.5, 0.35, 0.25]},
+    "wrong_notes":      {"param": "rate",     "options": {"at_least_one": true},                          "x": "phys:rate_per_note",
+                         "pilot_levels": [0.01, 0.02, 0.04, 0.08, 0.16]}
+  },
+  "control_range": {
+    "comment": "search range of the control parameter when a main-study ladder is given as x targets (build --ladder main); x must grow from the first to the second value",
+    "timing_jitter": [0.0, 0.3], "tempo_flatten": [0.0, 1.0], "dynamics_flatten": [0.0, 1.0],
+    "voicing": [1.0, -1.5], "pedal_blur": [0.55, 4.0], "articulation": [1.0, 0.2], "wrong_notes": [0.0, 0.3]
+  },
+  "main": null,
+  "catch": {"dimension": "wrong_notes", "level": 0.3,
+            "note": "gross wrong-note version: attention / lapse check in both parts"},
+  "render": {"sample_rate": 44100, "target_lufs": -23.0, "tail_sec": 0.8, "fade_out_sec": 0.4,
+             "fade_in_sec": 0.005, "lead_in_sec": 0.25, "release_sec": 1.0},
+  "seed": 20260927
+}

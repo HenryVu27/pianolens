@@ -1,0 +1,455 @@
+{
+ "movement": "M2",
+ "recognised_piece": "Mozart, Piano Sonata in B-flat major K. 333 (315c), first movement (Allegro)",
+ "notes": "Annotated from the rendering. Elisions marked where a cadential arrival also begins the next unit (second theme restatement, closing section). Development: f-minor PAC, HC in g minor, retransition on V of B-flat treated as a weak HC. Bar 128 (second ending) annotated separately; repeated bars 65-127 left to automatic copying.",
+ "events": [
+  {
+   "bar": 1,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.95
+  },
+  {
+   "bar": 5,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 5,
+   "beat": "3+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 11,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 11,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 15,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 15,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 23,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 24,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 27,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 27,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 32,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 32,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 35,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 35,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 39,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 39,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 47,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 47,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 51,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 51,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 55,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 55,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 60,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 60,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 62,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 62,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 64,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 128,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 129,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 137,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 137,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 147,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 153,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 158,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 159,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.9
+  },
+  {
+   "bar": 163,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 163,
+   "beat": "3+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 169,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 169,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 176,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 176,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 184,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 185,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 188,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 188,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 193,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 193,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 196,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 196,
+   "beat": 4,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 200,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 200,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 208,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 208,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 216,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 218,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 218,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 222,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 222,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 227,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 227,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 229,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 229,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 231,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.8
+  }
+ ]
+}

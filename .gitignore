@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+data/raw/
+data/interim/
+data/processed/
+experiments/*/artifacts/
+*.ckpt
+*.pt
+*.safetensors
+*.onnx
+.env
+experiments/*/envs/

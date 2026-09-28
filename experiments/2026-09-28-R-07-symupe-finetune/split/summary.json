@@ -1,0 +1,63 @@
+{
+ "seed": 20260928,
+ "val_frac": 0.05,
+ "n_r10_seen": 24,
+ "sha256_pieces_csv": "3341bfa58ff2d8bb89ca7d72468dc5077ea12fdc0e0e598338a5b4d322296b86",
+ "periscope_rows": 46473,
+ "periscope_paired": 38077,
+ "paired_unmatched_to_pianocore": 287,
+ "unmatched_paired_titles": 70,
+ "pieces_by_split": {
+  "train": 5740,
+  "test": 257,
+  "val": 91,
+  "quarantine": 81
+ },
+ "pieces_by_role": {
+  "train": 5740,
+  "R10u": 106,
+  "val": 91,
+  "quarantine": 81,
+  "A": 73,
+  "R10s": 64,
+  "P": 7,
+  "V": 7
+ },
+ "works_by_role": {
+  "A": 23,
+  "P": 3,
+  "R10s": 24,
+  "R10u": 75,
+  "V": 4,
+  "quarantine": 79,
+  "train": 5057,
+  "val": 59
+ },
+ "tier_a_perfs_by_split": {
+  "quarantine": 366,
+  "test": 30263,
+  "train": 118243,
+  "val": 8335
+ },
+ "tier_a_perfs_by_role": {
+  "A": 8129,
+  "P": 260,
+  "R10s": 9055,
+  "R10u": 10583,
+  "V": 2236,
+  "quarantine": 366,
+  "train": 118243,
+  "val": 8335
+ },
+ "r02_pieces_by_role": {
+  "A": 44,
+  "P": 1,
+  "R10s": 33,
+  "R10u": 79,
+  "V": 5,
+  "quarantine": 2,
+  "train": 502,
+  "val": 32
+ },
+ "test_pieces_periscope_paired": 122
+}

@@ -1,0 +1,210 @@
+{
+ "movement": "M1",
+ "recognised_piece": null,
+ "notes": "Minuet in F (A: to C, PAC bar 9; B: back to F, PAC bar 31) with Trio in F minor (Ab PAC bar 53, F minor PAC bar 71, closing phrase over tonic pedal bars 81-85), then written-out minuet return with pedal coda 106-110. Bar 85 cadence is dominant over tonic pedal, so PAC is uncertain. Bar 27 (V6/5-I of Bb) treated as a passing tonicization, not a cadence.",
+ "events": [
+  {
+   "bar": 1,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.9
+  },
+  {
+   "bar": 5,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 5,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 9,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 18,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 19,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 23,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 23,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 31,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 45,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 49,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 49,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 53,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 63,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 67,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 67,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 71,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 81,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 85,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 86,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 90,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 90,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 94,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 94,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 98,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 98,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 106,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 106,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.75
+  },
+  {
+   "bar": 110,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  }
+ ]
+}

@@ -1,0 +1,525 @@
+{
+ "movement": "M5",
+ "recognised_piece": null,
+ "notes": "C minor, 3/4. Main theme returns at bar 104 and bar 222; second theme in Eb (bars 47-97) returns in C minor (168-213). Bars 144-167 are episodes in F minor and G minor ending on dominant-type chords; the 'phrase' at 144-145 and 273-274 is a lone diminished-seventh gesture with fermata. Coda from 288 with a deceptive cadence at 302.",
+ "events": [
+  {
+   "bar": 1,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.9
+  },
+  {
+   "bar": 9,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 9,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 17,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 17,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 25,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 27,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 31,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.8
+  },
+  {
+   "bar": 31,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 39,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 41,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 45,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.8
+  },
+  {
+   "bar": 46,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 59,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 59,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 75,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 75,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 83,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 83,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 91,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 91,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 93,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 95,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 97,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 97,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 103,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 104,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 112,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 112,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 120,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 120,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 128,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 130,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 134,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.8
+  },
+  {
+   "bar": 134,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 142,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 144,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 145,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 147,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 155,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 158,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 166,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 168,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 180,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 180,
+   "beat": "2+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 198,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 198,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 206,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 206,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 214,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 220,
+   "beat": "1+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 229,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 229,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 249,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 249,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.75
+  },
+  {
+   "bar": 257,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 259,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 263,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.8
+  },
+  {
+   "bar": 263,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.75
+  },
+  {
+   "bar": 271,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 273,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 274,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 276,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 288,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 288,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 294,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 294,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 302,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "DC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 310,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 310,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 312,
+   "beat": 1,
+   "type": "cadence",
+   "cadence": "PAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 314,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 314,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 318,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.45
+  }
+ ]
+}

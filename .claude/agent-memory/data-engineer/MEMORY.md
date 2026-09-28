@@ -1,0 +1,17 @@
+# data-engineer memory
+
+Index. One line per note; details in topic files beside this one. Settled facts belong in
+`.claude/rules/` or `.claude/skills/`, not here.
+
+- [partitura_traps.md](partitura_traps.md) — pedal-extended durations, row_stack crash, U256 ids, unfold ids, anacrusis quarter_map offset, hand-built Part
+- [asap_quirks.md](asap_quirks.md) — (n)ASAP metadata bug, missing alignments, id heuristics (D-01)
+- [percepiano_quirks.md](percepiano_quirks.md) — filename order, label cleaning, rater/performer counts, spans (D-02)
+- [piece_ids.md](piece_ids.md) — accent folding, piece_ids.parquet, MAJEPPA title parsing (D-07)
+- [pianocore.md](pianocore.md) — PianoCoRe layout, npz index order, piece-id parse, cache build (D-03, D-07)
+- [small_sets.md](small_sets.md) — Expert-Novice, NeuroPiano, Vienna, Batik, MazurkaBL, MAJEPPA quirks (D-04, D-05)
+- [d10_skill_check.md](d10_skill_check.md) — MAJEPPA score fixes, context confound, transcription pairs, PianoVAM/Rach3 (D-10)
+- [dcml_jc_bach.md](dcml_jc_bach.md) — DCML jc_bach: TSV-built label-free Part, unfold via `next`, ms3 traps, counts (D-12)
+- [skypiano.md](skypiano.md) — SKY-Piano not released, license unclear; where to re-check (D-09, BL-11)
+- types.py contract lives in `src/pianolens/data/types.py`; builders `performance_from_partitura`,
+  `score_from_partitura` are the only sanctioned way to wrap partitura objects. D-07 added
+  `BeatCurve`, `ALIGNMENT_LABELS`, `Alignment.interpolated` / `.paired`.
