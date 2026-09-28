@@ -14,3 +14,4 @@ experiments/*/artifacts/
 *.onnx
 .env
 experiments/*/envs/
+*.log

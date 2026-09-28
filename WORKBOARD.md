@@ -242,6 +242,12 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
     timing flags leave "experimental".
   - Implement the recurring-error promotion and correctness-first ranking (DECISIONS 2026-09-28,
     after F-08).
+- **F-08c Per-bar expert check for single-take reports** (S). blocked_by: A-01.
+  - Suppress correctness flags at bars where expert transcriptions of the same score also show
+    errors, as in Op. 64 No. 2 bars 78-79.
+- **A-01b Phone-audio extra-note filter** (M). blocked_by: A-01.
+  - Uses register, fixed repeated pitches and the absence of a plausible source note.
+  - Validate on audio with ground truth first (BL-13 / PianoVAM).
 - **O-01 OWNER: Henry records MIDI** (S). Three takes each of one or two passages from a piece in
   (n)ASAP / PianoCoRe. Needs a piece choice and MIDI out.
 
@@ -363,7 +369,7 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
     Transformer), measure the held-out variance of expert curves that the model explains, on
     unseen pieces.
   - Split it into the part shared across performers and the individual part.
-- **A-01 Transcription baseline on phone-like audio** (M). owner: audio-engineer. status: in progress (2026-09-28; centred on Henry's 5 phone takes, O-01). Transkun vs Aria-AMT, on rendered +
+- **A-01 Transcription baseline on phone-like audio** (M). owner: audio-engineer. status: done (2026-09-28, resumed after pause; spec `docs/specs/phone-audio-baseline.md`; reports in `data/interim/reports/henry/`, gitignored). Transkun vs Aria-AMT, on rendered +
   convolved MIDI.
 - **A-02 Synthetic phone-audio augmentation + fine-tune** (L). blocked_by: A-01, O-03.
 - **A-03 Loudness calibration protocol** (M).
@@ -630,3 +636,4 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   writing the report script. Resume by re-dispatching A-01 with "check existing work first". Look in
   `data/interim/henry_takes/` and any new scripts or `src/pianolens/audio/` files. No other agents
   are running.
+- 2026-09-28: A-01 (audio-engineer), resumed; reused all transcriptions and the baseline run. Controlled check (3 MAESTRO Disklavier perfs, S-02 render, phone sim + AAC): transcription adds +1.7 to +3.3 pts F-02 error rate, the phone sim under 1 pt; onset rsd 2.3 ms Transkun / 4.4 ms Aria. Floor (150 PianoCoRe refs): Transkun median error 6.7%, extras 1.3%. Henry's takes: wrong/missed near floor, extras 15-29% on 3 of 5 takes (both models agree), up to 19.5% of score notes at >= G6 on fixed pitches; not reproduced by the phone sim, cause unverified. 10 F-08 reports (Transkun + Aria cross-check) with floor and suspect-extras notes. Timing/tempo tiers stable across transcribers, velocity not. Spec `docs/specs/phone-audio-baseline.md`. pytest 439 passed, 1 skipped; ruff clean. Not committed.

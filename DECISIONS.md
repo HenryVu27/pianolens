@@ -420,3 +420,12 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - Reports built from it stay in `data/interim/`.
   - All 5 pieces have large PianoCoRe tier A reference sets, 221 to 1,631 performances each.
   - There is one take per piece, so the repeated-take features (F-07) are not available yet.
+- **2026-09-28, lead: after A-01.**
+  - Phone reports trust timing and tempo only.
+  - Correctness uses wrong and missed notes against the per-piece transcription floor.
+  - Extra notes, velocity and pedal are low confidence.
+  - Suspect high-register extras are flagged in the report.
+  - A per-bar expert check for single-take reports is ticket F-08c.
+  - **Incident:** `transcribe.log` (Henry's recording file names and YouTube IDs, no audio) was
+    committed in 646a8e7 and pushed. It has been removed from the tree, and `*.log` is now
+    gitignored. It remains in git history unless Henry approves a history rewrite and force-push.
