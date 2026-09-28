@@ -28,7 +28,7 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
 | Phase | Tickets | Done |
 |---|---|---|
 | 0 Infrastructure | D-01..D-08, F-01, E-01 | 7 (E-01, D-01, D-02, D-03, F-01, D-07, D-08) |
-| 1 Scorer v1 | F-02..F-08 | 5 (F-02, F-03, F-05, F-06, F-08) |
+| 1 Scorer v1 | F-02..F-08 | 6 (F-02, F-03, F-05, F-06, F-07, F-08) |
 | 2 Low-dimensionality | R-01..R-05 | 1 (R-01, Confirmed with caveats) |
 | 3 Perceptual cost | S-01..S-03 | 3 (S-02, S-01, S-03 design/build; pilot and O-02 pending) |
 | 4 Preference study | S-04..S-06 | 0 |
@@ -221,15 +221,15 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   - Add reference-based features (R-04's S1 set; DECISIONS 2026-09-27): distance of this
     performance's curves to other performers of the same passage or piece, leave-one-out.
   - Reuse `src/pianolens/features/extract.py` (`reference_features`).
-- **F-07 Repeated-take analysis** (S). blocked_by: F-03. owner: feature-engineer. status: in progress. paths: `src/pianolens/features/takes.py`, `tests/features/test_takes.py`, `experiments/2026-09-27-F-07-H5-intent-vs-noise/`. Split timing into the part consistent
+- **F-07 Repeated-take analysis** (S). blocked_by: F-03. owner: feature-engineer. status: done 2026-09-28 (API: `pianolens.features.takes`: `decompose_takes`, `take_structure`, `takes_from_files` for O-01; H5 experiment `experiments/2026-09-27-F-07-H5-intent-vs-noise/`, Provisional, needs eval-auditor). paths: `src/pianolens/features/takes.py`, `tests/features/test_takes.py`, `experiments/2026-09-27-F-07-H5-intent-vs-noise/`. Split timing into the part consistent
   across takes and the residual (H5).
 - **F-08 Report generator** (M). blocked_by: F-02..F-06. owner: feature-engineer. status: done 2026-09-28
   (API `pianolens.report`; CLI `scripts/pianolens_report.py`; samples `scripts/build_report_samples_f08.py`).
   paths: `src/pianolens/report/`, `scripts/pianolens_report.py`, `tests/report/`,
   `data/interim/reports/`. An HTML report: per-bar flags, curves against the expert band.
 - **F-08b Report: provenance check for timing flags, plus recurring-error tiering** (S). blocked_by: F-08.
-  owner: feature-engineer. status: in progress. paths: `src/pianolens/report/`, `tests/report/`,
-  `scripts/build_report_samples_f08.py`, `scripts/check_timing_provenance_f08b.py`,
+  owner: feature-engineer. status: done 2026-09-28 except the spec doc (lead to write `docs/specs/report-validation.md` from the report). paths: `src/pianolens/report/`, `tests/report/`,
+  `scripts/build_report_samples_f08.py`, `scripts/check_timing_provenance_f08b.py`, `scripts/calibrate_recurring_f08b.py`,
   `data/interim/reports/`, `data/interim/timing_provenance_f08b/`, `docs/specs/report-validation.md`.
   - Score D-10's Disklavier/transcribed same-performance pairs against PianoCoRe references. Is the
     Disklavier version flagged more often? If so, match reference provenance or calibrate before
@@ -386,7 +386,7 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   - Metadata and small TSVs; CC BY-NC-SA 4.0.
   - The MuseScore files embed labels, so the renderer must never read label elements.
   - Register the dataset in DATASETS.md.
-- **R-08c LLM phrase analysis on unfamiliar repertoire** (S). blocked_by: D-12.
+- **R-08c LLM phrase analysis on unfamiliar repertoire** (S). blocked_by: D-12. owner: ml-researcher. status: in progress (preparation done 2026-09-28: pre-registered, sha256 ef243096...; blind inputs Q1-Q5 in `blind_input/` pass the leakage and identity check; `score.py --harness` PASSED. Waiting for the lead to run 2 x 5 blind annotators from copies of `blind_input/` outside the repo, then `score.py --llm-dir ... --run R1|R2`, `recognition.json`, `score.py --compare`). paths: `experiments/2026-09-28-R-08c-llm-unfamiliar-repertoire/`.
   - Pre-registered, same protocol as R-08a/b: blind annotators, detector comparator, the same 0.70
     go bar, and a within-piece recognition analysis only.
   - This is required before LLM boundaries are generalized beyond Classical sonatas.
@@ -602,3 +602,6 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   `recognition.json` is filled, and `score.py --compare` was run. Result: PASS (disguised 0.802 vs
   undisguised 0.789; 0 of 5 disguised recognised). Provisional; eval-auditor dispatched.
 - 2026-09-28: L-03 methods pass (lit-scout). Landscape section 6 "Methods references": Woods 2017, Milne 2021, Bradley-Terry 1952, Wichmann-Hill 2001, Cameron-Miller 2015, Schuirmann 1987, Berger 1982, Spearman/Brown 1910, McGraw-Wong 1996, Shrout-Fleiss 1979, Horn 1965, Green et al. 2012, Ledoit-Wolf 2004, Theiler 1992, Eilers-Marx 1996, Eilers 2003. **Correction:** the CJ "12 comparisons give .70, 17 give .80" is in neither Kinnear 2025 nor Verhavert 2019; `rules/study.md` and plan Phase 4 ("12-17 comparisons per item") rest on it. Lead to decide the new target.
+- 2026-09-28: F-08b (feature-engineer). Timing provenance: 64 D-10 pairs, Disklavier not over-flagged (tempo notable+/strong 4.3/0.9% vs transcribed twin 4.5/1.0%; timing 4.2/1.2% vs 4.7/1.3%; paired CIs include 0); timing flags leave "experimental", no correction. Recurring errors: naive rule fires on 24-31% of expert bars; implemented wrong-pitch-only + expert-artefact filter (0.18%/0.51%), needs >= 2 expert recordings. Correctness-first ranking. Sample (e) passes. pytest 372 passed, ruff clean.
+- 2026-09-28: F-07 (feature-engineer). `features/takes.py`: take-consistent vs take-specific split per channel (ICC(3,1), Spearman-Brown), per-bar + per-take-bar output, pairwise half-sum/half-difference structure test, `takes_from_files` for Henry's MIDI; +10 tests. H5 on PianoCoRe A (1,390 same-pianist groups, 91 pianists, dedup r > 0.98): timing R² sum 0.123 vs diff 0.005, delta 0.118 [0.110, 0.126]: supported (Provisional); ASAP Disklavier timing delta 0.075 [0.053, 0.098].
+- 2026-09-28: R-08c preparation (ml-researcher). Pre-registered (README hash ef243096...7796). 21 eligible J. C. Bach movements (op. 5 nos. 2-4 excluded), 5 rendered-size strata, seeded draw 20260930: Q1 wa06op05no6a, Q2 wa06op05no6b, Q3 wa07op17no1a, Q4 wa10op17no4a, Q5 wa12op17no6a. Renderings via R-08a `common.render` on `load_score(tempo_word=False)`; INSTRUCTIONS/SCHEMA = R-08a's with ids M->Q and the worked example moved to bars 25/28 (pre-registered collision rule; 'Classical period' wording kept). Leakage + identity check PASSED (planted cues fire); harness PASSED (oracle 1.000; detector via events = D-12 rows; dry run). Detector on the 5: 0.437. Finding: the detector is not pass-consistent on Q4/Q5, so it scores 0.560/0.522 through the annotation path vs 0.541/0.527 on its own; comparator stays its own score. Not committed.

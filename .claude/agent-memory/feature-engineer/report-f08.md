@@ -36,3 +36,21 @@ calibration = constants), CLI `scripts/pianolens_report.py`, samples + known-ans
 - (d) deadpan: all 5 windows too flat strong (tempo and velocity), tempo typicality <= 0.006.
 - (b) Vienna p01 + 21 sensor refs: velocity high confidence, one notable evenness bar.
 - Runtime: 8 s (a), 16 s (b, 21 extra alignments).
+
+## F-08b (2026-09-28)
+- Provenance check `scripts/check_timing_provenance_f08b.py` (18 min, 10 workers) ->
+  `data/interim/timing_provenance_f08b/`. 64 D-10 pairs / 43 pieces, both versions left out of
+  refs. Pooled notable+/strong: Disklavier tempo 4.3/0.9%, timing 4.2/1.2%; transcribed twin
+  4.5/1.0%, 4.7/1.3%; paired diff CIs include 0 (disk slightly lower). PianoCoRe refs as targets:
+  Disklavier 3.5/0.6% (tempo), transcribed 5.4/1.5%. SunMeiting08 is a high-flag performer
+  (its transcription 29%/32%): not provenance. No fix; timing flags leave "experimental".
+- PianoCoRe tier A cache holds the ASAP copies (source id `ASAP_<stem>`, 63/65 pairs) but
+  mostly NOT the transcribed duplicates (2/65): exclude both anyway.
+- Recurring errors: naive "same key in >= 2 takes" fires on 24-31% of expert bars
+  (3 ASAP pianists as pseudo-takes, `scripts/calibrate_recurring_f08b.py`, cache
+  `recurring_signatures.pkl`). Cause: score/checker artefacts shared by all pianists (missed
+  notes in chords/ornaments). Only wrong-pitch + expert filter (keys seen for other experts of
+  the same score removed) is under 1%: 0.18% (2 takes) / 0.51% (3). Needs >= 2 experts;
+  report_from_files auto-loads up to 6 ASAP perfs when takes are given.
+- Chopin Op.10/3 has ONE ASAP performance: sample (e) uses Op.10/4 (22 perfs).
+- The harness blocks Write of new .md files from subagents; the spec text went to the lead.

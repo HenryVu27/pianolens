@@ -336,3 +336,25 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   3. **Disclose that the renderings lack fermatas and printed rests** (they are derived), unlike Batik.
   4. **`tempo_word=False`.** Drop the movement-title tempo word, consistent with the R-08b disguise.
   5. The detector comparator on this corpus is 0.427 (29 movements); the go bar stays 0.70.
+- **2026-09-28, lead: after F-08b.**
+  - **The recurring-error promotion is narrowed** (it supersedes the F-08 decision item 2). Only a
+    *wrong pitch* at the same score note in 2 or more takes counts, and it must pass the expert
+    filter (not reported for any expert recording of the score) with at least 2 experts checked.
+  - The broad rule would have marked 24-31% of expert bars strong. The narrowed rule marks 0.2-1%.
+  - **Timing flags are no longer "experimental" with respect to reference provenance.** Disklavier
+    targets are not over-flagged (paired difference -0.5 [-1.0, +0.0] points). Skill validity stays
+    unproven (D-10 / R-09). Spec: `docs/specs/report-validation.md`.
+- **2026-09-28, lead: after F-07 (H5 Provisional, under audit).**
+  - Timing R²: the take-consistent part 0.123 vs the take-specific part 0.005, across 1,390
+    same-pianist groups. A Disklavier check on 40 groups gives a smaller but positive difference
+    (0.075).
+  - Tier B/D does not switch to "take-consistent = intent" until the audit passes AND it is tested
+    on real same-day practice takes (O-01, or BL-16 Rach3).
+  - **BL-16:** split the Rach3 Hanon sessions into takes and align them, as a same-day practice test
+    of H5.
+- **2026-09-28, lead: R-08c.** The detector's pass-inconsistency on the J.C. Bach repeats is recorded
+    and disclosed. The comparator remains the detector's own score (0.437).
+- **2026-09-28, lead: R-08c annotation run.** 10 blind annotators were launched from `r08c_R1` / `r08c_R2`
+  in the scratchpad, outside the repo. Agent ids, for the transcript blinding audit:
+  - R1 (Q1-Q5): a90c5b9749e4f4bd1, a2de5b115ee75d025, a64f9844ce6b3beb1, a60d2685204f082d2, a01344795ddd28e99
+  - R2 (Q1-Q5): a84454ce70dd5d18d, a14ac68367a7b2883, aeac12b86ca91ab05, ab3da0e0c78f95c4a, ab6c9a0a1b25306be

@@ -26,6 +26,9 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [interpretation-f06.md](interpretation-f06.md) - F-06 tier D: frame/beat mapping, deadpan-safe
   typicality (log magnitude), LW mixed-scale trap, Horn vs sequential PA on real data, calibration.
 - [report-f08.md](report-f08.md) - F-08 report: tier plumbing, correctness calibration on clean
-  D-08 copies, too-flat ranking, timing-noise convention, sample results (a)-(d).
+  D-08 copies, too-flat ranking, timing-noise convention, sample results (a)-(d); F-08b
+  provenance check (no Disklavier over-flagging) and recurring-error calibration (expert filter).
 - [coherence-f05d.md](coherence-f05d.md) - F-05d: coherence min-length rule (n_written_bars,
   12 bars), extract override, R-04/R-09 impact, clip_to_train drift vs R-04 parquet.
+- [takes-f07.md](takes-f07.md) - F-07 repeated takes: decomposition design, pooled-deviation R² = 0
+  trap, PianoCoRe duplicate facts (tempo-r rule over-merges), BLAS oversubscription, H5 numbers.

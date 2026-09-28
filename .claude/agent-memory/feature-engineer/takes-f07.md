@@ -35,3 +35,9 @@ Experiment: `experiments/2026-09-27-F-07-H5-intent-vs-noise/` (run.py, asap.py, 
   delta 0.118 [0.110, 0.126]; ICC(3,1) 0.60. Supported; holds at 0.95 / 0.90 thresholds and k=2.
 - articulation delta 0.229, velocity 0.259 (transcribed), smooth tempo 0.103 (diff R² < 0).
 - 88 of 91 pianists have mean delta > 0.
+- ASAP Disklavier (40 k=2 groups, 28 name ids): timing delta 0.075 [0.053, 0.098], articulation
+  0.289, tempo 0.178, velocity 0.276. Smaller timing effect than transcribed PianoCoRe: part of
+  the PianoCoRe consistent timing may be shared transcriber bias (not separable here).
+- `take_structure` follows the F-05d minimum length (n_blocks = ceil(distinct written bars / 4),
+  NaN + undefined_reason below 3 blocks or 12 bars). Rerun with it: no H5 number changed.
+- Rach3 Hanon not used (needs session -> take segmentation + alignment first).
