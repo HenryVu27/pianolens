@@ -16,6 +16,8 @@
 - F-05c detector mean end F1 +-1 beat 0.427 over 29 (grid4 0.273). HC recall 55/235.
 - Op. 5 nos. 2-4 (wa02-wa04) are the sources of Mozart's K.107 concertos (README): a
   familiarity route for R-08c.
+- Since D-13 the module is a wrapper of `data/dcml.py` (outputs byte-identical; keep it so:
+  R-08c's pre-registered renderings depend on it).
 - QA script: `scripts/check_dcml_jc_bach.py` -> `data/interim/dcml_jc_bach/` (pieces.csv,
   comparators.csv, cands.pkl in F-05c layout, summary.txt). Same approach should work for
   wf_bach_sonatas / cpe_bach_keyboard / scarlatti_sonatas (same ms3 layout).

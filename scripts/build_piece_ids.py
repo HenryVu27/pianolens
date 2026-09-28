@@ -5,7 +5,7 @@ One row per (dataset, source_key): the dataset's own name for a piece and the Pi
 datasets; that is the point of the table. Sources: (n)ASAP (composer/title), PianoCoRe
 (``data/processed/pianocore_piece_map.csv`` + counts), PercePiano (work), MAJEPPA (score id),
 Vienna 4x22 (excerpt), Batik-plays-Mozart (movement), MazurkaBL (mazurka), DCML J. C. Bach
-sonatas (movement; score only). MAESTRO, PSyllabus,
+sonatas and the five DCML Romantic corpora of D-13 (movement; score only). MAESTRO, PSyllabus,
 Expert-Novice and NeuroPiano have free-text or local ids only and are not included.
 
 Columns: dataset, source_key, piece_id, canonical, composer, title, movement, n_performances.
@@ -24,6 +24,7 @@ import pandas as pd
 from pianolens.data import (
     asap,
     batik_mozart,
+    dcml,
     dcml_jc_bach,
     majeppa,
     mazurkabl,
@@ -114,11 +115,25 @@ def _jc_bach() -> pd.DataFrame:
     ])  # fmt: skip
 
 
+def _dcml(corpus: str) -> pd.DataFrame:
+    """A DCML Romantic corpus (D-13), score only: ``n_performances`` is 0. ``title`` is the
+    corpus's subtitle (e.g. "Mazurka in b, Op. 30, no. 2")."""
+    c = dcml.get_corpus(corpus)
+    md = dcml.metadata(c).set_index("piece")
+    return pd.DataFrame([
+        {"source_key": stem, "piece_id": dcml.piece_id(c, stem), "composer": c.composer,
+         "title": str(md.loc[stem, "subtitle_text"] if "subtitle_text" in md else stem),
+         "movement": str(md.loc[stem].get("movementTitle", "") or ""), "n_performances": 0}
+        for stem in dcml.pieces(c)
+    ])  # fmt: skip
+
+
 def main() -> None:
     parts = {
         "asap": _asap, "pianocore": _pianocore, "percepiano": _percepiano,
         "majeppa": _majeppa, "vienna4x22": _vienna, "batik_mozart": _batik,
         "mazurkabl": _mazurkabl, "dcml_jc_bach": _jc_bach,
+        **{f"dcml_{c}": (lambda c=c: _dcml(c)) for c in dcml.ROMANTIC},
     }  # fmt: skip
     frames = []
     for name, fn in parts.items():

@@ -388,3 +388,12 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - **Pre-cutoff DCML labels are acceptable, with the same caveat as R-08c** (exposure not excluded).
   - Henry's post-cutoff labels (OWNER) remain the gold-standard option. They are not a blocker.
   - Meters: simple meters preferred. Any compound meter is disclosed and analysed separately.
+- **2026-09-28, lead: R-08d draw details (after D-13).**
+  - Size strata are *within each corpus* (tertiles of rendered characters), not R-08a's absolute
+    window. Kinderszenen pieces are all small.
+  - **Simple meter only** for the primary draw (Liszt has 8 eligible). Movements that render to
+    more than 120k characters are excluded, for annotator context and consistency with R-08a-c.
+  - Blind ids only. Stems contain titles.
+  - Disclose the "Tempo primo" / "una corda" text rewrites and the 4 hand-unfolded mazurkas
+    (`unfold_validated=False`). Those 4 mazurkas are excluded from the draw.
+  - Two annotator runs per movement, as in R-08c.

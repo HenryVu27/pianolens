@@ -11,6 +11,7 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [small_sets.md](small_sets.md) — Expert-Novice, NeuroPiano, Vienna, Batik, MazurkaBL, MAJEPPA quirks (D-04, D-05)
 - [d10_skill_check.md](d10_skill_check.md) — MAJEPPA score fixes, context confound, transcription pairs, PianoVAM/Rach3 (D-10)
 - [dcml_jc_bach.md](dcml_jc_bach.md) — DCML jc_bach: TSV-built label-free Part, unfold via `next`, ms3 traps, counts (D-12)
+- [dcml_romantic.md](dcml_romantic.md) — shared `data/dcml.py`, 5 Romantic corpora: spanners, text markup, gap ties, ms3 unfold bugs (D-13)
 - [skypiano.md](skypiano.md) — SKY-Piano not released, license unclear; where to re-check (D-09, BL-11)
 - types.py contract lives in `src/pianolens/data/types.py`; builders `performance_from_partitura`,
   `score_from_partitura` are the only sanctioned way to wrap partitura objects. D-07 added

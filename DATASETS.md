@@ -15,7 +15,12 @@ The manifest of every dataset on disk. The `data-engineer` agent owns it. Data l
 | NeuroPiano | `data/raw/neuropiano` | https://huggingface.co/datasets/anusfoil/NeuroPiano-data | HF commit 1341e63, 2026-09-27 | MIT (dataset card) | 197 MB (audio in parquet) | `pianolens.data.neuropiano` (`load_ratings`, `load_audio_bytes`) | 104 student recordings, 39 students, 35 raters, 13 questions, score 0-6, JP + EN text answers | loaded: 2,265 rows, 104 recordings (card: 2,255 entries, 104 recordings) |
 | Vienna 4x22 | `data/raw/vienna4x22` | https://github.com/CPJKU/vienna4x22 | commit 1033ade, shallow clone 2026-09-27 | CC BY 4.0 | 23 MB | `pianolens.data.vienna4x22` (`iter_aligned`) | 88 match files (4 excerpts x 22 pianists), Boesendorfer SE MIDI, MusicXML scores | loaded: 88/88 with ground-truth alignment, 0 failures |
 | Batik-plays-Mozart | `data/raw/batik_mozart` | https://github.com/huispaty/batik_plays_mozart | commit 9c5f700, submodule `annotations` = DCMLab/mozart_piano_sonatas 7cfeb73 | CC BY-NC-SA 4.0 (LICENSE.md); DCML annotations submodule CC BY-NC-SA 4.0 (`annotations/LICENSE`, checked 2026-09-27 by F-04b) | 306 MB | `pianolens.data.batik_mozart` (`iter_aligned(musicxml_score=)`, `load_aligned`, `performed_score`, `phrase_annotations`, `load_note_annotations`; D-11) | 36 movements: match files, MIDI, MusicXML, per-note harmony / cadence / phrase CSVs | loaded: 36/36 with ground-truth alignment, 0 failures |
-| DCML J. C. Bach keyboard sonatas (D-12) | `data/raw/dcml_jc_bach` | https://github.com/DCMLab/jc_bach_sonatas (Zenodo DOI 10.5281/zenodo.14996292; data report Hentschel et al. 2025, Sci. Data 12:685) | tag v2.4, commit ac9fd07 (`ac9fd07905eb62c3d8cfbd96811491170a216232`, 2025-04-27), shallow clone 2026-09-28 | CC BY-NC-SA 4.0 (README badge and `.zenodo.json`; no LICENSE file, GitHub shows no SPDX) | 38 MB | `pianolens.data.dcml_jc_bach` (`load_score` label-free, `phrase_annotations`, `iter_scores`, `label_strings`) | score-only: 29 movements of op. 5 and op. 17 (12 sonatas) as MuseScore 3 `.mscx` with embedded DCML labels, ms3 TSVs (`notes`, `measures`, `chords`, `harmonies`), PDFs, `reviewed/`; no performances, no MusicXML | loaded: 29/29, 0 failures; notes = metadata `n_onsets` in 29/29; unfolding = metadata bar count and length in 29/29; 442 phrase ends and 406 cadence labels (folded), all mapped |
+| DCML J. C. Bach keyboard sonatas (D-12) | `data/raw/dcml_jc_bach` | https://github.com/DCMLab/jc_bach_sonatas (Zenodo DOI 10.5281/zenodo.14996292; data report Hentschel et al. 2025, Sci. Data 12:685) | tag v2.4, commit ac9fd07 (`ac9fd07905eb62c3d8cfbd96811491170a216232`, 2025-04-27), shallow clone 2026-09-28 | CC BY-NC-SA 4.0 (README badge and `.zenodo.json`; no LICENSE file, GitHub shows no SPDX) | 38 MB | `pianolens.data.dcml_jc_bach` (`load_score` label-free, `phrase_annotations`, `iter_scores`, `label_strings`; a wrapper of `pianolens.data.dcml` since D-13, outputs unchanged) | score-only: 29 movements of op. 5 and op. 17 (12 sonatas) as MuseScore 3 `.mscx` with embedded DCML labels, ms3 TSVs (`notes`, `measures`, `chords`, `harmonies`), PDFs, `reviewed/`; no performances, no MusicXML | loaded: 29/29, 0 failures; notes = metadata `n_onsets` in 29/29; unfolding = metadata bar count and length in 29/29; 442 phrase ends and 406 cadence labels (folded), all mapped |
+| DCML Chopin Mazurkas (D-13) | `data/raw/dcml_chopin_mazurkas` | https://github.com/DCMLab/chopin_mazurkas (Zenodo concept DOI 10.5281/zenodo.7473566) | tag v3.2, commit 5931135 (`5931135e614985023b96de2a291c74b7ef90b287`, 2025-04-27), sparse shallow clone 2026-09-28 (`notes`, `measures`, `chords`, `harmonies`, `metadata.tsv`, README, LICENSE; no `MS3/`) | CC BY-NC-SA 4.0 (`LICENSE`, `.zenodo.json`) | 10 MB | `pianolens.data.dcml` (`load_score(corpus, stem)` label-free, `phrase_annotations`, `iter_scores`, `label_strings`, `pieces(labelled=)`; D-13) | score-only: 56 mazurkas (all 3/4) as ms3 TSVs; 55 with DCML labels (op. 30/1 has no `harmonies/`) | loaded: 56/56, 0 failures; notes = metadata `n_onsets` in 56/56; unfolding = metadata in 52/56 (4 hand-checked, see notes); 606 phrase ends, 344 cadence labels (folded), all mapped |
+| DCML Grieg Lyric Pieces (D-13) | `data/raw/dcml_grieg_lyric_pieces` | https://github.com/DCMLab/grieg_lyric_pieces (Zenodo concept DOI 10.5281/zenodo.7473578) | tag v2.3, commit 91a3045 (`91a304563521f3f273b8c0aadec1ce2ede2d1384`, 2025-04-27), sparse shallow clone 2026-09-28 (`notes`, `measures`, `chords`, `harmonies`, `metadata.tsv`, README, LICENSE; no `MS3/`) | CC BY-NC-SA 4.0 (`LICENSE`, `.zenodo.json`) | 12 MB | `pianolens.data.dcml` (`load_score(corpus, stem)` label-free, `phrase_annotations`, `iter_scores`, `label_strings`, `pieces(labelled=)`; D-13) | score-only: 66 pieces (10 books) as ms3 TSVs, all labelled | loaded: 66/66, 0 failures; notes = `n_onsets` 66/66; unfolding = metadata 66/66; 559 phrase ends, 433 cadence labels, all mapped |
+| DCML Tchaikovsky The Seasons (D-13) | `data/raw/dcml_tchaikovsky_seasons` | https://github.com/DCMLab/tchaikovsky_seasons (Zenodo concept DOI 10.5281/zenodo.7473586) | tag v2.3, commit 281afa3 (`281afa3c6637b7f881fc18928f074f3f9d7dbfcf`, 2025-04-27), sparse shallow clone 2026-09-28 (`notes`, `measures`, `chords`, `harmonies`, `metadata.tsv`, README, LICENSE; no `MS3/`) | CC BY-NC-SA 4.0 (`LICENSE`, `.zenodo.json`) | 3.2 MB | `pianolens.data.dcml` (`load_score(corpus, stem)` label-free, `phrase_annotations`, `iter_scores`, `label_strings`, `pieces(labelled=)`; D-13) | score-only: 12 pieces of op. 37a as ms3 TSVs, all labelled | loaded: 12/12, 0 failures; notes = `n_onsets` 12/12; unfolding = metadata 12/12; 298 phrase ends, 185 cadence labels, all mapped |
+| DCML Schumann Kinderszenen (D-13) | `data/raw/dcml_schumann_kinderszenen` | https://github.com/DCMLab/schumann_kinderszenen (Zenodo concept DOI 10.5281/zenodo.7473582) | tag v2.3, commit ee929c1 (`ee929c1556bc937fe1ea7303cac4476e37caa4d1`, 2025-04-27), sparse shallow clone 2026-09-28 (`notes`, `measures`, `chords`, `harmonies`, `metadata.tsv`, README, LICENSE; no `MS3/`) | CC BY-NC-SA 4.0 (`LICENSE`, `.zenodo.json`) | 1.4 MB | `pianolens.data.dcml` (`load_score(corpus, stem)` label-free, `phrase_annotations`, `iter_scores`, `label_strings`, `pieces(labelled=)`; D-13) | score-only: 13 pieces of op. 15 as ms3 TSVs, all labelled | loaded: 13/13, 0 failures; notes = `n_onsets` 12/13 (no. 7: 3 orphan tie heads, see notes); unfolding = metadata 13/13; 87 phrase ends, 79 cadence labels, all mapped |
+| DCML Liszt Années de pèlerinage (D-13) | `data/raw/dcml_liszt_pelerinage` | https://github.com/DCMLab/liszt_pelerinage (Zenodo concept DOI 10.5281/zenodo.7473580) | tag v2.3, commit f1cfd30 (`f1cfd308adba5763aad3a18885eac48d42449fc4`, 2025-04-27), sparse shallow clone 2026-09-28 (`notes`, `measures`, `chords`, `harmonies`, `metadata.tsv`, README, LICENSE; no `MS3/`) | CC BY-NC-SA 4.0 (`LICENSE`, `.zenodo.json`) | 9.7 MB | `pianolens.data.dcml` (`load_score(corpus, stem)` label-free, `phrase_annotations`, `iter_scores`, `label_strings`, `pieces(labelled=)`; D-13) | score-only: 19 pieces of S.160-162 as ms3 TSVs, all labelled | loaded: 19/19, 0 failures; notes = `n_onsets` 16/19 (4 orphan tie heads in 3 pieces); unfolding = metadata 19/19 (length to 0.01 quarter: metadata is rounded); 277 phrase ends, 272 cadence labels, all mapped |
 | MazurkaBL | `data/raw/mazurkabl` | https://github.com/katkost/MazurkaBL | commit 00c5b67, shallow clone 2026-09-27 | CC BY-NC-SA 4.0 (README only, no LICENSE file) | 900 MB | `pianolens.data.mazurkabl` (`load_beat_curves`, `iter_beat_curves` -> `BeatCurve`; `load_mazurka`, `load_all` long DataFrame) | beat times + normalised beat loudness per recording, markings, sones curves, 44 MusicXML scores | loaded: 46 mazurkas, 2,098 recordings, 700,008 beat rows (landscape: 44 mazurkas, ~2,000 recordings) |
 | PianoJudges labels | `data/raw/pianojudges` | https://github.com/anusfoil/PianoJudges | commit 79dd1b7, shallow clone 2026-09-27 | unclear (no LICENSE file) | 6.7 MB | `pianolens.data.pianojudges` (`load_cipi_index`, `load_channel_lists`, `load_technique_urls`) | code repo; CIPI label index (652 works, Henle 1-9, 5 folds), YouTube channel / URL lists by expertise and technique. No audio or MIDI | loaded: 652 CIPI works, 73 channel lines (18 advanced, 55 novice; 3 active), 167 technique URLs (headers mix technique names and annotator notes) |
 | MAESTRO v3 (MIDI) | `data/raw/maestro_v3_midi` | https://magenta.tensorflow.org/datasets/maestro | v3.0.0 `maestro-v3.0.0-midi.zip`, sha256 `70470ee253295c8d2c71e6d9d4a815189e35c89624b76d22fce5a019d5dde12c`, 2026-09-27 | CC BY-NC-SA 4.0 | 139 MB | `pianolens.data.maestro` (`iter_performances`) | 1,276 Disklavier MIDI (962 train / 137 validation / 177 test), no audio | loaded: 1,276/1,276, 7,040,150 notes, 0 failures |
@@ -409,6 +414,84 @@ values among the A rows.
     minuet-trio pair ending op. 5/2.
   - **Familiarity caveat:** the README says op. 5 nos. 2-4 are the sonatas Mozart arranged as
     his K.107 concertos, so those are the likeliest to be recognised.
+
+### DCML Romantic corpora (D-13, data-engineer, 2026-09-28; QA: `scripts/check_dcml_romantic.py`)
+
+- **Why they are here:** R-08d, the Romantic-repertoire test of LLM phrase analysis (DECISIONS
+  2026-09-28, R-08d design; landscape section 2.1). Pool: `chopin_mazurkas`,
+  `grieg_lyric_pieces`, `tchaikovsky_seasons`, `schumann_kinderszenen`, `liszt_pelerinage`.
+  Labels predate the model cutoff (all released 2025-04-27), so exposure is not excluded.
+- **Loader:** the J. C. Bach loader is generalised into `pianolens.data.dcml` (corpus as the
+  first argument; `CORPORA`, `ROMANTIC`); `dcml_jc_bach` is now a thin wrapper and its outputs
+  are unchanged (R-08a rendering, notes, phrase tables and meta hashed for all 29 movements x
+  unfold x tempo word: identical before and after). Same label-free path: `notes/`,
+  `measures/`, `chords/` only.
+- **What the Romantic path adds or changes** (J. C. Bach unaffected):
+  - hairpins and crescendo / diminuendo lines (spanner columns of `chords/`) become partitura
+    loudness directions; text lines and text hairpins (`TextLine_stringendo`,
+    `HairPin:2_poco a poco cresc.`) become words; system text is read;
+  - tempo comes from the `Tempo` events (tempo words and metronome marks, spelled
+    `quarter=144`), **not** from the movement title, which names the piece ("Träumerei",
+    "Gondoliera"). Titles are in `Score.meta["title"]` only. Liszt stems contain titles, so
+    blind ids are needed downstream;
+  - text markup (`<font .../>`, `<i>`) and private-use glyphs are stripped; texts with no
+    letter or digit (a lone natural sign) are dropped;
+  - two spellings are normalised because R-08a's leakage check reads them as labels:
+    "Tempo I" / "Temp. I." -> "Tempo primo" (Roman numeral), Liszt's "una chorda" / "tres
+    chorde" -> "una corda" / "tres corde" ("chord"). This was found by the leakage check
+    (Grieg op. 68/6, Liszt 161.07) and is the only text rewriting;
+  - not read: fermatas, slurs, pedal marks, ottava lines (pitches are already sounding: ms3's
+    `octave` / `midi` agree with the spelling for every note), `lyrics_1` (Chopin: brackets and
+    hairpin glyphs; Grieg: two dynamics).
+- **Ties:** ms3 exports some tie continuations that start after a gap or on the other staff.
+  They are merged if they start within 4 quarters of the head's end (`meta["n_gap_ties"]`:
+  Chopin 6, Grieg 14, Tchaikovsky 6, Schumann 4, Liszt 14). Left as separate notes (orphan tie
+  heads, so notes exceed `n_onsets`): Kinderszenen no. 7 (3, grace notes coded as tie
+  continuations), Liszt 160.02 (1, same), 161.04 (1) and 161.07 Dante (2).
+- **Unfolding** follows `next` and equals `metadata.tsv` for 162 of 166 movements. The four
+  others are Chopin mazurkas where ms3 itself gets it wrong or gives up, hand-checked:
+  - B.16/2 and B.73: ms3 ends the piece at the *Fine* before the D.C. / D.S. is played
+    (metadata 24 and 12 bars); the loader plays on and stops at the Fine after the jump (64 and
+    62 bars);
+  - op. 7/5 (D.S. *senza fine*, metadata empty): the segno section is played once more (36);
+  - op. 17/3 (D.S. al Fine, the Fine in the first ending, metadata empty): after the jump the
+    first ending is taken and the piece ends there (174).
+  - `Score.meta["unfold_validated"]` is False for these four.
+- **Labels:** only `{`, `}`, `}{` (no deprecated `\\`). Cadences PAC, IAC, HC, EC, DC, PC.
+  Unfolded distinct beats over the 165 labelled movements: PAC 634, IAC 295, HC 431, EC 12,
+  DC 6, PC 50. All labels map to the playthrough (0 unmapped); 33 unfolded placements are not
+  on a note onset (on a rest or a tied-over note; kept at their exact beat).
+- **Leakage:** R-08a's `common.render` on all 165 labelled unfolded movements contains no DCML
+  label string (length >= 3, incl. `alt_label` and `special`), none of R-08a's banned words and
+  no Roman-numeral token (`LEAKAGE CHECK PASSED`); a planted label is caught for every corpus
+  (tests). Identity report (capitalised title words or the composer in the rendering, not a
+  failure): only "Valse" in Grieg op. 68/6 ("Tempo di Valse tranquillo", a printed tempo mark).
+- **Eligibility for R-08d** (`pieces.csv`): `eligible` = labelled and >= 5 folded phrase ends;
+  `simple_meter` = every time signature has numerator 2, 3 or 4; `meter_changes` flags changes.
+  - Chopin 52 eligible, all simple (excluded: op. 68/4, op. 6/4, op. 7/5; op. 30/1 unlabelled);
+  - Grieg 53 eligible, 45 simple (op. 43/2, 47/2, 47/3, 54/1, 54/2, 65/4 in 6/8; 57/3 in
+    6/8 and 9/8; 54/4 mixed 9/8-6/8-3/8);
+  - Tchaikovsky 12 eligible, 9 simple (April, August in 6/8; May 9/8-2/4);
+  - Schumann 10 eligible, all simple (excluded: nos. 1, 5, 9 with 3-4 ends);
+  - Liszt 19 eligible, 8 simple (compound or mixed: 160.03 Pastorale, 160.04 Au bord d'une
+    source, 160.08 Le mal du pays, 160.09 Les cloches de Genève, 161.01 Sposalizio, the three
+    sonetti 161.04-06, 161.07 Dante, 162.01 Gondoliera, 162.03 Tarantella).
+  - Rendered size of the eligible simple-meter movements, median (range) in characters: Chopin
+    19,011 (9,424-50,164), Grieg 19,212 (9,619-70,199), Tchaikovsky 34,134 (15,842-42,660),
+    Schumann 10,033 (6,905-13,543), Liszt 42,672 (14,729-121,773). Dante renders to 215,692.
+- **F-05c detector** (shipped Batik-fitted defaults, unchanged), mean end F1 at +-1 beat over
+  the eligible movements (unfolded): detector / proxy last onset / 4-bar grid: Chopin 0.341 /
+  0.241 / 0.185; Grieg 0.307 / 0.225 / 0.208; Tchaikovsky 0.181 / 0.207 / 0.171; Schumann
+  0.420 / 0.433 / 0.359; Liszt 0.227 / 0.179 / 0.112 (J. C. Bach, D-12: 0.427). Pooled
+  detector recall by type at +-1 beat: PAC 285/634, IAC 96/295, HC 86/431, EC 0/12, DC 1/6,
+  PC 7/50. Per movement: `comparators.csv`; `cands.pkl` (key `score_id`) has the F-05c layout.
+- `piece_id`: `chopin_op<k>_no<n>` (opus numbers as the corpus gives them, Sapp's numbering,
+  e.g. op. 41/1 = C# minor), `chopin_b<n>[_no<k>]` for the 7 mazurkas without opus (Brown
+  number from the file name), `grieg_op<k>_no<n>`, `tchaikovsky_op37a_no<n>`,
+  `schumann_op15_no<n>`, `liszt_s16<k>_no<n>`. In `piece_ids.parquet`: all 46 MazurkaBL
+  mazurkas share an id with DCML (45 labelled; op. 30/1 has no labels). PianoCoRe tier A ids:
+  Chopin 33, Grieg 12, Tchaikovsky 10, Schumann 4, Liszt 2; ASAP: Gondoliera; MAJEPPA: 12
+  Kinderszenen pieces.
 
 ### mistakes_v1 (D-08, feature-engineer, 2026-09-27)
 
