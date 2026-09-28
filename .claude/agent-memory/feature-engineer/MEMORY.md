@@ -30,5 +30,5 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   provenance check (no Disklavier over-flagging) and recurring-error calibration (expert filter).
 - [coherence-f05d.md](coherence-f05d.md) - F-05d: coherence min-length rule (n_written_bars,
   12 bars), extract override, R-04/R-09 impact, clip_to_train drift vs R-04 parquet.
-- [takes-f07.md](takes-f07.md) - F-07 repeated takes: decomposition design, pooled-deviation R² = 0
+- [takes-f07.md](takes-f07.md) - F-07 repeated takes: decomposition design, pooled-deviation R² = 0; audit: consistent part is piece-shared, not intent
   trap, PianoCoRe duplicate facts (tempo-r rule over-merges), BLAS oversubscription, H5 numbers.

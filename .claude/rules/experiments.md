@@ -99,3 +99,20 @@ paths:
   `null` string can sit next to a half-recognition in the hand-back text. A disguise control
   rules out explicit recall, not structural familiarity. Only unfamiliar repertoire rules out
   both.
+
+## Lesson from the F-07 audit (2026-09-28)
+
+- **Any "shared part vs difference part" contrast needs a cross-unit positive control.** For
+  example, compare same-pianist pairs with different-pianist pairs. Otherwise "the shared part is
+  structured" is nearly guaranteed whenever single-unit structure exists, and says nothing specific
+  to the unit.
+
+## Lessons from the R-08c audit (2026-09-28)
+
+- **Unfamiliar is not unseen.** Public label sets (DCML and others) released before the model's
+  training cutoff may have been seen. Unfamiliar repertoire rules out recall that depends on
+  recognising the piece. It does not rule out exposure to the labels. Only ground truth made
+  after the cutoff excludes that. Check whether the errors follow the label standard's
+  conventions (a model recalling the labels would copy the standard's phrase level).
+- **A point-estimate GO near the bar with n = 5:** report leave-one-group-out means, the
+  worst-run variant, and the one-sided p against the bar next to the t-interval.

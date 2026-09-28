@@ -358,3 +358,25 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   in the scratchpad, outside the repo. Agent ids, for the transcript blinding audit:
   - R1 (Q1-Q5): a90c5b9749e4f4bd1, a2de5b115ee75d025, a64f9844ce6b3beb1, a60d2685204f082d2, a01344795ddd28e99
   - R2 (Q1-Q5): a84454ce70dd5d18d, a14ac68367a7b2883, aeac12b86ca91ab05, ab3da0e0c78f95c4a, ab6c9a0a1b25306be
+- **2026-09-28, lead: F-07 / H5 is Confirmed with caveats, and reinterpreted.**
+  - H5 passes its pre-registered test, but the auditor's cross-pianist control (post-hoc) shows two
+    takes by *different* pianists pass too: delta 0.097, against 0.121 for the same pianist.
+  - **So the take-consistent part is timing that any two performances of the piece share.** It is not
+    a pianist's personal intent. The test was nearly guaranteed to pass once single-take R² > 0.
+  - **What F-07 does support:** a pianist's own take-to-take variation is mostly unstructured
+    (R² 0.011 vs 0.049 between pianists; paired gap 0.038 [0.030, 0.046]). It therefore can be read
+    as noise.
+  - **Tier B/D must NOT adopt "take-consistent = intent"** on F-07's evidence. Take-to-take variation
+    as a noise estimate is supported, and remains subject to O-01 / BL-16.
+- **2026-09-28, lead: R-08c is Confirmed with caveats.**
+  - **Headline wording:** "GO by the point-estimate rule; primary 0.750, t [0.588, 0.912]; beats the
+    detector by +0.313".
+  - **Scope:** LLM phrase boundaries are approved for Classical / galant sonata-type movements in
+    simple meters, including unrecognised pieces.
+  - DCML label exposure in training is not excluded.
+  - **Before LLM boundaries feed PianoLens's target repertoire** (Romantic: Schubert, Chopin, and the
+    MAJEPPA practice pieces) or H4/R-09, a Romantic-repertoire test is required (R-08d). The data
+    options, in order:
+    1. DCML Romantic corpora with phrase labels, if any exist;
+    2. phrase labels made after the model's cutoff (OWNER: Henry or a teacher annotates about 5
+       passages).

@@ -58,13 +58,21 @@ directly comparable for ``k > 2``; the balanced contrast is per pair of takes ``
 half-sum ``(Y_j + Y_l) / 2`` and the half-difference ``(Y_j - Y_l) / 2`` carry equal noise
 variance when takes are exchangeable, so only structure can separate their R².
 
+Interpretation (F-07 audit, DECISIONS 2026-09-28): the take-consistent part is not shown to be
+the player's own intent. Pairs of takes by *different* players pass the same half-sum vs
+half-difference test, so a structured consistent part mostly reflects timing that any two
+performances of the piece share. What the H5 run supports is narrower: a player's take-specific
+part is mostly unstructured by the score basis, so it can be read as noise. Do not label the
+consistent part "intent" on this evidence.
+
 Per-bar output: ``bars`` (per channel and bar: mean and SD of the consistent part, RMS of the
 take-specific part scaled to a one-take SD, local ICC) and ``bars_by_take`` (signed mean and RMS
 of each take's departure: where take 2 rushed or dragged against the others).
 
-Citations: repeated takes as intent vs noise in expressive timing: Repp 1992 (grouping-structure
-timing is highly reproducible within pianists, https://doi.org/10.1121/1.404425); landscape doc
-section 1.2-1.3 (expressive timing hierarchy; Basis Mixer score features). ICC / Spearman-Brown:
+Citations: consistent vs take-specific expressive timing across takes: Repp 1992
+(grouping-structure timing is highly reproducible within pianists,
+https://doi.org/10.1121/1.404425); landscape doc section 1.2-1.3 (expressive timing hierarchy;
+Basis Mixer score features). ICC / Spearman-Brown:
 McGraw and Wong 1996 (https://doi.org/10.1037/1082-989X.1.1.30) and Shrout and Fleiss 1979
 (https://doi.org/10.1037/0033-2909.86.2.420): method references, not in the landscape doc.
 """

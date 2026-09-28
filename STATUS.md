@@ -78,12 +78,15 @@ and `WORKBOARD.md`. This page is the short version.
     structure is not excluded.
   - LLM boundaries are approved for Classical sonatas. Other repertoire needs R-08c (J.C. Bach).
 
-- **R-08c (unfamiliar repertoire, J.C. Bach): GO, Provisional and under audit.**
-  - LLM end F1 is 0.750, against the detector's 0.437. Paired difference +0.313 (t [+0.154, +0.472]).
-  - 0 of 5 movements recognised. Run-to-run SD is 0.027.
-- **F-07 (H5, intent vs noise): supported, Provisional and under audit.** For timing, the part
-  that stays consistent across takes has score-structure R² 0.123, against 0.005 for the part
-  that varies between takes. That is across 1,390 same-pianist groups.
+- **R-08c (unfamiliar repertoire, J.C. Bach): GO, Confirmed with caveats.**
+  - LLM end F1 is 0.750 (t [0.588, 0.912]), against the detector's 0.437. Paired difference +0.313.
+  - Blinding was clean. 0 of 10 runs recognised.
+  - Scope: Classical sonata-type movements. Label exposure is not excluded.
+  - Romantic repertoire needs R-08d.
+- **F-07 (H5): Confirmed with caveats, reinterpreted.** The pre-registered test passes, but a
+  cross-pianist control passes too. So the take-consistent part is shared piece timing, not personal
+  intent. Supported: a pianist's own take-to-take variation is mostly unstructured, which justifies
+  treating it as noise.
 - **F-08b:** timing flags are no longer experimental. The recurring-error rule is narrowed to wrong
   pitches that pass the expert filter.
 
@@ -93,7 +96,7 @@ and `WORKBOARD.md`. This page is the short version.
 - R-08b: memorisation control for the LLM phrase analysis (disguised scores, reruns).
 - F-08b: report fixes (timing-flag provenance check, recurring-error tiering).
 - F-05d: coherence minimum-length fix.
-- R-08c audit. F-07 (H5) audit.
+- R-08d (Romantic repertoire) is next for the LLM phrase analysis.
 - R-09: coherence vs skill (H4), with recording context controlled.
 
 ## Waiting on Henry (OWNER)

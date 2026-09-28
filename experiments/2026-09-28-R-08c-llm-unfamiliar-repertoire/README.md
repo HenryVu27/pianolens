@@ -410,3 +410,188 @@ description.
 - Data: DCML `jc_bach_sonatas` v2.4 (commit ac9fd07); D-12 cache `data/interim/dcml_jc_bach/`
   (`cands.pkl`, `comparators.csv`, 2026-09-28 run). Draw wall time 10 s.
 - Pre-registration sha256 (README up to `## Preparation record`): `ef24309683759c6e8accd5bbb3dfaa4c27d4c4ed3dbfa801e3def08599987796`.
+
+
+## Results (lead, 2026-09-28; audited, see the Audit section)
+
+The full tables are in `artifacts/r08c_summary.txt`, reproduced byte-identically by the auditor.
+
+**Headline:**
+- **GO by the pre-registered point-estimate rule.** Primary mean end F1 is 0.750, with t-interval
+  [0.588, 0.912]. "Interval above 0.70" is not claimed; the one-sided p is 0.22.
+- **Beats the detector:** detector 0.437, paired +0.313 (t [+0.154, +0.472]). The LLM is ahead on
+  5 of 5 movements.
+- Leave-one-movement-out means are all at least 0.722. The worse run per movement gives 0.731.
+- Run-to-run: R1 0.751, R2 0.749. Within-movement SD is 0.027.
+
+**Per movement** (mean of 2 runs): Q1 0.815, Q2 0.562, Q3 0.667, Q4 0.843, Q5 0.864.
+
+**Q3 (theme and variations):** both runs mark 4-bar phrases where DCML marks one phrase per 8- or
+10-bar half (precision 0.50, recall 1.00, identical ends in both runs). That is a disagreement about
+phrase level, and evidence against recalling the labels.
+
+**Recognition:** 10 of 10 null. Two hand-back guesses ("Haydn or early Mozart", "Haydn- or
+Mozart-like") are recorded as borderline; both name the wrong composer.
+
+**Scope:** galant / Classical sonata-type movements in simple meters. DCML label exposure in
+training is not excluded (labels published 2025, before the model cutoff).
+
+## Audit (2026-09-28, eval-auditor)
+
+**Verdict: Confirmed with caveats. GO by the pre-registered rule (primary 0.750 ≥ 0.70, point
+estimate), and "beats the detector" is shown (paired +0.313, t [+0.154, +0.472]). What it
+licenses is narrow: on 5 galant / early Classical keyboard sonata movements by one less-famous
+composer, labelled to the DCML standard, which the annotator did not name, the annotator reaches
+the go bar. It does not show that the annotator reaches 0.70 in general (the t-interval
+[0.588, 0.912] includes values well below the bar), and it says nothing about other styles.**
+
+Audited: the pre-registration hash and timeline, the draw, the renderings and the leakage
+check, blinding in all 10 transcripts, the scorer and harness, recognition classes, and the
+interpretation. Audit scripts are in the session scratchpad (`r08c_audit/audit.py`, `h.py`).
+Nothing in `src/`, the experiment scripts or `artifacts/` was changed.
+
+### 1. Pre-registration: intact, rule applied word for word
+
+- README up to `## Preparation record` hashes to `ef243096...7796`, as recorded. The README was
+  last modified at 00:24:54; the first annotator started at 03:32 (transcripts), so the header
+  predates every annotation.
+- `draw.py`, `build.py`, `score.py`, `INSTRUCTIONS.md`, `SCHEMA.json` and `Q1..Q5.txt` hash to
+  the prefixes in the preparation record. R-08a's `common.py`, `render.py` and `score.py` hash
+  to `272d81dd`, `82785dc0`, `b73b1b7e` (unchanged).
+- The rule in `score.compare` is the registered one: per movement the mean of R1 and R2, then
+  the mean over the 5 movements; GO at ≥ 0.70 on the point estimate; "shown" only if the paired
+  mean is > 0 and the 4-df t-interval excludes 0; "interval above 0.70" only if the t lower
+  end > 0.70 (it is 0.588, so it is correctly not claimed). The comparator is the detector's own
+  score (0.437), not its propagated score (0.440), as registered.
+- The disclosed pre-hash edit (harness check 4, "with propagation on") changes no rule, metric
+  or comparator. I accept it.
+
+### 2. Blinding: clean in all 10 transcripts
+
+- Each of the 10 agents (ids in DECISIONS, R-08c annotation run) made only these calls: Read
+  `INSTRUCTIONS.md`, Read `SCHEMA.json`, Read its own `Q#.txt` (Q3-Q5 in two reads because of
+  the read-size limit; every agent reached the `END` line, so all saw the whole rendering), one
+  write of `out/Q#.json` (Bash heredoc or Python `json.dump` to that one path, or the Write
+  tool), an optional `json.load` of its own output, and the hand-back. No `ls`, `find`, `glob`,
+  `cat` of another file, web tool or repo path. Every Read was inside `r08c_R1/` or `r08c_R2/`.
+- The 10 prompts are identical after normalising the run folder and the id (one sha).
+- Context given to the annotators: the user's global `CLAUDE.md` and personal `MEMORY.md` only
+  (neither mentions Bach, DCML, Mozart or PianoLens). The environment block shows the cwd
+  (`.../pianolens`) and a public GitHub remote name, as in R-08a/b. A grep of each transcript
+  (cwd fields removed) finds no "Bach", "DCML", "op. 5/17" or file stem; the only "Haydn" and
+  "Mozart" hits are the annotators' own guesses (R1/Q2, R2/Q4). Two `WA06`/`WA14` hits are
+  inside base64 signature strings.
+- Scratchpad inputs are byte-identical to `blind_input/`. The 10 repo annotations are
+  byte-identical to the scratchpad `out/` files; for the two Write-tool outputs (R2 Q3, Q5) the
+  transcript content equals the file (`jq -S`).
+
+### 3. Renderings, leakage check and harness: reproduced
+
+- Draw: rerun from the loader, sizes and picks equal `selection.json`. Re-rendering gives
+  byte-identical `Q1..Q5.txt`.
+- `build.py --check` (read-only) passes: no banned word, Roman token, label string, identity or
+  provenance word, own title, or old id; every planted cue fires.
+- Remaining printed text, all disclosed before the draw: Q1 "Siegue subito" and the next
+  movement's heading "[2. Allegro Moderato]"; Q2 "Arpeggio"; Q3 "Var. 1..5", "Min. D.C."; f/p.
+  These are form and period cues (a multi-movement work, a minuet with variations, an 18th-century
+  print's spelling), not identity cues. The instructions' "Classical period" wording is R-08a's.
+  I found no residual identity leak.
+- Harness rerun against a scratch copy of `artifacts/`: PASSED, `harness.txt` byte-identical
+  (oracle 1.000; detector through the annotator path equals D-12's rows; dry run 0.4400 vs
+  0.4398).
+- Scoring rerun to scratch: `scores_R1.csv`, `scores_R2.csv`, `summary_R1.txt`, `summary_R2.txt`
+  and `r08c_summary.txt` are all byte-identical to `artifacts/`.
+
+### 4. Numbers I checked beyond the summary
+
+- Paired LLM − detector per movement: +0.515, +0.229, +0.183, +0.302, +0.336 (5 of 5 positive).
+- Leave-one-movement-out primary: 0.734, 0.797, 0.771, 0.727, 0.722. GO survives dropping any
+  one movement. Using the worse run of each movement: 0.731.
+- One-sided t-test of primary > 0.70: t = 0.86, 4 df, p = 0.22. The data do not show that the
+  population mean is above 0.70. The GO is by the registered point-estimate rule only, the same
+  standard as R-08a/b. Exact onset (0.722) is still at or above the bar; ±1 bar is 0.788.
+- Per movement the picture is mixed: Q1 0.815, Q4 0.843 and Q5 0.863 are above 0.70; Q3 0.667
+  and Q2 0.562 are below it. Q2 (C minor, imitative texture) is also the least stable movement
+  (R1 0.612, R2 0.512).
+- Q3 (theme and variations) scores P 0.500, R 1.000 in both runs, with identical end sets. The
+  annotator marks 4-bar phrases inside each 8-bar half (e.g. bars 4 and 8 of the theme), while
+  DCML marks one phrase per half-section. This is a granularity mismatch with the standard, not
+  noise. Q4 goes the other way (P 0.94-0.95, R 0.74-0.78).
+- HC recall via phrase ends: 24/31 and 26/31 vs the detector's 13/31. EC 7/11 and 6/11 vs 0/11.
+
+### 5. Is unfamiliarity plausibly achieved?
+
+- **Self-report:** 10 of 10 strings are null, so all are `none` by the registered rule, and
+  the premise check (0 of 5 recognised) is correctly computed. The two hand-back guesses
+  (R1/Q2 "Haydn- or Mozart-like", R2/Q4 "Haydn or early Mozart") point at the wrong composers.
+  They are correctly recorded as borderline. Self-report is a lower bound (thinking is redacted
+  in the transcripts), but nothing in them suggests recognition.
+- **The scores may be in the training data.** The op. 5 and op. 17 sonatas are on public score
+  sites and in modern editions, and J. C. Bach is a well-documented composer. Unfamiliar here
+  means "not named and not a staple", not "never seen".
+- **The DCML labels themselves are public** (GitHub, v2.4 tagged 2025-04-27, Zenodo, Sci. Data
+  2025), well before the model's cutoff (June 2026). The `.mscx` files carry the labels
+  inline, and the TSVs index them by measure number. So the model could have seen these exact
+  labels. Using them would need (a) identifying the movement from a label-free, key-mode-free,
+  title-free rendering, and (b) recalling measure-indexed label rows from a small TSV corpus.
+  Nothing in the transcripts suggests (a). Evidence against (b): on Q3, both runs mark phrase
+  ends at a finer level than DCML (P 0.500, identical in both runs). Someone recalling the DCML
+  rows would reproduce DCML's 8-bar level. Evidence for a generic skill: the gains are largest
+  where the style is most schematic (Q1, Q4, Q5), and the lowest score is on the contrapuntal
+  movement. **My judgement:** label recall is implausible as the source of the 0.750, but it
+  cannot be excluded by this design. The only control that excludes it is ground truth made
+  after the model's cutoff, e.g. a few movements newly labelled to the DCML phrase standard by
+  a human, or a DCML release published after June 2026.
+- **The corpus is stylistically adjacent to Mozart.** J. C. Bach was a direct model for the
+  young Mozart, and the galant cadence and phrase schemata are shared. Transfer from Mozart to
+  J. C. Bach is the smallest step away from the validated set, and knowing these schemata is the
+  skill being tested (README threats). This test separates "knows these pieces" from "knows the
+  style". It does not test other styles.
+
+### 6. What the result licenses
+
+- **Licensed:** LLM phrase-end annotation (this prompt, this renderer, this model) may be used on
+  galant / Classical keyboard sonata-type movements in 2/4, 3/4 and 4/4, including pieces the
+  model does not recognise, with an expected end F1 around 0.75 at ±1 beat against the DCML
+  standard. Expect per-movement values from about 0.5 to 0.9, and a granularity mismatch on
+  variation or dance forms (Q3).
+- **Not licensed:**
+  - Baroque, Romantic (e.g. Chopin, Schumann) or later piano music. Its phrase rhythm is less
+    schematic and more often elided or overlapped.
+  - Etudes and other non-phrase-driven textures.
+  - Compound meters (no 3/8 or 12/8 was drawn, so the narrow ±1-beat window there is untested).
+  - Renderings from transcribed performance MIDI rather than scores.
+  - Other models or prompts.
+  - Any statement that the annotator "reaches 0.70" as an interval claim.
+
+  Much of PianoLens's target repertoire (MAJEPPA, PercePiano's Schubert, practice pieces) lies
+  outside this. Before phrase boundaries feed tempo coherence on that repertoire (R-09 / H4), a
+  Romantic-repertoire test is needed. Candidates: DCML's Chopin mazurka or Schumann corpora,
+  if they carry phrase labels; unverified.
+
+### 7. n = 5 caveats
+
+- 5 movements from 4 sonatas; Q1 and Q2 are the same sonata. One composer, one annotation
+  team per opus.
+- The primary t-interval half-width is 0.162. The registered check expected about 0.12, because
+  the between-movement SD here (0.13) is larger than on the Mozart pilot. Leave-one-out and
+  worst-run checks hold the GO, but a sixth movement near Q2 would move the mean by about
+  0.03.
+- The percentile bootstrap [0.643, 0.846] is narrower than the t-interval, as expected with
+  5 groups; the t-interval is the one to quote.
+- Run-to-run: 2 runs per movement give a rough SD (0.027, next to R-08b's 0.031). Q1 and Q3 are
+  identical across runs, and Q2 differs by 0.10. That is enough to say run noise is small
+  compared with between-movement spread. It is not enough to estimate it well.
+- The cross-corpus comparison (0.750 here vs 0.789-0.802 on Mozart) is descriptive. It cannot
+  separate unfamiliarity, a different annotation team and poorer renderings (no fermatas,
+  derived rests).
+
+### Required text fixes (no rerun needed)
+
+1. The README has no Results section yet (Method step 6). Append one, before this Audit,
+   from `artifacts/r08c_summary.txt`, with the borderline hand-back notes and the Q3
+   granularity note.
+2. Wherever the headline is stated, write "GO by the point-estimate rule; t-interval
+   [0.588, 0.912]" and never "reaches 0.70" alone. State the scope as in section 6.
+3. DECISIONS / STATUS: record that DCML labels predate the model cutoff, so label exposure is
+   not excluded (section 5). Only post-cutoff labels would exclude it.

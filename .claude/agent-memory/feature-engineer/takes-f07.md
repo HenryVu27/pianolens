@@ -32,7 +32,8 @@ Experiment: `experiments/2026-09-27-F-07-H5-intent-vs-noise/` (run.py, asap.py, 
 
 ## Measured (H5, pianist bootstrap, dedup r > 0.98, 1,390 groups / 91 pianists / 415 pieces)
 - timing: R²(pair sum) 0.123 [0.114, 0.132], R²(pair diff) 0.005 [0.003, 0.008],
-  delta 0.118 [0.110, 0.126]; ICC(3,1) 0.60. Supported; holds at 0.95 / 0.90 thresholds and k=2.
+  delta 0.118 [0.110, 0.126]; ICC(3,1) 0.60. Pre-registered H5 passes; holds at 0.95 / 0.90 and k=2.
+  Explained share of the repeatable part is ~0.16 (0.123 x 0.8 / 0.6), NOT 0.12/0.60 (mixed denominators).
 - articulation delta 0.229, velocity 0.259 (transcribed), smooth tempo 0.103 (diff R² < 0).
 - 88 of 91 pianists have mean delta > 0.
 - ASAP Disklavier (40 k=2 groups, 28 name ids): timing delta 0.075 [0.053, 0.098], articulation
@@ -41,3 +42,14 @@ Experiment: `experiments/2026-09-27-F-07-H5-intent-vs-noise/` (run.py, asap.py, 
 - `take_structure` follows the F-05d minimum length (n_blocks = ceil(distinct written bars / 4),
   NaN + undefined_reason below 3 blocks or 12 bars). Rerun with it: no H5 number changed.
 - Rach3 Hanon not used (needs session -> take segmentation + alignment first).
+
+## Audit outcome (2026-09-28): Confirmed with caveats, reinterpreted
+- Cross-pianist control (auditor, 411 pieces): different-pianist pairs pass too, delta 0.097 vs
+  same 0.121. So take-consistent = piece-shared timing, NOT intent. Supported claim: within-pianist
+  take-to-take variation is mostly unstructured (R²(diff) 0.011 vs 0.049, gap 0.038 [0.030, 0.046]).
+- Never write "consistent = intent" for F-07 again (README, docstring and EXPERIMENTS reworded).
+- Lesson: a sum-vs-difference test needs a cross-unit control in the prereg; without it "falsified"
+  is unreachable once single-take R² > 0 (now in rules/experiments.md).
+- Lesson: disclose every smoke run on real data after registration (the --limit 8 run was missed).
+- ASAP basis (MusicXML with markings) != PianoCoRe basis (MIDI, none): Disklavier check is not
+  like-for-like; the transcriber share of the delta is unbounded.
