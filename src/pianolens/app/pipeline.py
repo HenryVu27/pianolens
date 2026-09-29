@@ -209,6 +209,7 @@ def run(job_dir: Path) -> None:
         "n_practise": len(rep.get("practise", [])),
         "n_issues_tiered": sum(1 for i in rep.get("issues", []) if i.get("tier") != "none"),
         "error_rate": rep.get("correctness", {}).get("error_rate"),
+        "wrong_missed_rate": _wrong_missed(rep.get("correctness") or {}),
         "n_references": rep.get("references", {}).get("tier_d_total"),
         "errors": rep.get("errors") or {},
     }  # fmt: skip
@@ -233,7 +234,7 @@ def run(job_dir: Path) -> None:
             elif re.match(r"w\d+ ", s):
                 n_win[1] += 1
             if n_win[0]:
-                set_step(job_dir, "clips", "running", f"passage {n_win[1]} of {n_win[0]}",
+                set_step(job_dir, "clips", "running", f"{n_win[1]} of {n_win[0]} passages done",
                          n_win[1] / n_win[0])
 
         cfg = CompareConfig(max_windows=int(spec.get("max_windows", 8)))
@@ -243,6 +244,11 @@ def run(job_dir: Path) -> None:
         set_step(job_dir, "clips", "done", f"{len(m['windows'])} passages, {n_clips} clips", 1.0)
     update_status(job_dir, state="done", summary=summary, finished=time.time(),
                   message="Finished.")
+
+
+def _wrong_missed(c: dict[str, Any]) -> float | None:
+    n = c.get("n_score_notes")
+    return (c.get("n_wrong_pitch", 0) + c.get("n_missed", 0)) / n if n else None
 
 
 def main(argv: list[str]) -> int:

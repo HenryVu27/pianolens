@@ -37,3 +37,5 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   average (-0.055; Romantic -0.12, n=3); short-phrase merge does not help; PianoCoRe score DTW.
 - [compare-p01.md](compare-p01.md) - P-01 A/B clips: report-JSON-only coupling, window merge,
   isotonic time map, expert choice, excerpt render, tuplet tolerance, check biases, measured.
+- [app-p02.md](app-p02.md) - P-02 local app: stdlib server + guards, subprocess worker and
+  cancel, job hashing, catalog (584 PianoCoRe + 221 ASAP), clip/curve joining, measured runs.

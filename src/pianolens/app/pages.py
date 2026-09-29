@@ -25,7 +25,8 @@ def layout(title: str, body: str, page: str, attrs: str = "") -> str:
 </head><body data-page="{page}" {attrs}>
 <header class="top"><div class="wrap top-in">
 <a class="brand" href="/">PianoLens</a><nav>{nav}</nav>
-<button type="button" class="ghost" id="theme" aria-label="Switch light or dark theme">Theme</button>
+<button type="button" class="ghost" id="theme"
+ aria-label="Switch light or dark theme">Theme</button>
 </div></header>
 <main class="wrap">{body}</main>
 <footer class="wrap foot">Runs on this computer only. Recordings and results stay in
@@ -102,7 +103,8 @@ def job_page(job: dict[str, Any]) -> str:
     body = f"""
 <div class="head-row"><div>
 <h1 id="job-title">{escape(spec.get("title") or "Analysis")}</h1>
-<p class="muted">{kind} input, {n} take{"s" if n != 1 else ""} · started {escape(job.get("created", ""))}</p>
+<p class="muted">{kind} input, {n} take{"s" if n != 1 else ""} ·
+started {escape(job.get("created", ""))}</p>
 </div><div id="job-actions" class="actions"></div></div>
 <section id="progress" class="card" hidden></section>
 <section id="results" hidden></section>"""
@@ -119,10 +121,11 @@ def history_page(jobs: list[dict[str, Any]]) -> str:
             spec = j.get("spec", {})
             s = j.get("summary") or {}
             rep = s.get("report") or {}
-            er = rep.get("error_rate")
             facts = []
-            if er is not None:
-                facts.append(f"{100 * er:.1f}% note errors")
+            if spec.get("input_kind") == "audio" and rep.get("wrong_missed_rate") is not None:
+                facts.append(f"{100 * rep['wrong_missed_rate']:.1f}% wrong or missed notes")
+            elif spec.get("input_kind") != "audio" and rep.get("error_rate") is not None:
+                facts.append(f"{100 * rep['error_rate']:.1f}% note errors")
             if rep.get("n_practise") is not None:
                 facts.append(f"{rep['n_practise']} practise items")
             names = ", ".join(t.get("original_name", "") for t in j.get("takes", []))

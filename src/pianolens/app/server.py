@@ -49,7 +49,11 @@ CSP_REPORT = ("default-src 'none'; style-src 'unsafe-inline'; img-src data:; "
 PROVENANCES = ("disklavier", "sensor", "unknown", "synthetic")
 
 
-def parse_multipart(content_type: str, body: bytes) -> tuple[dict[str, str], dict[str, list[Upload]]]:
+Fields = dict[str, str]
+Files = dict[str, list[Upload]]
+
+
+def parse_multipart(content_type: str, body: bytes) -> tuple[Fields, Files]:
     """``multipart/form-data`` -> (text fields, file fields). Standard library email parser."""
     msg = BytesParser(policy=HTTP).parsebytes(
         b"Content-Type: " + content_type.encode("latin-1") + b"\r\n\r\n" + body)
@@ -92,7 +96,7 @@ class App:
     def piece(self, piece_id: str) -> Piece | None:
         return next((p for p in self.catalog if p.piece_id == piece_id), None)
 
-    def create_job(self, fields: dict[str, str], files: dict[str, list[Upload]]) -> tuple[str, bool]:
+    def create_job(self, fields: Fields, files: Files) -> tuple[str, bool]:
         takes = files.get("performance", [])
         if not takes:
             raise ValueError("Upload a recording (audio) or a MIDI file.")

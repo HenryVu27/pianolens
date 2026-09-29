@@ -38,6 +38,7 @@ def window_curves(rep: dict[str, Any], bars: list[int], pad: int = 1) -> dict[st
         return out
     lo_b, hi_b = min(bars) - pad, max(bars) + pad
     inside = set(bars)
+    labels = {b.get("index"): b.get("label") for b in rep.get("bars") or []}
     for block, c in curves.items():
         mi = c.get("measure_index") or []
         idx = [i for i, m in enumerate(mi) if m is not None and lo_b <= m <= hi_b]
@@ -51,7 +52,7 @@ def window_curves(rep: dict[str, Any], bars: list[int], pad: int = 1) -> dict[st
         out[block] = {"beat": pick("beat"), "target": pick("target"), "lo": pick("lo"),
                       "mid": pick("mid"), "hi": pick("hi"), "unit": c.get("unit", ""),
                       "flagged": [mi[i] in inside for i in idx],
-                      "bar": [mi[i] for i in idx]}  # fmt: skip
+                      "bar": [labels.get(mi[i], mi[i]) for i in idx]}  # fmt: skip
     return out
 
 
@@ -110,15 +111,23 @@ def results_data(job_dir: Path | str, job_id: str) -> dict[str, Any]:
                          "window": best_window(d.get("bars", []), windows)})  # fmt: skip
     kind = job["spec"]["input_kind"]
     corr = rep.get("correctness") or {}
+    trust = trust_notes(rep, kind)
+    if not (rep.get("references") or {}).get("tier_d_total"):
+        trust.append({"what": "Comparison with experts", "level": "low",
+                      "why": "No expert references for this score: no interpretation findings "
+                             "and no expert clips."})  # fmt: skip
     return {
         "title": rep.get("piece", {}).get("title") or job["spec"].get("title"),
         "piece_id": rep.get("piece", {}).get("piece_id"),
         "input_kind": kind,
         "provenance": rep.get("input", {}).get("provenance"),
         "n_takes": len(job.get("takes", [])),
-        "trust": trust_notes(rep, kind),
+        "trust": trust,
         "confidence_notes": (rep.get("confidence") or {}).get("notes", []),
         "facts": {"error_rate": corr.get("error_rate"),
+                  "wrong_missed_rate": ((corr.get("n_wrong_pitch", 0) + corr.get("n_missed", 0))
+                                        / corr["n_score_notes"]) if corr.get("n_score_notes")
+                  else None,
                   "n_bars": rep.get("piece", {}).get("n_bars"),
                   "n_references": (rep.get("references") or {}).get("tier_d_total"),
                   "tempo_bpm": ((rep.get("interpretation") or {}).get("tempo_overall")

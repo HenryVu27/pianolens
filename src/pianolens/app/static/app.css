@@ -23,7 +23,7 @@ code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
 nav{display:flex;gap:16px;flex:1}
 nav a{color:var(--ink2);text-decoration:none;font-size:14px;padding:4px 0}
 nav a[aria-current]{color:var(--ink);border-bottom:2px solid var(--accent)}
-main{padding-top:28px;padding-bottom:40px}
+main.wrap{padding-top:28px;padding-bottom:40px}
 .foot{color:var(--muted);font-size:12.5px;padding-bottom:32px}
 h1{font-size:25px;margin:0 0 6px;font-weight:660;letter-spacing:-.01em}
 h2{font-size:17px;margin:0 0 12px;font-weight:620}
