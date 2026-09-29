@@ -63,8 +63,14 @@ def test_label_false_extras_with_offset():
 def test_rule_and_filter_notes():
     # loud-ish melody in the middle, one quiet isolated high D#7 (99) with no source
     n = _notes([0.0, 0.3, 0.6, 0.62], [60, 62, 64, 99], vel=[70, 70, 70, 40])
+    n.loc[3, "duration_sec"] = 0.06  # short, like the A-01 artefacts
     s = rule_scores(note_features(n))
     assert s.tolist() == [0, 0, 0, 1]
+    # a long high note is kept by default, removed when the duration cap is lifted
+    n.loc[3, "duration_sec"] = 0.5
+    assert rule_scores(note_features(n)).tolist() == [0, 0, 0, 0]
+    assert rule_scores(note_features(n), max_dur=99).tolist() == [0, 0, 0, 1]
+    n.loc[3, "duration_sec"] = 0.06
     kept, drop = filter_notes(n)
     assert drop.tolist() == [False, False, False, True] and len(kept) == 3
     # an octave above a played note is not removed by the rule
@@ -99,8 +105,9 @@ def test_filter_midi_keeps_pedal(tmp_path):
 
     pm = pretty_midi.PrettyMIDI()
     ins = pretty_midi.Instrument(0)
-    for t, p, v in [(0.0, 60, 70), (0.3, 62, 70), (0.6, 64, 70), (0.62, 99, 40)]:
-        ins.notes.append(pretty_midi.Note(velocity=v, pitch=p, start=t, end=t + 0.2))
+    for t, p, v, d in [(0.0, 60, 70, 0.2), (0.3, 62, 70, 0.2), (0.6, 64, 70, 0.2),
+                       (0.62, 99, 40, 0.06)]:
+        ins.notes.append(pretty_midi.Note(velocity=v, pitch=p, start=t, end=t + d))
     ins.control_changes.append(pretty_midi.ControlChange(64, 127, 0.1))
     pm.instruments.append(ins)
     pm.write(str(tmp_path / "a.mid"))

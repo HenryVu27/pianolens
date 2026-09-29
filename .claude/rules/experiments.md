@@ -149,3 +149,12 @@ paths:
 - **When repertoire tracks the label, also report a within-piece AUC** (pairs from the same piece
   only). Repertoire difficulty lifts a matched baseline towards the ceiling, so a pooled delta can
   understate the effect. In R-05 it was +0.073 pooled and +0.122 within piece.
+
+## Lesson from the BL-16 audit (2026-09-28)
+
+- **A cross-unit control must match the within-unit pair on the nuisance axes.** Examples are
+  time separation (same sitting vs other days), tempo, and noise level. Add a same-unit pair at
+  the cross pair's separation. In BL-16 a same-pianist pair from another day was nearly as
+  structured as a cross-pianist pair (0.011 [-0.015, 0.034]).
+- **R² gaps between pairs scale with each pair's noise.** Report the variance ratio or the
+  explained variance next to them.

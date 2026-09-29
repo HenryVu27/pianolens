@@ -123,14 +123,16 @@ def label_false_extras(ref, est, onset_tol: float = 0.05  # noqa: ANN001
     return y, f
 
 
-def rule_scores(feat: pd.DataFrame, min_pitch: int = 91, max_vel_rel: float = 0.0,
-                min_spike: float = 0.0) -> np.ndarray:
-    """Rule baseline: 1.0 for a note that is at or above ``min_pitch`` (G6), has no harmonic
-    source (none starting with it, none still sounding), is at most ``max_vel_rel`` louder than
-    the local median, and sits on a pitch that recurs at least as often as its neighbours
+def rule_scores(feat: pd.DataFrame, min_pitch: int = 91, max_vel_rel: float = 99.0,
+                min_spike: float = 0.0, max_dur: float = 0.15) -> np.ndarray:
+    """Rule for the A-01 phone-take signature: 1.0 for a note that is at or above ``min_pitch``
+    (G6), has no harmonic source (no note a harmonic step below starts with it or is still
+    down), is shorter than ``max_dur`` seconds, is at most ``max_vel_rel`` louder than the local
+    median, and sits on a pitch that recurs at least as often as its neighbours
     (``pitch_spike >= min_spike``); else 0.0."""
     return ((feat["pitch"] >= min_pitch)
             & (feat["harm_onset"] == 0) & (feat["harm_sounding"] == 0)
+            & (feat["log_dur"] < np.log(max_dur + 1e-3))
             & (feat["vel_rel_local"] <= max_vel_rel)
             & (feat["pitch_spike"] >= min_spike)).to_numpy(float)  # fmt: skip
 

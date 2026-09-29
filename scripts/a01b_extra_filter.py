@@ -37,9 +37,12 @@ PV = ROOT / "data" / "interim" / "pianovam_a01b"
 HB = ROOT / "data" / "interim" / "henry_takes"
 OUT_H = HB / "a01b"
 G6 = 91
-RULE_GRID = [dict(min_pitch=mp, max_vel_rel=mv, min_spike=ms)
-             for mp in (84, 88, 91, 96) for mv in (-20.0, -10.0, 0.0, 10.0, 99.0)
-             for ms in (-9.0, 0.0, 0.5, 1.0)]  # fmt: skip
+RULE_GRID = [dict(min_pitch=mp, max_dur=md, min_spike=ms, max_vel_rel=mv)
+             for mp in (88, 91, 93, 96) for md in (0.08, 0.1, 0.15, 0.25, 99.0)
+             for ms in (-9.0, 0.0, 0.5, 1.0) for mv in (99.0, 0.0, -10.0)]  # fmt: skip
+#: Safety budget fixed before looking at held-out numbers: share of true notes removed, overall
+#: and among true notes at G6 or above (removing a real note creates a false "missed" flag).
+MAX_LOSS_ALL, MAX_LOSS_HIGH = 0.001, 0.05
 
 
 def _pm_notes(path: Path) -> pd.DataFrame:
@@ -171,69 +174,95 @@ def _characterise(d: pd.DataFrame) -> dict:
                                  (ex["pitch"] // 12 - 1).value_counts().sort_index().items()}}
 
 
+def _henry_features() -> pd.DataFrame:
+    """Features of Henry's Transkun takes, no labels (label-free tie-break for rule choice)."""
+    from pianolens.audio.extra_filter import note_features
+
+    return pd.concat([note_features(_pm_notes(HB / "transcribed" / "transkun" / f"{k}.mid"))
+                      for k in sorted(json.loads((HB / "scores" / "scores.json").read_text()))],
+                     ignore_index=True)  # fmt: skip
+
+
+def _rule_loss(d: pd.DataFrame, g: dict) -> dict:
+    from pianolens.audio.extra_filter import rule_scores
+
+    drop = rule_scores(d, **g) >= 0.5
+    t = (d["y"] == 0).to_numpy()
+    hi = t & (d["pitch"] >= G6).to_numpy()
+    return {"loss_all": float((drop & t).sum() / max(1, t.sum())),
+            "loss_high": float((drop & hi).sum() / max(1, hi.sum())),
+            "n_true_high": int(hi.sum()), "drop": drop}  # fmt: skip
+
+
+def _choose_rule(d: pd.DataFrame, henry_removed: dict) -> dict | None:
+    """Among grid rules within the safety budget on ``d``, the one removing most Henry notes."""
+    ok = []
+    for k, g in enumerate(RULE_GRID):
+        e = _rule_loss(d, g)
+        if e["loss_all"] <= MAX_LOSS_ALL and e["loss_high"] <= MAX_LOSS_HIGH:
+            ok.append((henry_removed[k], -e["loss_high"], k))
+    return RULE_GRID[max(ok)[2]] if ok else None
+
+
 def cv(max_loss: float) -> None:
     from pianolens.audio.extra_filter import FEATURES, rule_scores
 
     d = pd.read_parquet(PV / "notes.parquet")
     pf = pd.read_csv(PV / "per_file.csv")
     bad = set(pf.loc[pf["f1"] < 0.7, "record_time"])  # audio/MIDI sync failure, not extras
-    if bad:
-        print(f"excluded {len(bad)} files with note F1 < 0.7 (sync): {sorted(bad)}")
     d = d[~d["record_time"].isin(bad)].reset_index(drop=True)
-    res = {"max_loss": max_loss, "excluded_sync": sorted(bad), "all": _characterise(d),
-           "by_skill": {s: _characterise(g) for s, g in d.groupby("skill")}}
-    per_fold, pooled = [], {"rule": [], "model": [], "y": [], "n_ref": 0}
+    res = {"max_loss_model": max_loss, "rule_budget": [MAX_LOSS_ALL, MAX_LOSS_HIGH],
+           "excluded_sync": sorted(bad), "all": _characterise(d),
+           "by_skill": {s: _characterise(g) for s, g in d.groupby("skill")}}  # fmt: skip
+    hf = _henry_features()
+    henry_removed = {k: int((rule_scores(hf, **g) >= 0.5).sum()) for k, g in enumerate(RULE_GRID)}
+    per_fold, pooled = [], {"rule": [], "model": [], "y": [], "high": [], "n_ref": 0}
     for pianist in sorted(d["pianist"].unique()):
         tr, te = d[d["pianist"] != pianist], d[d["pianist"] == pianist]
         ytr, yte = tr["y"].to_numpy(), te["y"].to_numpy()
-        # rule: best grid point on training pianists under the loss budget
-        best, best_rec = None, -1.0
-        for g in RULE_GRID:
-            dr = rule_scores(tr, **g) >= 0.5
-            e = _eval(ytr, dr, _n_ref(tr))
-            if e["true_loss"] <= max_loss and e["removal_recall"] > best_rec:
-                best, best_rec = g, e["removal_recall"]
+        best = _choose_rule(tr, henry_removed)
         dr_te = (rule_scores(te, **best) >= 0.5) if best else np.zeros(len(te), bool)
-        # model: fit on training pianists; threshold from out-of-fold scores within them
+        # classifier: fit on training pianists; threshold from out-of-fold scores within them
         oof = np.zeros(len(tr))
         for q in sorted(tr["pianist"].unique()):
             msk = (tr["pianist"] == q).to_numpy()
             oof[msk] = _fit_model(tr[~msk]).predict_proba(tr.loc[msk, FEATURES])[:, 1]
         thr = _pick_threshold(ytr, oof, max_loss)
-        mdl = _fit_model(tr)
-        s_te = mdl.predict_proba(te[FEATURES])[:, 1]
-        dm_te = s_te >= thr
+        dm_te = _fit_model(tr).predict_proba(te[FEATURES])[:, 1] >= thr
         nr = _n_ref(te)
         per_fold.append({"pianist": pianist, "skill": te["skill"].iloc[0],
                          "n_files": int(te["record_time"].nunique()), "rule_params": best,
                          "model_threshold": thr, "rule": _eval(yte, dr_te, nr),
                          "model": _eval(yte, dm_te, nr)})  # fmt: skip
-        pooled["rule"].append(dr_te)
-        pooled["model"].append(dm_te)
-        pooled["y"].append(yte)
+        for k, v in (("rule", dr_te), ("model", dm_te), ("y", yte),
+                     ("high", (te["pitch"] >= G6).to_numpy())):
+            pooled[k].append(v)
         pooled["n_ref"] += nr
-        print(pianist, "rule", {k: round(v, 3) for k, v in per_fold[-1]["rule"].items()
-                                if k in ("removal_precision", "removal_recall", "true_loss")},
-              "model", {k: round(v, 3) for k, v in per_fold[-1]["model"].items()
-                        if k in ("removal_precision", "removal_recall", "true_loss")},
-              flush=True)  # fmt: skip
-    y = np.concatenate(pooled["y"])
-    res["cv_pooled"] = {k: _eval(y, np.concatenate(pooled[k]), pooled["n_ref"])
-                        for k in ("rule", "model")}  # fmt: skip
+        print(pianist, best, {m: {k: round(v, 4) for k, v in per_fold[-1][m].items()
+                                  if k in ("removed_false", "removed_true", "true_loss")}
+                              for m in ("rule", "model")}, flush=True)  # fmt: skip
+    y, high = np.concatenate(pooled["y"]), np.concatenate(pooled["high"])
+    res["cv_pooled"] = {}
+    for k in ("rule", "model"):
+        dr = np.concatenate(pooled[k])
+        e = _eval(y, dr, pooled["n_ref"])
+        th = (y == 0) & high
+        e["true_loss_high"] = float((dr & th).sum() / max(1, th.sum()))
+        e["n_true_high"] = int(th.sum())
+        res["cv_pooled"][k] = e
     res["cv_folds"] = per_fold
-    # final: all pianists; threshold from leave-one-pianist-out scores
+    # final rule and classifier on all pianists
+    best = _choose_rule(d, henry_removed)
+    e = _rule_loss(d, best)
+    res["final"] = {"rule_params": best, "rule_in_sample": {k: v for k, v in e.items()
+                                                            if k != "drop"},
+                    "henry_transkun_removed": henry_removed[RULE_GRID.index(best)]}  # fmt: skip
     oof = np.zeros(len(d))
     for q in sorted(d["pianist"].unique()):
         msk = (d["pianist"] == q).to_numpy()
         oof[msk] = _fit_model(d[~msk]).predict_proba(d.loc[msk, FEATURES])[:, 1]
     thr = _pick_threshold(d["y"].to_numpy(), oof, max_loss)
-    best, best_rec = None, -1.0
-    for g in RULE_GRID:
-        e = _eval(d["y"].to_numpy(), rule_scores(d, **g) >= 0.5, _n_ref(d))
-        if e["true_loss"] <= max_loss and e["removal_recall"] > best_rec:
-            best, best_rec = g, e["removal_recall"]
-    res["final"] = {"model_threshold": thr, "rule_params": best,
-                    "oof_at_threshold": _eval(d["y"].to_numpy(), oof >= thr, _n_ref(d))}
+    res["final"]["model_threshold"] = thr
     from pianolens.audio.extra_filter import ExtraNoteFilter
 
     ExtraNoteFilter(_fit_model(d), thr, {
@@ -241,8 +270,8 @@ def cv(max_loss: float) -> None:
         "n_files": int(d["record_time"].nunique()), "max_true_loss": max_loss,
         "cv_pooled": res["cv_pooled"]["model"]}).save(PV / "extra_filter.pkl")
     (PV / "cv.json").write_text(json.dumps(res, indent=1, default=float))
-    print(json.dumps({k: res[k] for k in ("all", "by_skill", "cv_pooled", "final")}, indent=1,
-                     default=float))  # fmt: skip
+    print(json.dumps({k: res[k] for k in ("cv_pooled", "final")}, indent=1, default=float))
+    print(json.dumps(res["all"], default=float))
 
 
 def _henry_one(k: str, t: str, src: Path, dst: Path, mode: str, label: str) -> dict:

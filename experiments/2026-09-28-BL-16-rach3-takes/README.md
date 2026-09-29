@@ -221,3 +221,178 @@ day) and 0.081 (p3), close to the 0.08 assumed. The intervals are informative.
 - **Alignment.** DP matches agree with parangonar on 99.5% of notes (24 takes). Exact-pitch
   matching means wrong notes are unpaired, not mis-timed.
 - **Part II and transposed practice are not covered.** p1 matched only 44% of its session notes.
+
+## Audit (2026-09-28)
+
+Auditor: eval-auditor. Verdict: **Confirmed with caveats.** A and B are supported by the
+pre-registered rule, and the numbers reproduce. But arm A's gap is not shown to be a
+*pianist* effect: a same-pianist pair taken on different days is about as structured as a
+cross-pianist pair. Arm B holds that control, but its cross partner is always an advanced,
+faster player. The claim is narrowed below. Audit scripts and outputs are in
+`artifacts/audit/` (`variants.py`, `summ.py`, `absvar.py`, `var_*.csv`).
+
+### Pre-registration
+
+- The first 113 lines hash to `f9336acc…2c54`. They are identical to the data-engineer's
+  `Write` of this README at 00:22:09Z (subagent transcript `agent-a1d67a944b65494fc`). The
+  runs started at 00:22:26Z.
+- Before the header was written, only counts and alignment checks ran:
+  - the same-day feasibility counts (00:17:40Z);
+  - the job counts (00:18Z);
+  - the smoke run (00:18:19Z). It printed only the per-channel n (224 / 233 / 464 / 464) and
+    the key names. No R², ICC or SD was printed;
+  - the parangonar check.
+- The next-day beginner arm was added to `run.py` at 00:18:02Z, before the header, and it is in
+  the header. The pivot was pre-registered.
+- The `TakeQC` thresholds are in the first `Write` of `rach3_takes.py` (23:36:37Z), before the
+  first build. They never changed.
+- The `analyze.py` change after the hash: I diffed the original `Write` (00:07:22Z) against the
+  current file. The diff is only I/O (two windows, file names) and a line split. `boot()` and
+  every statistic are unchanged, as disclosed.
+- The partner breakdown and the gap SD are post hoc, as disclosed. They are descriptive only.
+
+### Reproduction
+
+- `analyze.py`, run on copies of the artifacts: `analysis.txt` and both `rows_*.csv` are
+  byte-identical.
+- I re-scored every same-day pair from the built takes with the scratch copy of `run.py`.
+  Maximum absolute difference in R²(diff) against the artifacts: 0 (same and cross).
+- The SHA-256 prefixes of `run.py`, `rach3_takes.py`, `build_rach3_hanon_takes.py`,
+  `takes.py` and `shaping.py` match the run record. `analyze.py` is now `72fed98262e1251c`
+  (not recorded in the run record).
+- `tests/data/test_rach3_takes.py`: 5 passed. Ruff is clean on the BL-16 files.
+
+### Findings
+
+1. **Deviation: "the first two takes in time order" is not what the code does on days with
+   several files.**
+   - `session` is `'0'` for every take: Rach3 has one sitting per day in this subset.
+   - The sort `(pianist, day, session, t0_sec)` therefore orders a day's takes by onset
+     *within their own file*, not by file order (the `NN` in the file name).
+   - Affected groups: same-day p1 24 of 42 and p2 3 of 47; next-day p1 2 and p2 2. p3 is
+     unaffected (one file per day).
+   - Re-run in file order (`variants.py order_*`): A 0.034 [0.011, 0.057] (t [-0.000, 0.070]);
+     p1 0.019 [-0.021, 0.075]; p2 0.043 [0.019, 0.061]; B 0.052 [0.037, 0.066]. The verdict does
+     not change.
+2. **Threat "p1 separate sessions, possibly hours apart" is contradicted by the dataset naming.**
+   - The Rach3 README defines the digit after the date as the sitting number. It is 0 for every
+     file, so all same-day takes are from one sitting.
+   - p1 saves most passes as separate files within that sitting: 33 of 42 same-day (a1, a2)
+     pairs are in different files, against 2 of 47 for p2.
+   - So session structure does not explain p1 against p2.
+3. **Time-separation confound in arm A (the main caveat).**
+   - The cross partner b1 is a random take from any day. The same-pianist pair (a1, a2) is from
+     one sitting. The gap therefore mixes "different pianist" with "different day".
+   - Control (`variants.py otherday_*`): c1 = a random QC take of the same exercise by the
+     *same* pianist on another day. The cross side is averaged over 6 partner draws.
+
+     | | same pair | same pianist, other day (c1) | cross (6 partners) | cross - c1 |
+     |---|---|---|---|---|
+     | Advanced, same day | 0.028 | 0.046 | 0.061 | 0.011 [-0.015, 0.034] (t [-0.026, 0.024]) |
+     | p1 | 0.049 | 0.055 | 0.050 | -0.011 [-0.059, 0.028] |
+     | p2 | 0.009 | 0.038 | 0.068 | 0.024 [-0.005, 0.051] |
+     | p3, next day | -0.000 | 0.017 | 0.058 | 0.041 [0.028, 0.052] (t [0.027, 0.057]) |
+
+   - For the advanced players, a pair of the same pianist's takes on different days is nearly as
+     structured as a cross-pianist pair. A shows that **same-sitting** changes are less
+     structured than **across-day** changes. It does not show that they are less structured than
+     *between-pianist* changes.
+   - For p3 the contrast survives the control.
+4. **Noise-level asymmetry in R² explains part of p1's "absent" effect.**
+   - For p1 groups, the cross half-difference has 1.7 times the variance of the same pair
+     (median; p2's takes are noisier). This deflates the cross R².
+   - Explained variance in absolute units (R² times variance): the p1 gap is positive,
+     +0.015e-4 beats² [-0.021e-4, 0.039e-4], against the R² gap of 0.003. p2 and p3 have a
+     ratio near 1.
+   - p1 is still not significant. "The effect is absent for p1" should read "not shown for p1".
+5. **Arm B's confounds.**
+   - The cross partner is always advanced and faster: the median |log duration ratio| of a
+     cross pair is 0.28, against 0.02 for p3's next-day pairs.
+   - |log duration ratio| predicts R²(diff): slope 0.07 [0.02, 0.12] (OLS, clusters =
+     pianist-days).
+   - Adjusted for it, cross minus same is still 0.039 [0.025, 0.053] for p3, and 0.028
+     [0.007, 0.049] for the advanced players.
+   - Skill level and player identity cannot be separated with one beginner. The p3-to-advanced
+     cross R²(diff) (0.051) is no higher than the advanced-to-advanced one (0.058). So nothing
+     suggests a level effect, but that is not evidence against one.
+6. **The bootstrap unit.**
+   - Pianist-days nest in pianists. For "between-pianist" claims the pianist is the real unit:
+     A has 2 pianists with opposite results (0.003 / 0.057; unweighted mean 0.030, no interval
+     possible), and B has 1.
+   - The bootstrap CI describes these players' days, as the README says. The t-interval touching
+     0 in A is the honest summary for A.
+7. **Robustness that holds.**
+   - Partner draw: over 6 seeds, the A gap is 0.036-0.048 and the B gap 0.051-0.067.
+   - QC without the pause rule (142 / 379 groups): A 0.032 [0.009, 0.051] (t [0.003, 0.045]),
+     B 0.064 [0.055, 0.073].
+   - Stricter pause rule, at most 4x (55 / 118 groups): A 0.043 [0.017, 0.066], B 0.059
+     [0.042, 0.078].
+   - So QC selection does not drive the gap, and same-pianist R²(diff) stays at or below 0.016
+     for p2 and p3 under every QC.
+8. **Segmentation.**
+   - No kept takes overlap within a file.
+   - Medians for QC takes: note match 0.99-1.00, insertions 0.004-0.013 per score note.
+   - The 99.5% parangonar agreement (24 takes) is recorded in the transcript output. I did not
+     rerun it.
+   - Exact-pitch matching leaves wrong notes unpaired, so timing is taken from correct notes
+     only.
+   - Durations of QC takes vary up to 4.9x within a pianist and exercise (median ratio 1.7).
+     Practice tempo varies a lot, which is part of finding 5.
+9. **Reachability.** The pre-registered reasoning holds, and the post-run gap SDs (0.094 /
+   0.081) match the assumed value. The branches were reachable.
+
+### What the evidence supports
+
+- **Supported:** within one practice sitting, a player's take-to-take timing changes are
+  close to unstructured by the score basis.
+  - R²(diff): p2 0.009, p3 next day -0.000.
+  - p1 is the exception at 0.049 (0.038 in file order).
+  - These changes are less structured than changes across days by the same player (p2 0.038,
+    p3 0.017) or by another player (0.05-0.07).
+- **Not shown:** that advanced players' same-day variation is less structured than
+  *between-pianist* differences specifically. The same-pianist other-day control removes most
+  of the gap (0.011 [-0.015, 0.034]).
+- **B:** holds against the other-day control for one beginner. It is confounded with skill
+  level and tempo, and adjusting for tempo leaves 0.039.
+- **For tier B noise estimation:** same-sitting takes (or next-day takes for the beginner) are
+  a defensible noise estimate for timing. The SD is about 0.011-0.013 beats (7.5 ms advanced,
+  11 ms p3).
+  - Takes from different days are not. They carry structured drift, so pooling takes across
+    days would count real change as noise.
+  - p1 shows that some players' same-sitting changes are structured. Check this per user
+    (O-01).
+
+### Required fixes (text only)
+
+1. Verdict A: "supported by the pre-registered rule; the gap is not shown to be a pianist
+   effect. A same-pianist other-day pair gives 0.011 [-0.015, 0.034] against the cross pair."
+   Replace "less structured than between-pianist differences" with "less structured than
+   across-day or between-pianist changes".
+2. Disclose deviation 1 (time order across files) in the run record, with the file-order
+   numbers.
+3. Remove the "p1 separate sessions" threat. Replace it with "p1 saves passes as separate files
+   within one sitting".
+4. p1: "not shown", not "absent". Add the noise-asymmetry note (variance ratio 1.7).
+5. Add to the Threats for B: the tempo difference to the partner (median |log ratio| 0.28), and
+   the tempo-adjusted 0.039.
+6. Record the `analyze.py` hash (`72fed98262e1251c`).
+
+## Post-audit corrections (lead, 2026-09-28)
+
+1. **Verdict A reworded.** Same-sitting timing changes are less structured than changes across
+   days. That arm A shows they are less structured than *between-pianist* differences is **not
+   shown**: against a same-pianist-other-day control the gap is 0.011 [−0.015, 0.034].
+2. **Time-order deviation.** Takes were ordered by their onset within each file, not by file (NN)
+   order, because the Rach3 `session` digit is always 0. Re-run in file order: A 0.034, B 0.052.
+   Verdict unchanged.
+3. **The p1 "separate sessions" threat is withdrawn.** Every file comes from one sitting per day;
+   p1 simply saves each pass as its own file.
+4. **p1:** the gap is "not shown", not "absent". Its cross pairs have 1.7 times the variance of its
+   same-pianist pairs (p2 is noisier).
+5. **Arm B threat:** the partner is always a faster, advanced player. Adjusted for tempo ratio, the
+   gap is 0.039 [0.025, 0.053]. Skill and player identity cannot be separated with one beginner.
+6. `analyze.py` hash: `72fed98262e1251c`.
+
+**What survives:** same-sitting timing changes are close to unstructured by the score, with SD
+about 0.011-0.013 beats (7.5 ms advanced, 11 ms beginner). That makes them a defensible noise
+estimate. Changes across days are not noise; they carry structured drift.

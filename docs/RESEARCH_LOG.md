@@ -200,6 +200,15 @@ This is the most direct test of the original idea that current LLMs can help.
   - a contrasting expert.
 - Switching keeps your place in the bar.
 
+### BL-16. What does "the same passage played twice" tell us?
+- **Data:** Rach3 practice sessions (3 pianists), cut into separate takes of Hanon exercises.
+- **Result:** within one sitting, a pianist's take-to-take timing changes are close to random
+  (7.5 ms for advanced players, 11 ms for the beginner). They are a usable noise estimate.
+  Across days, changes are structured drift, not noise.
+- **Audit:** the claim that these changes are less structured than differences between pianists is
+  shown for the beginner only, and even that is confounded with skill level.
+- **Practical rule:** record repeated takes in one sitting.
+
 ## 5. Supporting checks (not headline experiments)
 
 - **D-10:** expert vs amateur control features.

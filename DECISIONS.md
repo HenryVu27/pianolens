@@ -460,3 +460,10 @@ Append only. Each entry records the date, the decision, the reason, and who deci
     to real audio."
   - This backs CLAUDE.md rule 3 for audio models.
   - A real-audio H8 still needs the OWNER decision on re-fetching MAJEPPA YouTube audio.
+- **2026-09-28, lead: BL-16 is Confirmed with caveats.**
+  - **Tier B timing-noise estimation uses same-sitting takes only** (next-day only when nothing
+    else exists, and flagged). Takes are never pooled across days: across days they carry
+    structured drift.
+  - Check this per user under O-01.
+  - **O-01 guidance for Henry:** record 2-3 takes of the same passage in one sitting.
+  - A second beginner is still needed to separate skill from player identity.
