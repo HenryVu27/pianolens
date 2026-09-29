@@ -170,6 +170,36 @@ This is the most direct test of the original idea that current LLMs can help.
   same bars (43 and 60) for timing, including rushing bar 60 about 14% faster than the typical
   expert shape.
 
+### R-05. Do audio skill models cheat on recording quality? (H8)
+- **Setup:** 1,250 MAJEPPA performances rendered in 4 simulated recording settings.
+- **Result:** when the setting is tied to skill (as in real datasets), the audio model's
+  beginner-vs-advanced score rises from 0.87 to 0.94. Shuffling the settings at test time drops it
+  to 0.73.
+- **Audit:** the model uses the recording setting about as much as it would use an explicit label
+  naming it. The mechanism is shown; the size on real audio is unknown.
+
+### F-05e. Do the LLM's phrase boundaries feed the tempo measures?
+- **Result:** with LLM phrase boundaries, the slow-fast-slow arc measure matches expert annotations
+  on Mozart (Δ −0.01) and beats the rule-based detector everywhere.
+- On Romantic pieces it loses about 0.12 to expert annotations, from misplaced boundaries.
+- **Audit controls:** random boundaries at the same density score about 0, and over-segmenting is
+  penalised.
+- **Decision:** LLM boundaries now replace the detector in the scoring engine.
+
+### F-08c. Stop blaming the player for the score
+- Bars where expert recordings of the same score show the same "errors" are no longer flagged, and
+  extra notes never count against transcribed input.
+- On Henry's reports, strong correctness flags fell from up to 30 per piece to at most 2.
+- Injected real mistakes are still caught (85% of previously flagged mistake bars).
+
+### P-01. Audible comparison
+- Every flagged passage gets an A/B player with four versions:
+  - the learner's real audio;
+  - the learner re-rendered on a neutral piano;
+  - a typical expert on the same piano;
+  - a contrasting expert.
+- Switching keeps your place in the bar.
+
 ## 5. Supporting checks (not headline experiments)
 
 - **D-10:** expert vs amateur control features.

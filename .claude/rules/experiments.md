@@ -137,3 +137,15 @@ paths:
   the reference boundaries with each segment halved. The first shows density alone does not inflate
   the measure. The second shows how the measure treats correct but finer segmentation. Report the
   predicted-to-reference boundary-count ratio next to the measure.
+
+## Lessons from the R-05 audit (2026-09-28)
+
+- **Shortcut size needs an explicit-label ceiling.** When the nuisance variable (context) can be
+  decoded almost perfectly, compare the confounded model with a stacked model: the matched
+  model's score plus the one-hot nuisance label, fitted on inner out-of-fold scores. Do not just
+  append the label to a high-dimensional embedding under the same L2 penalty, which shrinks it.
+  If the confounded model is near that ceiling, the size reflects the confound strength, not the
+  encoder. Claim direction and mechanism only.
+- **When repertoire tracks the label, also report a within-piece AUC** (pairs from the same piece
+  only). Repertoire difficulty lifts a matched baseline towards the ceiling, so a pooled delta can
+  understate the effect. In R-05 it was +0.073 pooled and +0.122 within piece.

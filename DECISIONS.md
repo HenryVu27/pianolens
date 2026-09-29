@@ -454,3 +454,9 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - **Known gap (BL-18):** strong runs at 1.4-2.3% on transcribed input, against a nominal 1%,
     because with 14-15 experts the q99 is close to the per-bar maximum. The fix is more experts per
     bar, or a margin above the maximum.
+- **2026-09-28, lead: R-05 (H8) is Confirmed with caveats.**
+  - The wording is: "Mechanism shown on simulated contexts. A frozen-MuQ skill probe exploits
+    recording context about as much as an explicit context label would. The size does not transfer
+    to real audio."
+  - This backs CLAUDE.md rule 3 for audio models.
+  - A real-audio H8 still needs the OWNER decision on re-fetching MAJEPPA YouTube audio.

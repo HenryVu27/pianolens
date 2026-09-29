@@ -316,3 +316,157 @@ mechanism for frozen MuQ features.
 - **Disclosed runs.** 8-clip timing pilot, a synthetic smoke test of `analyze.py`, and the build
   started before the README (all listed above). The robustness runs were pre-registered. The
   post-hoc checks are labelled.
+
+## Audit (2026-09-28)
+
+Auditor: `eval-auditor`. Verdict: **Confirmed with caveats.** H8 is supported by the
+pre-registered rule on simulated contexts, and every number in the Results reproduces exactly.
+The claim holds as a mechanism and a direction. Its size is close to what handing the classifier
+the context label would give, so it measures MAJEPPA's confound strength more than anything
+specific to MuQ. Three statements must be reworded (required fixes 1-3). Audit scripts and logs:
+the auditor's scratchpad (`r05_audit/checks1-6.py`), not kept in the repo.
+
+### Reproduction
+
+- `analyze.py` rerun on copies of `embeddings.npz`, `sample.csv` and `excerpt_stats.csv` (only
+  `ART` redirected): the primary log is identical line for line, and `results_*.json` for the
+  primary, fold seeds 1 and 2 and layer 6 are identical to the stored files (except `wall_s`).
+  That covers the 3-group secondary and the context decoding (0.997).
+- Within-context post-hoc numbers reproduce (phone_room 0.889 vs 0.901, recital_phone 0.825 vs
+  0.885, clean 0.594 vs 0.666).
+
+### Pre-registration and timeline (subagent transcript, UTC)
+
+- 23:37 `build.py` written, 8-clip pilot (this draws `sample.csv`); 23:38 full build started,
+  `reachability.py` started; 23:49 `analyze.py` written (mtime unchanged since); 23:50 README draft
+  in the scratchpad and the synthetic smoke test (random embeddings, the real `sample.csv` only
+  for ids and labels). No command read real embeddings or scores before the header.
+- 00:13:54 README written; `shasum` printed `7add1490...f0c5` at 19:13:55 CDT, and the current
+  header (the 186 lines before `## Results`, minus the blank separator) still hashes to it.
+  00:15:01 build finished; 00:15:18 first `analyze.py` run. Header before results: verified.
+- **Undisclosed, harmless:** at 00:15:27 (after the header and the first analyze launch) the
+  docstring of `build.py` and one `return` line of `reachability.py` were rewrapped for ruff E501.
+  No behaviour change. Add one line to the Disclosures in the Results section.
+- The rho 0.69 reachability cases with a shift finished at 19:18:56 CDT, after the first analysis,
+  as the README says. They do not bear on the rule; observed effects are 4-12 half-widths.
+
+### Splits and leakage
+
+- Folds rebuilt for fold seeds 0, 1, 2: 5 x 250 clips, no `piece_id`, no `recording_id` and no
+  `youtube_url` in two folds (1,149 videos = 1,149 recording ids in the binary set). No
+  normalised composer + title maps to two piece ids. No two clips have identical excerpt stats.
+- **Context copies cannot cross.** In every binary condition each clip enters once (in one
+  context); train rows are `emb[tr, ctx_train[tr]]` and test rows `emb[te, a[te]]`, with `tr` and
+  `te` group-disjoint, so a clip's other renderings are never in the training set of its own test
+  fold. In the context-decoding run all 4 copies share a fold: the clip-major reshape matches
+  `np.repeat(g3, 4)` (checked element-wise).
+- Scaler and C are fit inside the training fold; C by inner grouped CV. Layer and seeds were
+  pre-registered. No selection on test.
+- Pooled out-of-fold AUC vs mean per-fold AUC: M mean 0.870 vs 0.872, CC 0.943 vs 0.944, CS 0.730
+  vs 0.733; deltas +0.072 / +0.212. Pooling does not drive the result.
+
+### Bootstrap unit
+
+Groups are real clusters: 559 groups for 1,250 clips; 320 groups hold more than one clip (1,011
+clips), largest 10. The bootstrap resamples pieces (with their videos), which is the right unit.
+Performers are not identifiable (as disclosed).
+
+### Is "matched" the right comparator?
+
+Yes. The 4 matched sets agree within 0.011 (0.865-0.876), so the mean hides nothing, and RR (same
+context diversity as CC, but independent of skill) gives the same 0.872. The negative control
+passes in all four variants (fold seed 2 is slightly negative, -0.009 [-0.016, -0.001], so
+diversity does not help; the withhold rule is one-sided).
+
+### Separability: how large "should" the shortcut be?
+
+The contexts' parameter ranges barely overlap, so MuQ decodes them at 0.997. With the context
+effectively observed, the inflation should be what giving the classifier the context label
+gives. Benchmark (auditor, post-hoc): in each outer fold, fit the matched MuQ model, take its
+inner out-of-fold scores, and stack them with the one-hot real context in a low-regularised
+logistic regression.
+
+| Model | AUC | Test contexts permuted |
+|---|---|---|
+| Matched MuQ (M mean) | 0.870 | - |
+| Matched MuQ score + explicit context label (stacked, mean over 4 contexts) | 0.959 | 0.705 |
+| CC (context only in the audio) | 0.943 | 0.730 |
+
+So CC reaches about 80% of the explicit-label inflation (+0.073 of +0.089) and of the
+explicit-label shortcut (+0.214 of +0.254). (Appending the one-hot to the 2,048-d embedding under
+the same L2 penalty gives only 0.916, because the penalty shrinks 4 columns among 2,052; the
+stacked version is the fair ceiling.)
+
+What survives:
+
+- **Direction and mechanism:** a linear probe on frozen MuQ uses recording context when context
+  and skill are confounded. It gains most of what an explicit label would give, and loses more
+  than a matched model once the confound is broken (CS 0.730 vs matched 0.870).
+- **Not the size.** +0.073 is close to a ceiling fixed by the confound strength (context label
+  alone 0.867) and the MIDI signal. It is not a measure of how susceptible MuQ is. Real contexts
+  are less separable (which lowers it) but carry extra cues such as the instrument (which could
+  raise it). The README's first threat already says the size does not transfer. The results
+  should also say that here the size is near the context-label ceiling (fix 1).
+
+### Repertoire difficulty and its interaction with context
+
+- Within the advanced class, context tracks difficulty: clean (teachers' demos) has a median of
+  7.0 notes/s, and teachers' `slow_demo` clips 2.9 notes/s (the beginners' practice median is
+  4.4-7.9). Teachers are the advanced level that simple MIDI statistics separate worst (symbolic
+  AUC 0.702 vs 0.79 for the others), and the one with a nearly exclusive context (context-only
+  AUC 0.956). So the confound adds most where the MIDI is most ambiguous.
+- **Within-piece AUC** (only beginner-advanced pairs of the same piece; 138 pieces, 398 pairs;
+  piece bootstrap): M mean 0.800 [0.740, 0.858], CC 0.922 [0.888, 0.953], CS 0.664, symbolic
+  0.711, context label alone 0.915. delta_infl **+0.122 [+0.066, +0.182]**, delta_short +0.258
+  [+0.213, +0.302]. When repertoire is held fixed, the inflation is larger, not smaller. The
+  pooled +0.073 is conservative, because repertoire difficulty lifts the matched baseline towards
+  the AUC ceiling. The Threats statement "the deltas are unaffected" is too strong (fix 3).
+
+### Per-level claim ("teachers carry the inflation")
+
+CC - M mean against all beginners, group bootstrap (1,000): piano_teacher **+0.180 [+0.145,
++0.215]**, virtuoso **+0.061 [+0.047, +0.079]**, child_professional **-0.022 [-0.041, -0.003]**.
+Teachers carry most of it, but not all: virtuosos (all concert_hall, context-only AUC 1.000) add
+a significant part. Child professionals lose slightly (fix 2).
+
+### Required fixes (text only; the header is unchanged)
+
+1. Verdict point 2 and the plain-terms summary: add that with near-perfectly decodable contexts
+   the inflation is close to that of an explicit context label (stacked benchmark 0.959 / 0.705 vs
+   CC 0.943 / 0.730). So +0.073 reflects the confound strength, not a MuQ-specific size. Claim
+   direction and mechanism only.
+2. Verdict point 4: "concentrated in teachers" becomes "largest for teachers (+0.180 [+0.145,
+   +0.215]), also present for virtuosos (+0.061 [+0.047, +0.079]), slightly negative for child
+   professionals (-0.022 [-0.041, -0.003])". Add the mechanism: clean demos (including slow
+   demos) are nearly exclusive to teachers and have the most beginner-like MIDI.
+3. Threats, "matched AUC is not a clean skill measure": replace "The deltas are unaffected" with
+   the within-piece result: repertoire difficulty shares the deltas' MIDI signal and makes the
+   pooled inflation conservative (within-piece +0.122 [+0.066, +0.182]).
+4. Disclose the post-header lint rewrap of `build.py` and `reachability.py` (no behaviour change).
+
+### Not verified
+
+- The audio pipeline itself (renderer, `simulate_phone`, AAC) was not re-executed; the embeddings
+  were taken as given. Context versions differ per clip (min L2 distance 2.73), so no copy is
+  duplicated.
+- Overlapping context ranges (the second threat) were not tested. That needs a re-render.
+- Transfer to real YouTube audio (H8 proper) remains untested (OWNER decision on D-05).
+
+## Post-audit corrections (lead, 2026-09-28)
+
+1. **Claim direction and mechanism only.** When recording context is confounded with skill, a
+   frozen-MuQ linear probe uses context about as much as it would use an explicit context label.
+   The confounded result reaches about 80% of the stacked explicit-label ceiling: inflation +0.073
+   of +0.089, shortcut +0.214 of +0.254. The +0.073 is not a measure of MuQ's own susceptibility,
+   and it does not transfer to real audio. The simulated contexts are more separable than real
+   ones.
+2. **Per-level inflation** (confounded minus matched, vs beginners):
+   - teachers +0.180 [0.145, 0.215];
+   - virtuosos +0.061 [0.047, 0.079];
+   - child professionals −0.022.
+
+   The mechanism: teachers' slow demos (median 2.9 notes/s) coincide with the clean context.
+3. **Repertoire:** within-piece AUC gives inflation +0.122 [+0.066, +0.182]. The pooled +0.073 is
+   therefore conservative, not inflated by repertoire.
+4. **Disclosure:** `build.py` and `reachability.py` were re-wrapped for lint after the header was
+   hashed. Behaviour did not change.
