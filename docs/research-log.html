@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PianoLens research log</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1f2328;--muted:#5b6470;--line:#e3e0d8;--card:#ffffff;
+--accent:#2f5d8a;--accent-soft:#e8eef5;--code:#f3f1ec;--good:#2e7d4f;--warn:#9a6b00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--fg:#e6e6e3;
+--muted:#9aa3ad;--line:#2c3036;--card:#1c1f23;--accent:#8fb6e0;--accent-soft:#1f2a36;
+--code:#22262b;--good:#6fcf97;--warn:#e0b458}}
+:root[data-theme="dark"]{--bg:#15171a;--fg:#e6e6e3;--muted:#9aa3ad;--line:#2c3036;--card:#1c1f23;
+--accent:#8fb6e0;--accent-soft:#1f2a36;--code:#22262b;--good:#6fcf97;--warn:#e0b458}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{display:grid;grid-template-columns:260px minmax(0,760px);gap:48px;
+max-width:1100px;margin:0 auto;padding:48px 24px 96px}
+nav.toc{position:sticky;top:24px;align-self:start;max-height:calc(100vh - 48px);overflow:auto;
+font-size:14px;line-height:1.45;border-right:1px solid var(--line);padding-right:16px}
+nav.toc .title{font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+font-size:12px;margin-bottom:10px}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 0}
+nav.toc a.h3{padding-left:12px;font-size:13px}
+nav.toc a:hover{color:var(--accent)}
+main h1{font-size:2.1rem;line-height:1.2;margin:0 0 .4rem}
+main h2{font-size:1.45rem;margin:2.6rem 0 .8rem;padding-top:.6rem;border-top:1px solid var(--line)}
+main h3{font-size:1.12rem;margin:2rem 0 .5rem;color:var(--accent)}
+main p,main li{max-width:72ch}
+main a{color:var(--accent)}
+blockquote{margin:1.2rem 0;padding:.9rem 1.2rem;background:var(--accent-soft);
+border-left:4px solid var(--accent);border-radius:6px}
+blockquote p{margin:.3rem 0}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font-size:.88em}
+table{width:100%;border-collapse:collapse;margin:1rem 0 1.4rem;font-size:.92rem;
+background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:block;
+overflow-x:auto}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--accent-soft);font-weight:600}
+tr:last-child td{border-bottom:none}
+hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
+.meta{color:var(--muted);font-size:.95rem;margin-bottom:1.5rem}
+.theme{position:fixed;top:14px;right:16px;background:var(--card);color:var(--fg);
+border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+@media (max-width:900px){.wrap{grid-template-columns:1fr;gap:0;padding:56px 16px 64px}
+nav.toc{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line);
+padding:0 0 16px;margin-bottom:24px}}
+@media print{nav.toc,.theme{display:none}.wrap{display:block}}
+</style></head>
+<body><button class="theme" type="button">Light / dark</button>
+<div class="wrap"><nav class="toc"><div class="title">Contents</div><a class="h2" href="#1-the-question">1. The question</a><a class="h2" href="#2-how-the-work-was-organised">2. How the work was organised</a><a class="h2" href="#3-what-was-built">3. What was built</a><a class="h2" href="#4-the-experiments-in-order">4. The experiments, in order</a><a class="h3" href="#r-01-do-expert-ratings-of-piano-playing-reduce-to-a-few-dimensions">R-01. Do expert ratings of piano playing reduce to a few dimensions?</a><a class="h3" href="#r-02-is-expert-expression-low-dimensional">R-02. Is expert expression low-dimensional?</a><a class="h3" href="#r-03-does-a-published-audio-model-s-result-hold-up">R-03. Does a published audio model&#x27;s result hold up?</a><a class="h3" href="#r-04-can-simple-explainable-midi-features-match-the-audio-model">R-04. Can simple, explainable MIDI features match the audio model?</a><a class="h3" href="#r-06-which-expression-model-should-we-fine-tune">R-06. Which expression model should we fine-tune?</a><a class="h3" href="#r-09-does-structural-coherence-rise-with-skill">R-09. Does structural coherence rise with skill?</a><a class="h3" href="#f-07-does-repeated-timing-reveal-a-pianist-s-intent">F-07. Does repeated timing reveal a pianist&#x27;s intent?</a><a class="h3" href="#r-08a-to-r-08d-can-an-llm-claude-read-musical-phrase-structure-from-a-score">R-08a to R-08d. Can an LLM (Claude) read musical phrase structure from a score?</a><a class="h3" href="#a-01-phone-recordings-of-a-real-learner-henry-5-chopin-pieces-kawai-grand">A-01. Phone recordings of a real learner (Henry, 5 Chopin pieces, Kawai grand)</a><a class="h3" href="#r-05-do-audio-skill-models-cheat-on-recording-quality-h8">R-05. Do audio skill models cheat on recording quality? (H8)</a><a class="h3" href="#f-05e-do-the-llm-s-phrase-boundaries-feed-the-tempo-measures">F-05e. Do the LLM&#x27;s phrase boundaries feed the tempo measures?</a><a class="h3" href="#f-08c-stop-blaming-the-player-for-the-score">F-08c. Stop blaming the player for the score</a><a class="h3" href="#p-01-audible-comparison">P-01. Audible comparison</a><a class="h3" href="#bl-16-what-does-the-same-passage-played-twice-tell-us">BL-16. What does &quot;the same passage played twice&quot; tell us?</a><a class="h2" href="#5-supporting-checks-not-headline-experiments">5. Supporting checks (not headline experiments)</a><a class="h2" href="#6-where-the-auditor-changed-our-minds">6. Where the auditor changed our minds</a><a class="h2" href="#7-what-is-still-open">7. What is still open</a><a class="h2" href="#8-reproducing-anything">8. Reproducing anything</a></nav>
+<main><h1 id="pianolens-research-log">PianoLens research log</h1>
+<p>A plain-language record of everything done in this project so far, written as source material for
+a research blog post. Written 2026-09-28. Every number here comes from an experiment folder in
+<code>experiments/</code> or a spec in <code>docs/specs/</code>. The technical ledger is <code>EXPERIMENTS.md</code>; the reasons
+behind each choice are in <code>DECISIONS.md</code>.</p>
+<hr />
+<h2 id="1-the-question">1. The question</h2>
+<p>Can a computer judge piano playing the way a good teacher does? Not only "did you hit the right
+notes", which apps already do, but "is the phrasing musical, is the pedalling clean, is this an
+interpretation or just noise"?</p>
+<p>The bet behind the project:</p>
+<blockquote>
+<p>Piano is the most constrained instrument there is. Once the hammer leaves the string, the player
+cannot change the sound. Per note, a pianist controls only when it starts, how hard it is struck
+and when it is released, plus the pedals. So a MIDI recording plus the score is a near-complete
+description of a piano performance. If that is true, quality should be explainable with a
+modest number of measurable features and a small model, without a giant audio network.</p>
+</blockquote>
+<h2 id="2-how-the-work-was-organised">2. How the work was organised</h2>
+<ul>
+<li><strong>One repo:</strong> <code>github.com/HenryVu27/pianolens</code>, private research code.</li>
+<li><strong>An agentic setup.</strong></li>
+<li>A lead Claude session plans the work, splits it into tickets (<code>WORKBOARD.md</code>) and dispatches
+    role agents: data engineer, feature engineer, ML researcher, study designer, literature scout,
+    and an <strong>eval auditor</strong>.</li>
+<li>Each agent keeps its own memory notes.</li>
+<li>Rules that load automatically keep everyone consistent.</li>
+<li><strong>Pre-registration.</strong></li>
+<li>Every experiment writes down its question and what result would prove it wrong <em>before</em> it
+    runs.</li>
+<li>The pre-registration is hashed, so later edits are detectable.</li>
+<li><strong>Adversarial audit.</strong></li>
+<li>No result counts until the eval auditor has tried to break it: rerun the numbers, check for
+    leakage, check the pre-registration, and question the interpretation.</li>
+<li>The auditor changed the headline of several results. Section 6 lists these, and it may be the
+    most interesting part for a blog.</li>
+<li><strong>Data:</strong> 17 public datasets, about 11 GB of MIDI and labels, all non-commercial research
+  licences. Nothing is committed to git; <code>DATASETS.md</code> says how to re-fetch each one.</li>
+</ul>
+<h2 id="3-what-was-built">3. What was built</h2>
+<table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alignment</td>
+<td>Matches every played note to its score note. It picks the repeat path the pianist actually took. Mean F1 0.964 on 1,063 (n)ASAP performances.</td>
+</tr>
+<tr>
+<td>Tier A, correctness</td>
+<td>Wrong, extra and missed notes. Any-error F1 per bar is 0.99 on synthetic mistakes. Missed notes are reported per bar because single-note labels are unreliable.</td>
+</tr>
+<tr>
+<td>Tempo model</td>
+<td>Splits timing into a smooth, intentional tempo curve and leftover jitter. It handles fermatas, tempo changes and repeats.</td>
+</tr>
+<tr>
+<td>Tier B, control</td>
+<td>Timing noise, evenness in scales and Alberti bass, hand synchrony, tempo stability, and pedal held across harmony changes. The pedal rule is validated against expert harmony annotations (F1 0.75).</td>
+</tr>
+<tr>
+<td>Tier C, shaping</td>
+<td>Structural coherence (how much of a pianist's expression the score explains), per-phrase tempo arcs, consistency across repeated passages, voicing, and obedience to dynamic markings.</td>
+</tr>
+<tr>
+<td>Tier D, interpretation</td>
+<td>Compares a performance with hundreds of expert performances of the same piece: an expert band per bar, a small "shared core", a typicality score, and a guard against flat, lifeless playing.</td>
+</tr>
+<tr>
+<td>Report card</td>
+<td>MIDI in, a self-contained HTML report out: findings in plain language, a bar-by-bar timeline, curves against the expert band, and "what to practise". There is no invented overall grade.</td>
+</tr>
+<tr>
+<td>Listening-study app</td>
+<td>A local web app to measure how much each kind of flaw bothers listeners. It is built and not yet run.</td>
+</tr>
+<tr>
+<td>GPU job</td>
+<td>Fine-tuning an expression model, packaged to run on an RTX 5080. It is ready and not yet run.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-the-experiments-in-order">4. The experiments, in order</h2>
+<p>Each entry gives the question, what was done, the result, and the verdict after audit.</p>
+<h3 id="r-01-do-expert-ratings-of-piano-playing-reduce-to-a-few-dimensions">R-01. Do expert ratings of piano playing reduce to a few dimensions?</h3>
+<ul>
+<li><strong>Data:</strong> PercePiano, 1,202 short clips rated on 19 scales by 53 expert raters.</li>
+<li><strong>Method:</strong> factor analysis.</li>
+<li><strong>Result:</strong> the 19 scales collapse to <strong>3 to 5 factors</strong>, dominated by one general "quality" factor.
+  The others are loudness/energy, pedal/legato and mood.</li>
+<li><strong>Verdict:</strong> confirmed with caveats. The exact count depends on the method (3 to 7). The auditor
+  also found a bug in a statistics library (factor correlations assigned to the wrong factors).</li>
+</ul>
+<h3 id="r-02-is-expert-expression-low-dimensional">R-02. Is expert <em>expression</em> low-dimensional?</h3>
+<ul>
+<li><strong>Data:</strong> 698 pieces with 50 expert performances each, from PianoCoRe.</li>
+<li><strong>Question:</strong> how many independent "shapes" of tempo and loudness are there?</li>
+<li><strong>Prediction:</strong> 10 or fewer components explain 80% of the variation.</li>
+<li><strong>Result:</strong> <strong>19 components</strong>, so the prediction failed.</li>
+<li><strong>The audit's refinement:</strong> the part experts <em>share</em> is small (3 to 5 components, about 35-46%
+  of the variation). The rest is individual.</li>
+<li><strong>Takeaway:</strong> an interpretation is a small shared core plus a large space of personal freedom.</li>
+<li><strong>Verdict:</strong> confirmed with caveats. The original hypothesis is recorded as not supported.</li>
+</ul>
+<h3 id="r-03-does-a-published-audio-model-s-result-hold-up">R-03. Does a published audio model's result hold up?</h3>
+<ul>
+<li><strong>Background:</strong> CrescendAI reported that MuQ, a large audio model, predicts expert ratings with
+  R² 0.536.</li>
+<li><strong>Reproduction:</strong> we reproduced it: 0.509.</li>
+<li><strong>Fair test:</strong> tested on <em>pieces the model had never heard</em>, the result collapses to <strong>R² −0.087</strong>,
+  worse than always guessing the average. The model had learned the pieces, not the playing.</li>
+<li><strong>What survives:</strong> within a passage it still ranks pianists correctly about 59-62% of the time.</li>
+<li><strong>Also found:</strong> their "leak fix" made the leak worse.</li>
+<li><strong>Verdict:</strong> confirmed with caveats.</li>
+</ul>
+<h3 id="r-04-can-simple-explainable-midi-features-match-the-audio-model">R-04. Can simple, explainable MIDI features match the audio model?</h3>
+<ul>
+<li><strong>Setup:</strong> a small model on 62 measurable features, with no audio and no deep network.</li>
+<li><strong>Result:</strong> it <strong>matches MuQ</strong> on unseen pieces in all four test variants (within-passage ranking
+  about 62% vs 62%).</li>
+<li><strong>What drives it:</strong> pedalling, then dynamics, then tempo shape, then voicing.</li>
+<li><strong>Audit correction:</strong> both models sit at single-rater level. The ceiling is much higher (about
+  0.74 vs 0.35), so there is plenty of headroom.</li>
+<li><strong>Verdict:</strong> confirmed with caveats. "Matches", not "beats".</li>
+</ul>
+<h3 id="r-06-which-expression-model-should-we-fine-tune">R-06. Which expression model should we fine-tune?</h3>
+<ul>
+<li><strong>Setup:</strong> SyMuPe vs Pianist Transformer, both frozen, on pieces neither was trained on.</li>
+<li><strong>Result:</strong> they <strong>tie</strong>; SyMuPe won the pre-registered tie-break.</li>
+<li><strong>Big finding:</strong> the models' "how likely is this performance" score <strong>prefers flat, expressionless
+  playing to every real pianist</strong>. A raw likelihood can never be used as a quality score.</li>
+<li><strong>Verdict:</strong> confirmed with caveats. The lead's first "keep both models" was overruled by the
+  pre-registered rule.</li>
+</ul>
+<h3 id="r-09-does-structural-coherence-rise-with-skill">R-09. Does structural coherence rise with skill?</h3>
+<ul>
+<li><strong>Data:</strong> MAJEPPA, 1,081 performances from beginner to virtuoso.</li>
+<li><strong>Result:</strong> pooled, advanced players look more coherent. <strong>Within the same recording context</strong>
+  (practice vs concert) the effect disappears.</li>
+<li><strong>Why:</strong> in MAJEPPA, virtuosos are all concert recordings and beginners are all practice clips.
+  The earlier D-10 check found the same trap for the control features.</li>
+<li><strong>Also:</strong> articulation coherence does not survive transcription noise; timing coherence does.</li>
+<li><strong>Verdict:</strong> confirmed with caveats. <strong>Inconclusive</strong>, and the design had little chance of
+  reaching "falsified" in the first place.</li>
+</ul>
+<h3 id="f-07-does-repeated-timing-reveal-a-pianist-s-intent">F-07. Does repeated timing reveal a pianist's intent?</h3>
+<ul>
+<li><strong>Data:</strong> 1,390 cases of the same famous pianist recording the same piece more than once.</li>
+<li><strong>Result:</strong> the timing that repeats across recordings is explained by the score (R² 0.12). The part
+  that changes is not (0.005).</li>
+<li><strong>Audit twist:</strong> two recordings by <em>different</em> pianists pass the same test. So the repeating part
+  is timing that any two performances share, not personal intent.</li>
+<li><strong>What holds:</strong> a pianist's own take-to-take variation is mostly random, so it can be treated as
+  noise.</li>
+<li><strong>Verdict:</strong> confirmed with caveats, and <strong>reinterpreted</strong>.</li>
+</ul>
+<h3 id="r-08a-to-r-08d-can-an-llm-claude-read-musical-phrase-structure-from-a-score">R-08a to R-08d. Can an LLM (Claude) read musical phrase structure from a score?</h3>
+<p>This is the most direct test of the original idea that current LLMs can help.</p>
+<p><strong>Method:</strong>
+- Claude annotators receive a text rendering of a score, with no labels, no titles and no access to
+  the repo.
+- They mark phrase endings and cadence types.
+- Their marks are scored against expert (DCML) annotations and compared with a rule-based detector
+  we built.
+- Every run was blind, and the auditor checked each annotator's transcript for file access.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What was tested</th>
+<th>LLM F1</th>
+<th>Rule-based detector F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-08a</td>
+<td>5 famous Mozart sonata movements</td>
+<td>0.82</td>
+<td>0.57</td>
+</tr>
+<tr>
+<td>R-08b</td>
+<td>The same movements disguised (new key, words removed, bars renumbered); 0 of 5 recognised</td>
+<td>0.80</td>
+<td>0.57</td>
+</tr>
+<tr>
+<td>R-08c</td>
+<td>5 J.C. Bach movements the model did not recognise</td>
+<td>0.75</td>
+<td>0.44</td>
+</tr>
+<tr>
+<td>R-08d</td>
+<td>5 Romantic pieces: Tchaikovsky, Chopin, Schumann (Träumerei), Grieg, Liszt</td>
+<td>0.74</td>
+<td>0.39</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Takeaways:</strong>
+- <strong>Claude reads phrase structure from the notes and beats the hand-built rules by 0.25 to 0.35 in
+  every style.</strong> It is not recalling memorised analyses: disguising the score cost nothing.
+- The Romantic result passes the 0.70 bar only on the point estimate. Performance varies a lot from
+  piece to piece.
+- <strong>Caveat:</strong> the expert labels were published before the model's training cutoff, so exposure to
+  them cannot be fully excluded.</p>
+<h3 id="a-01-phone-recordings-of-a-real-learner-henry-5-chopin-pieces-kawai-grand">A-01. Phone recordings of a real learner (Henry, 5 Chopin pieces, Kawai grand)</h3>
+<ul>
+<li><strong>The pipeline:</strong> phone audio is transcribed to notes by two models (Transkun and Aria-AMT) and
+  aligned to the score. The report card then compares it with hundreds of expert performances of the
+  same piece.</li>
+<li><strong>Controlled check:</strong> expert recordings played through a simulated phone and then transcribed.</li>
+<li>98-99% of notes are recovered, with about 2 ms timing error.</li>
+<li>Transcription adds only about 2 points of apparent error.</li>
+<li><strong>On the real phone recordings:</strong></li>
+<li>The two models agree closely (note F1 0.91-0.97).</li>
+<li>Wrong and missed notes sit near the transcription floor.</li>
+<li>Three recordings show 15-29% "extra" notes. Many are on a few fixed high pitches, with no
+    plausible source note, and the simulation does not reproduce them.</li>
+<li><strong>Lesson:</strong> phone-based feedback can trust timing and tempo. Extra notes, dynamics and pedal are
+  low confidence until a filter is validated on real rooms with ground truth.</li>
+<li><strong>Example of trustworthy feedback:</strong> in Nocturne Op. 27 No. 2, both transcription models flag the
+  same bars (43 and 60) for timing, including rushing bar 60 about 14% faster than the typical
+  expert shape.</li>
+</ul>
+<h3 id="r-05-do-audio-skill-models-cheat-on-recording-quality-h8">R-05. Do audio skill models cheat on recording quality? (H8)</h3>
+<ul>
+<li><strong>Setup:</strong> 1,250 MAJEPPA performances rendered in 4 simulated recording settings.</li>
+<li><strong>Result:</strong> when the setting is tied to skill (as in real datasets), the audio model's
+  beginner-vs-advanced score rises from 0.87 to 0.94. Shuffling the settings at test time drops it
+  to 0.73.</li>
+<li><strong>Audit:</strong> the model uses the recording setting about as much as it would use an explicit label
+  naming it. The mechanism is shown; the size on real audio is unknown.</li>
+</ul>
+<h3 id="f-05e-do-the-llm-s-phrase-boundaries-feed-the-tempo-measures">F-05e. Do the LLM's phrase boundaries feed the tempo measures?</h3>
+<ul>
+<li><strong>Result:</strong> with LLM phrase boundaries, the slow-fast-slow arc measure matches expert annotations
+  on Mozart (Δ −0.01) and beats the rule-based detector everywhere.</li>
+<li>On Romantic pieces it loses about 0.12 to expert annotations, from misplaced boundaries.</li>
+<li><strong>Audit controls:</strong> random boundaries at the same density score about 0, and over-segmenting is
+  penalised.</li>
+<li><strong>Decision:</strong> LLM boundaries now replace the detector in the scoring engine.</li>
+</ul>
+<h3 id="f-08c-stop-blaming-the-player-for-the-score">F-08c. Stop blaming the player for the score</h3>
+<ul>
+<li>Bars where expert recordings of the same score show the same "errors" are no longer flagged, and
+  extra notes never count against transcribed input.</li>
+<li>On Henry's reports, strong correctness flags fell from up to 30 per piece to at most 2.</li>
+<li>Injected real mistakes are still caught (85% of previously flagged mistake bars).</li>
+</ul>
+<h3 id="p-01-audible-comparison">P-01. Audible comparison</h3>
+<ul>
+<li>Every flagged passage gets an A/B player with four versions:</li>
+<li>the learner's real audio;</li>
+<li>the learner re-rendered on a neutral piano;</li>
+<li>a typical expert on the same piano;</li>
+<li>a contrasting expert.</li>
+<li>Switching keeps your place in the bar.</li>
+</ul>
+<h3 id="bl-16-what-does-the-same-passage-played-twice-tell-us">BL-16. What does "the same passage played twice" tell us?</h3>
+<ul>
+<li><strong>Data:</strong> Rach3 practice sessions (3 pianists), cut into separate takes of Hanon exercises.</li>
+<li><strong>Result:</strong> within one sitting, a pianist's take-to-take timing changes are close to random
+  (7.5 ms for advanced players, 11 ms for the beginner). They are a usable noise estimate.
+  Across days, changes are structured drift, not noise.</li>
+<li><strong>Audit:</strong> the claim that these changes are less structured than differences between pianists is
+  shown for the beginner only, and even that is confounded with skill level.</li>
+<li><strong>Practical rule:</strong> record repeated takes in one sitting.</li>
+</ul>
+<h2 id="5-supporting-checks-not-headline-experiments">5. Supporting checks (not headline experiments)</h2>
+<ul>
+<li><strong>D-10:</strong> expert vs amateur control features.</li>
+<li>Pooled, advanced players look about 25% more controlled.</li>
+<li>Within matched recording contexts the difference disappears.</li>
+<li>Transcription noise was measured on 65 recordings that exist both as player-piano MIDI and as
+    transcribed audio:<ul>
+<li>timing survives (about 2 ms);</li>
+<li>loudness does not (about 9 MIDI units of error, above what listeners can hear).</li>
+</ul>
+</li>
+<li><strong>F-08b:</strong> the report's timing flags do not over-flag player-piano recordings when they are
+  compared against transcribed references.</li>
+<li><strong>F-04b / F-05b / F-05c:</strong></li>
+<li>The harmony-change detector reaches F1 0.75 against expert annotations.</li>
+<li>Real phrase boundaries double how much of tempo the score explains (0.07 to 0.14).</li>
+<li>81% of real phrases are played with a slow-fast-slow tempo arc, against 44% when the
+    boundaries are shifted.</li>
+</ul>
+<h2 id="6-where-the-auditor-changed-our-minds">6. Where the auditor changed our minds</h2>
+<p>The project's most useful habit was letting an independent agent try to break every result.</p>
+<table>
+<thead>
+<tr>
+<th>Result</th>
+<th>First claim</th>
+<th>After audit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R-01</td>
+<td>Exactly 4 factors; "impossible value" warning</td>
+<td>3 to 5 factors. The warning was a library bug, and the factor correlations were mislabelled.</td>
+</tr>
+<tr>
+<td>R-02</td>
+<td>Expression needs 19 components, so it is not low-dimensional</td>
+<td>The <em>shared</em> part is only 3 to 5 components. The rest is individuality.</td>
+</tr>
+<tr>
+<td>R-03</td>
+<td>Headline reproduction</td>
+<td>Their headline averaged 3 of 4 folds, and their "leak fix" made the leak worse. About 60% of MuQ's remaining signal came from spotting flat computer renditions.</td>
+</tr>
+<tr>
+<td>R-04</td>
+<td>"Everything is near the ceiling"</td>
+<td>Wrong ceiling. There is large headroom.</td>
+</tr>
+<tr>
+<td>R-06</td>
+<td>Keep both models</td>
+<td>The pre-registered rule picks one. Also, flat playing beats experts on likelihood even when perturbed.</td>
+</tr>
+<tr>
+<td>R-08a</td>
+<td>Confidence interval above the bar</td>
+<td>Too optimistic with 5 items. The t-interval touches the bar.</td>
+</tr>
+<tr>
+<td>R-08b</td>
+<td>"Recognised pieces scored lower"</td>
+<td>A mix-of-movements artefact. Within a movement, recognition helped slightly.</td>
+</tr>
+<tr>
+<td>R-09 / D-10</td>
+<td>"The effect vanishes with context fixed"</td>
+<td>It also drops the top skill levels. Context and skill cannot be separated there.</td>
+</tr>
+<tr>
+<td>F-07</td>
+<td>"Repeated timing = intent"</td>
+<td>Different pianists pass the same test. It is shared piece timing, not intent.</td>
+</tr>
+<tr>
+<td>Study design</td>
+<td>"12-17 comparisons per item is enough"</td>
+<td>Unsupported by its source. The current guidance is 20 or more.</td>
+</tr>
+</tbody>
+</table>
+<p>The pattern: first-pass analyses consistently overclaimed. Pre-registration plus an adversarial
+auditor caught it every time.</p>
+<h2 id="7-what-is-still-open">7. What is still open</h2>
+<ul>
+<li><strong>Does the tool measure skill, not just recording context?</strong> This needs recordings where skill
+  varies but the setting does not. Henry's own recordings are ideal.</li>
+<li><strong>H1b:</strong> can a fine-tuned expression model predict the shared expert core from the score? The
+  GPU job is ready.</li>
+<li><strong>H6:</strong> which flaws do listeners actually mind most? The study is built, with no listeners yet.</li>
+<li><strong>H7:</strong> what explains preference among good performances? This needs the pairwise listening study.</li>
+<li><strong>H8:</strong> do audio skill models cheat on recording quality? This is planned.</li>
+<li><strong>Phone audio:</strong> the baseline is built (A-01). Filtering spurious extra notes from real-room
+  recordings is in progress (A-01b).</li>
+</ul>
+<h2 id="8-reproducing-anything">8. Reproducing anything</h2>
+<p>Each experiment folder in <code>experiments/</code> has a README with its pre-registration, the exact command,
+the results and the audit. Data is re-fetched per <code>DATASETS.md</code>. <code>STATUS.md</code> has the current state.</p></main></div>
+<script>
+(function(){var r=document.documentElement,b=document.querySelector('.theme');
+try{var s=localStorage.getItem('rl-theme');if(s)r.dataset.theme=s;}catch(e){}
+b.addEventListener('click',function(){var d=r.dataset.theme||
+(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+r.dataset.theme=d==='dark'?'light':'dark';try{localStorage.setItem('rl-theme',r.dataset.theme);}catch(e){}});})();
+</script></body></html>
