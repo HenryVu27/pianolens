@@ -429,3 +429,20 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - **Incident:** `transcribe.log` (Henry's recording file names and YouTube IDs, no audio) was
     committed in 646a8e7 and pushed. It has been removed from the tree, and `*.log` is now
     gitignored. It remains in git history unless Henry approves a history rewrite and force-push.
+- **2026-09-28, lead: the platform (P-01, P-02).**
+  - Build a **local-only** web app first: localhost, no hosting. Reasons: Henry's recordings are
+    personal, and the reference data (PianoCoRe/ASAP) is non-commercial and must not be
+    redistributed.
+  - Every flagged passage gets an audible A/B comparison: the user's real audio, the user
+    re-rendered on the reference piano, and a typical expert on the same piano.
+  - Hosting or public deployment is a separate OWNER decision (BL-01 licensing).
+- **2026-09-28, lead: F-05e is Confirmed with caveats.**
+  - LLM phrase boundaries replace the cadence detector as the phrase source for the H4/R-09
+    secondary tempo channel. Scope:
+    - **Classical sonatas:** they recover the DCML-level signal (Batik Δ −0.014).
+    - **Romantic:** they beat the detector (+0.35) but do **not** recover the DCML signal
+      (Δ −0.124). The loss comes from misplaced boundaries, not over-segmentation. This must be
+      disclosed wherever Romantic values are used.
+  - Always report the phrase-count ratio next to `concave_excess`. The measure penalises
+    correct but finer segmentation, so "recovered" means recovered at the DCML level.
+  - `merge_short_phrases` stays opt-in; it did not help.

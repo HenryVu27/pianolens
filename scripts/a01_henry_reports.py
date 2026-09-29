@@ -8,6 +8,11 @@ references, provenance ``transcribed`` (so velocity is low confidence and not pr
 Each report carries a note with the per-piece transcription floor measured by
 ``scripts/a01_henry_baseline.py`` (run that first).
 
+Per-bar expert check (F-08c): the same A-01 floor transcriptions (15 per piece and transcriber
+family, the transcriber matching the take's), cached as per-bar tables by
+``scripts/calibrate_expert_check_f08c.py`` (run that first). Extra notes are low confidence on
+this input and never practise items (``rules/audio.md``).
+
 Stability: for every tiered issue (category, channel, bar) the script records whether the other
 transcriber's report tiers the same bar for the same channel. Writes
 ``data/interim/reports/henry/`` (gitignored; personal data, never commit).
@@ -30,6 +35,7 @@ TITLES = {"01": ("op27no2", "Chopin, Nocturne in D-flat major, Op. 27 No. 2"),
           "05": ("op9no1", "Chopin, Nocturne in B-flat minor, Op. 9 No. 1")}  # fmt: skip
 HIGH_PITCH = 91  # G6
 HIGH_NOTE_MIN_RATE = 0.02  # add the note when high extras exceed 2% of score notes
+FLOOR_TABLES = ROOT / "data" / "interim" / "reports" / "calibration" / "f08c_floor_tables.pkl"
 TR_NAME = {"transkun": "Transkun 2.0.1", "aria_amt": "Aria-AMT piano-medium-double-1.0"}
 
 
@@ -107,9 +113,12 @@ def tiered(rep: dict) -> set[tuple]:
 def main() -> None:
     warnings.filterwarnings("ignore")
     logging.basicConfig(level=logging.ERROR)
+    import pickle
+
     from pianolens.report import report_from_files, write_report
 
     summ = json.loads((BASE / "a01" / "summary.json").read_text())
+    floor = pickle.loads(FLOOR_TABLES.read_bytes())
     meta = json.loads((BASE / "scores" / "scores.json").read_text())
     OUT.mkdir(parents=True, exist_ok=True)
     stab = {}
@@ -119,7 +128,9 @@ def main() -> None:
             rep = report_from_files(
                 BASE / "transcribed" / t / f"{k}.mid", score=BASE / "scores" / f"{k}_score.mxl",
                 piece_id=meta[k]["piece_id"], provenance="transcribed", title=title,
-                notes=[floor_note(summ, k, t)])  # fmt: skip
+                notes=[floor_note(summ, k, t)],
+                expert_tables=[r["table"] for r in floor if r["take"] == k
+                               and r["transcriber"] == t and not r["suspect"]])  # fmt: skip
             extra_note = high_note(high_extras(k, t, meta), rep)
             if extra_note:  # the header renders confidence notes; input notes keep provenance
                 rep["confidence"]["notes"].append(extra_note)

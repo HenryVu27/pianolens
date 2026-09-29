@@ -125,6 +125,7 @@ __all__ = [
     "ShapingConfig",
     "channel_data",
     "dynamic_compliance",
+    "merge_short_phrases",
     "phrase_tempo_shaping",
     "pooled_structural_coherence",
     "repeated_material",
@@ -995,6 +996,41 @@ def _arc_table(grid: pd.DataFrame, starts: Sequence[float], min_beats: int
 def _shift_bounds(starts: Sequence[float], shift: float, lo: float, hi: float) -> list[float]:
     """Circular shift of boundaries inside ``[lo, hi)``: same number and spacing."""
     return sorted(float(v) for v in lo + np.mod(np.asarray(starts, float) - lo + shift, hi - lo))
+
+
+def merge_short_phrases(
+    starts_beats: Sequence[float],
+    min_bars: float,
+    beats_per_bar: float,
+    end_beat: float,
+) -> list[float]:
+    """Undo over-segmentation: merge phrases shorter than ``min_bars`` bars (F-05e).
+
+    LLM annotators often mark sub-phrases that DCML treats as one phrase (R-08c Q3, R-08d R5).
+    A phrase runs from its start to the next start; the last one ends at ``end_beat`` (the last
+    onset + 1 beat, as in :func:`phrase_tempo_shaping`). While more than one phrase remains and
+    one is shorter than ``min_bars * beats_per_bar`` beats, the shortest (earliest on ties) is
+    merged with its shorter neighbour (the following one on ties) by deleting the boundary
+    between them. Boundaries at or after ``end_beat`` are dropped. Unit: score beats.
+
+    Returns:
+        The retained phrase starts, sorted.
+    """
+    b = sorted({float(x) for x in starts_beats if float(x) < end_beat})
+    min_len = float(min_bars) * float(beats_per_bar)
+    while len(b) > 1:
+        lens = np.diff([*b, float(end_beat)])
+        i = int(np.argmin(lens))
+        if lens[i] >= min_len - 1e-9:
+            break
+        if i == 0:
+            j = 1  # merge with the following phrase: drop its start
+        elif i == len(b) - 1:
+            j = i  # the last phrase merges into the previous one
+        else:
+            j = i if lens[i - 1] < lens[i + 1] else i + 1
+        del b[j]
+    return b
 
 
 def phrase_tempo_shaping(

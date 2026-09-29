@@ -17,6 +17,7 @@ from typing import Any
 import numpy as np
 
 from pianolens.report import calibration as cal
+from pianolens.report import text
 
 REPO = Path(__file__).resolve().parents[3]
 SPECS = {
@@ -90,6 +91,19 @@ def _fmt(x: Any, nd: int = 1) -> str:
 # =========================================================================== timeline
 
 
+def _notes_tip(b: dict, rep: dict) -> str:
+    c = b["correctness"]
+    low = not rep["correctness"].get("extras_counted", True)
+    tip = (f"{c['n_wrong_pitch']} wrong, {c['n_missed']} missed, {c['n_extra']} extra"
+           + (" (extra notes: low confidence)" if low and c["n_extra"] else ""))
+    st = c.get("expert_check")
+    if st == "suppressed":
+        tip += f"; {text.artefact_text(rep)}"
+    elif st == "down_tiered":
+        tip += f"; experts also show errors here (was {c.get('tier_global')})"
+    return tip
+
+
 TIER_FILL = {"strong": "var(--strong)", "notable": "var(--notable)"}
 
 
@@ -99,9 +113,7 @@ def timeline_svg(rep: dict) -> str:
     n = len(bars)
     rows: list[tuple[str, Any]] = [
         ("Notes", lambda b: (b["correctness"]["tier"], b["correctness"]["n_errors"],
-                             f"{b['correctness']['n_wrong_pitch']} wrong, "
-                             f"{b['correctness']['n_missed']} missed, "
-                             f"{b['correctness']['n_extra']} extra")),
+                             _notes_tip(b, rep))),
         ("Tempo vs experts", lambda b: (b["tempo"]["tier"], None, _dev_tip(b, "tempo"))),
         ("Loudness vs experts", lambda b: (b["velocity"]["tier"], None, _dev_tip(b, "velocity"))),
         ("Too flat (tempo)", lambda b: (b["too_flat"]["tempo"], None, "")),
@@ -416,7 +428,12 @@ recordings ({cal.CORRECTNESS_EXPERT_BARS['n_performances']} (n)ASAP performances
 {cal.CORRECTNESS_EXPERT_BARS['n_bars']} bars): more than
 {int(cal.CORRECTNESS_EXPERT_BARS['wrong_pitch_q95'])} wrong note, or missed plus extra notes
 above {cal.CORRECTNESS_EXPERT_BARS['missed_extra_per_note_q95']:.2f} per note (95th percentile);
-the 99th percentile gives "strong".</li>
+the 99th percentile gives "strong". Per-bar expert check (F-08c): with at least
+{cal.EXPERT_CHECK_MIN_REFS} expert performances of the same score and capture method (transcribed
+experts for transcribed input), a bar must also exceed their {int(100 * cal.EXPERT_CHECK_Q[0])}th /
+{int(100 * cal.EXPERT_CHECK_Q[1])}th percentile at that bar;
+bars within it are marked as likely score or edition artefacts. On transcribed input extra notes
+are low confidence and not ranked (A-01).</li>
 <li>Tempo and loudness (F-03, F-06): 1.5-bar smooth curves. The level is removed before
 comparing shapes, so the charts show your shape on the expert level
 ({_fmt(tl, 0)} beats per minute, {_fmt(vl, 0)} velocity). A bar is notable when its deviation

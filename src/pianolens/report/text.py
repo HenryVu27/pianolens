@@ -102,6 +102,23 @@ def confidence_notes(rep: dict) -> list[str]:
     if _ok(mf) and mf < 0.9:
         out.append(f"Only {_pct(mf)} of this score could be matched to the reference edition; "
                    "bars outside it have no expert band.")
+    cs = rep["correctness"]
+    if not cs.get("extras_counted", True):
+        out.append("Extra notes are low confidence on transcribed input (A-01: phone recordings "
+                   "produced many extra notes that were not played). They are shown in the "
+                   "timeline but are not ranked and never become practise items.")
+    xc = cs.get("expert_check") or {}
+    if xc:
+        who = expert_words(xc.get("provenance"))
+        if xc.get("n_bars_checked"):
+            out.append(f"Per-bar expert check: each bar's flagged notes were compared with "
+                       f"{xc['n_expert_performances']} {who} of this score. Bars with no more "
+                       "errors than experts show there are not ranked (likely score, edition or "
+                       "checker artefacts).")
+        else:
+            out.append(f"No per-bar expert check: {xc.get('n_expert_performances', 0)} {who} "
+                       f"of this score were available ({xc.get('min_refs', 5)} needed), so "
+                       "flagged bars may include score or edition artefacts.")
     ec = rep["correctness"].get("expert_calibration", {})
     out.append(f"The note checker also flags notes in expert recordings: in a typical expert "
                f"performance {_pct(ec.get('share_bars_with_error_median', float('nan')))} of "
@@ -115,6 +132,19 @@ def confidence_notes(rep: dict) -> list[str]:
 # =========================================================================== issues
 
 
+def expert_words(provenance: str | None) -> str:
+    """How the per-bar expert check's references are named."""
+    return ("expert transcriptions" if provenance == "transcribed"
+            else "expert recordings")
+
+
+def artefact_text(rep: dict) -> str:
+    """The phrase for a bar the per-bar expert check suppressed (F-08c)."""
+    xc = rep["correctness"].get("expert_check") or {}
+    return (f"matches {expert_words(xc.get('provenance'))} here (likely score/edition "
+            "artefact)")
+
+
 def issue_text(item: dict, rep: dict) -> str:
     """One sentence per localized issue, grounded in the bar numbers."""
     idx, tier, ch, cat = item["bars"], item["tier"], item["channel"], item["category"]
@@ -125,6 +155,8 @@ def issue_text(item: dict, rep: dict) -> str:
         w = sum(bars[i]["correctness"]["n_wrong_pitch"] for i in idx)
         m = sum(bars[i]["correctness"]["n_missed"] for i in idx)
         e = sum(bars[i]["correctness"]["n_extra"] for i in idx)
+        if not rep["correctness"].get("extras_counted", True):
+            e = 0  # low confidence (A-01): never part of a practise item
         parts = [p for p in (_n(w, "wrong note") if w else "", _n(m, "missed note") if m else "",
                              _n(e, "extra note") if e else "") if p]
         this = "this bar" if len(idx) == 1 else "these bars"
@@ -138,7 +170,11 @@ def issue_text(item: dict, rep: dict) -> str:
             return (f"{where}: the same mistake recurs across your takes ({what}). A mistake "
                     f"repeated in several takes is learned, not a slip.{this_take} Relearn "
                     f"{this} slowly, hands separately, with the right notes.")
-        return (f"{where}: {', '.join(parts)}; {range_w} for the note checker. Play {this} "
+        down = any(bars[i]["correctness"].get("expert_check") == "down_tiered" for i in idx)
+        xc = rep["correctness"].get("expert_check") or {}
+        dn = (f" {expert_words(xc.get('provenance')).capitalize()} of this score also show "
+              "errors here, so this is ranked one tier lower." if down else "")
+        return (f"{where}: {', '.join(parts)}; {range_w} for the note checker.{dn} Play {this} "
                 "slowly, hands separately, until every note is secure.")
     if cat == "interpretation":
         dev = _span_mean(rep, idx, ch, "dev_mean")
@@ -226,6 +262,11 @@ def _correctness_card(rep: dict) -> dict:
     ns, nn = c.get("n_bars_strong", 0), c.get("n_bars_notable", 0)
     f.append(f"Bars beyond the expert range: {ns} strong, {nn} notable (missed notes are "
              "judged per bar, not per note).")
+    xc = c.get("expert_check") or {}
+    sup = xc.get("bars_suppressed") or []
+    if sup:
+        f.append(f"Not ranked, {_n(len(sup), 'bar')} that {artefact_text(rep)}: "
+                 + ", ".join(sup[:12]) + ("..." if len(sup) > 12 else "") + ".")
     tk = rep.get("takes")
     if tk and tk.get("takes"):
         rec = tk["recurring_error_bars"]

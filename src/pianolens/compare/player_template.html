@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src data: blob:; connect-src data:">
+<title>__TITLE__ - A/B</title>
+<style>
+:root{--bg:#faf8f4;--fg:#1f1d1a;--muted:#6b665e;--card:#ffffff;--line:#e3ded5;--accent:#2f6f8f;
+--accent-fg:#ffffff;--strong:#b4442c;--notable:#b8862b;--shade:rgba(47,111,143,.13);--head:#1f1d1a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#171614;--fg:#ece8e1;
+--muted:#a39d93;--card:#211f1c;--line:#35322d;--accent:#6fb0cf;--accent-fg:#10181c;--strong:#e07a5f;
+--notable:#e0b35f;--shade:rgba(111,176,207,.16);--head:#ece8e1}}
+:root[data-theme="dark"]{--bg:#171614;--fg:#ece8e1;--muted:#a39d93;--card:#211f1c;--line:#35322d;
+--accent:#6fb0cf;--accent-fg:#10181c;--strong:#e07a5f;--notable:#e0b35f;--shade:rgba(111,176,207,.16);
+--head:#ece8e1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+h1{font-size:1.35rem;margin:0 0 4px;color:var(--head)}
+.sub{color:var(--muted);font-size:.9rem;margin:0}
+.theme{background:none;border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:4px 10px;cursor:pointer}
+.win{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:16px 0}
+.win.active{border-color:var(--accent)}
+.whead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.whead h2{font-size:1.05rem;margin:0}
+.tier{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:1px 7px;border-radius:4px}
+.tier.strong{color:var(--strong);border:1px solid var(--strong)}
+.tier.notable{color:var(--notable);border:1px solid var(--notable)}
+ul.reasons{margin:6px 0 10px;padding-left:18px;color:var(--muted);font-size:.9rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.clip{border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
+.clip .k{color:var(--muted);font-size:.8rem;margin-right:4px}
+.clip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.clip[aria-pressed="true"] .k{color:var(--accent-fg)}
+.ctl{border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:6px;padding:6px 12px;cursor:pointer;font:inherit;min-width:74px}
+.ctl[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.tl{position:relative;height:34px;margin:12px 0 4px;border-radius:6px;background:var(--bg);border:1px solid var(--line);cursor:pointer;overflow:hidden}
+.tl .shade{position:absolute;top:0;bottom:0;background:var(--shade)}
+.tl .bar{position:absolute;top:0;bottom:0;width:1px;background:var(--muted);opacity:.45}
+.tl .head{position:absolute;top:0;bottom:0;width:2px;background:var(--accent)}
+.meta{color:var(--muted);font-size:.82rem;margin-top:4px;min-height:1.2em}
+.help{color:var(--muted);font-size:.85rem;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><h1 id="title"></h1><p class="sub" id="sub"></p></div>
+<button class="theme" id="theme" type="button">Theme</button>
+</header>
+<p class="help">Each passage has the same bars from up to four sources, all with about one bar before and after.
+Switch sources while playing: the position stays on the same beat of the music. Keys: 1-4 source, space play/pause, L loop.
+Clips are matched in loudness, so loud or soft overall is not a difference here.</p>
+<div id="wins"></div>
+</main>
+<script>
+"use strict";
+const DATA = __DATA__;
+const ORDER = ["user_audio","user_render","expert_typical","expert_contrast"];
+const root = document.documentElement;
+try { const t = localStorage.getItem("pl-theme"); if (t) root.dataset.theme = t; } catch (e) {}
+document.getElementById("theme").onclick = () => {
+  const dark = root.dataset.theme ? root.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("pl-theme", root.dataset.theme); } catch (e) {}
+};
+document.getElementById("title").textContent = DATA.title;
+document.getElementById("sub").textContent = DATA.windows.length + " passages" +
+  (DATA.provenance ? " - input: " + DATA.provenance : "");
+
+let ctx = null;
+function audioCtx() { if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)(); return ctx; }
+function b64buf(uri) {
+  const s = atob(uri.slice(uri.indexOf(",") + 1)); const b = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b.buffer;
+}
+function decode(buf) { return new Promise((res, rej) => audioCtx().decodeAudioData(buf, res, rej)); }
+function anchors(c, dur) {
+  const a = [0].concat(c.bar_times || []).concat([dur]).filter(x => x >= 0 && x <= dur);
+  const out = [];
+  for (const x of a.sort((p, q) => p - q)) if (!out.length || x > out[out.length - 1] + 1e-3) out.push(x);
+  return out;
+}
+function mapPos(t, a, b) {  // time t in anchors a -> same fraction between the same anchors in b
+  const n = Math.min(a.length, b.length);
+  if (n < 2) return t * (b[b.length - 1] / a[a.length - 1]);
+  for (let i = 0; i < n - 1; i++) {
+    if (t <= a[i + 1] || i === n - 2) {
+      const f = Math.min(1, Math.max(0, (t - a[i]) / Math.max(1e-6, a[i + 1] - a[i])));
+      return b[i] + f * (b[i + 1] - b[i]);
+    }
+  }
+  return t;
+}
+let active = null;
+class Win {
+  constructor(w, el) {
+    this.w = w; this.el = el; this.kinds = ORDER.filter(k => w.clips[k]);
+    this.kind = this.kinds.includes("user_audio") ? "user_audio" : this.kinds[0];
+    this.buffers = {}; this.src = null; this.playing = false; this.loop = true;
+    this.t0 = 0; this.off = 0; this.raf = 0;
+  }
+  clip() { return this.w.clips[this.kind]; }
+  dur(k) { const b = this.buffers[k || this.kind]; return b ? b.duration : this.w.clips[k || this.kind].duration_sec; }
+  async ready() {
+    for (const k of this.kinds) if (!this.buffers[k]) this.buffers[k] = await decode(b64buf(this.w.clips[k].src));
+  }
+  pos() {
+    if (!this.playing) return this.off;
+    let p = this.off + (audioCtx().currentTime - this.t0); const d = this.dur();
+    return this.loop ? p % d : Math.min(p, d);
+  }
+  stopSrc() { if (this.src) { this.src.onended = null; try { this.src.stop(); } catch (e) {} this.src = null; } }
+  startAt(p) {
+    const c = audioCtx(); this.stopSrc();
+    const s = c.createBufferSource(); s.buffer = this.buffers[this.kind]; s.loop = this.loop;
+    s.connect(c.destination); p = Math.max(0, Math.min(p, this.dur() - 1e-3));
+    s.start(0, p); this.src = s; this.t0 = c.currentTime; this.off = p; this.playing = true;
+    s.onended = () => { if (this.src === s) { this.playing = false; this.off = 0; this.src = null; this.render(); } };
+    this.tick();
+  }
+  async play() {
+    if (active && active !== this) active.pause();
+    active = this; document.querySelectorAll(".win").forEach(e => e.classList.toggle("active", e === this.el));
+    await audioCtx().resume(); await this.ready(); this.startAt(this.off); this.render();
+  }
+  pause() { this.off = this.pos(); this.playing = false; this.stopSrc(); cancelAnimationFrame(this.raf); this.render(); }
+  toggle() { this.playing ? this.pause() : this.play(); }
+  async select(k) {
+    if (!this.w.clips[k] || k === this.kind) { if (!this.playing) this.play(); return; }
+    const p = this.pos(); const a = anchors(this.clip(), this.dur());
+    await this.ready();
+    const nk = k; const b = anchors(this.w.clips[nk], this.dur(nk));
+    const np = mapPos(p, a, b); const was = this.playing;
+    this.kind = nk; this.off = np;
+    if (was) this.startAt(np); else this.play();
+    this.render();
+  }
+  setLoop(v) { this.loop = v; if (this.playing) this.startAt(this.pos()); this.render(); }
+  seekFrac(f) { const p = f * this.dur(); if (this.playing) this.startAt(p); else { this.off = p; this.render(); } }
+  tick() { cancelAnimationFrame(this.raf); const f = () => { this.renderHead(); if (this.playing) this.raf = requestAnimationFrame(f); }; f(); }
+  renderHead() { const d = this.dur(); this.head.style.left = (100 * this.pos() / d) + "%"; }
+  render() {
+    for (const k of this.kinds) this.btn[k].setAttribute("aria-pressed", String(k === this.kind));
+    this.playBtn.textContent = this.playing ? "Pause" : "Play";
+    this.loopBtn.setAttribute("aria-pressed", String(this.loop));
+    const c = this.clip(), d = this.dur();
+    this.shade.style.left = (100 * c.window_on / d) + "%";
+    this.shade.style.width = (100 * (c.window_off - c.window_on) / d) + "%";
+    this.bars.innerHTML = "";
+    for (const t of (c.bar_times || [])) { const e = document.createElement("div"); e.className = "bar"; e.style.left = (100 * t / d) + "%"; this.bars.appendChild(e); }
+    const m = [];
+    if (c.performer) m.push(c.performer);
+    if (c.source_dataset) m.push(c.source_dataset + (c.capture_model ? " (" + c.capture_model + ")" : ""));
+    if (c.distance_percentile != null) m.push("closer to the expert median than " + Math.round(100 * (1 - c.distance_percentile)) + "% of experts here");
+    m.push(d.toFixed(1) + " s");
+    this.metaEl.textContent = c.label + ": " + m.join(" - ");
+    this.renderHead();
+  }
+}
+const wrap = document.getElementById("wins");
+const wins = [];
+DATA.windows.forEach((w, i) => {
+  const el = document.createElement("section"); el.className = "win";
+  const h = document.createElement("div"); h.className = "whead";
+  const h2 = document.createElement("h2"); h2.textContent = (i + 1) + ". " + w.label[0].toUpperCase() + w.label.slice(1);
+  const tg = document.createElement("span"); tg.className = "tier " + w.tier; tg.textContent = w.tier;
+  h.append(h2, tg); el.appendChild(h);
+  const ul = document.createElement("ul"); ul.className = "reasons";
+  for (const r of w.reasons) { const li = document.createElement("li"); li.textContent = r.text || (r.category + " / " + r.channel); ul.appendChild(li); }
+  if (w.truncated) { const li = document.createElement("li"); li.textContent = "Only the first bars of a longer flagged passage are included."; ul.appendChild(li); }
+  el.appendChild(ul);
+  const W = new Win(w, el); wins.push(W);
+  const row = document.createElement("div"); row.className = "row"; W.btn = {};
+  W.kinds.forEach((k, j) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "clip";
+    const kk = document.createElement("span"); kk.className = "k"; kk.textContent = String(j + 1);
+    b.append(kk, document.createTextNode(w.clips[k].label)); b.onclick = () => W.select(k);
+    W.btn[k] = b; row.appendChild(b);
+  });
+  W.playBtn = document.createElement("button"); W.playBtn.type = "button"; W.playBtn.className = "ctl"; W.playBtn.onclick = () => W.toggle();
+  W.loopBtn = document.createElement("button"); W.loopBtn.type = "button"; W.loopBtn.className = "ctl"; W.loopBtn.textContent = "Loop"; W.loopBtn.onclick = () => W.setLoop(!W.loop);
+  row.append(W.playBtn, W.loopBtn); el.appendChild(row);
+  const tl = document.createElement("div"); tl.className = "tl"; tl.title = "Click to jump";
+  W.shade = document.createElement("div"); W.shade.className = "shade";
+  W.bars = document.createElement("div"); W.head = document.createElement("div"); W.head.className = "head";
+  tl.append(W.shade, W.bars, W.head);
+  tl.onclick = e => { const r = tl.getBoundingClientRect(); active = W; W.seekFrac((e.clientX - r.left) / r.width); };
+  el.appendChild(tl);
+  W.metaEl = document.createElement("div"); W.metaEl.className = "meta"; el.appendChild(W.metaEl);
+  el.addEventListener("pointerdown", () => { if (active !== W) { if (active) active.pause(); active = W; document.querySelectorAll(".win").forEach(x => x.classList.toggle("active", x === el)); } });
+  wrap.appendChild(el); W.render();
+});
+if (wins.length) { active = wins[0]; wins[0].el.classList.add("active"); }
+document.addEventListener("keydown", e => {
+  if (!active || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === " ") { e.preventDefault(); active.toggle(); }
+  else if (e.key === "l" || e.key === "L") active.setLoop(!active.loop);
+  else if (/^[1-4]$/.test(e.key)) { const k = active.kinds[Number(e.key) - 1]; if (k) active.select(k); }
+});
+</script>
+</body>
+</html>

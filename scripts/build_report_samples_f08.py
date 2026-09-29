@@ -22,7 +22,8 @@ Writes to ``data/interim/reports/`` (gitignored):
 
 Checks printed at the end: (c) must surface the injected mistakes (bar recall) and the jitter
 (timing steadiness worse than (a)); (d) must say "too flat"; (e) must mark the fixed mistake's
-bar "strong" as a recurring error and must not promote any random slip.
+bar "strong" as a recurring error and must not promote any random slip. F-08c: each sample's
+per-bar expert check (experts, suppressed / down-tiered bars).
 """
 
 from __future__ import annotations
@@ -200,6 +201,15 @@ def main() -> None:
     checks["e_pass"] = bool(fb["tier"] == "strong" and fb["recurring"]
                             and rec_bars == [E_BAR_LABEL] and not checks["e_slip_bars_promoted"]
                             and rep_e["practise"][0]["bars"] == [lab.index(E_BAR_LABEL)])
+    # F-08c: the per-bar expert check in every sample
+    for k, r in (("a", rep_a), ("b", rep_b), ("c", rep_c), ("d", rep_d), ("e", rep_e)):
+        xc = r["correctness"].get("expert_check") or {}
+        checks[f"{k}_expert_check"] = {
+            "n_experts": xc.get("n_expert_performances"), "provenance": xc.get("provenance"),
+            "n_bars_checked": xc.get("n_bars_checked"),
+            **{s: xc.get(f"bars_{s}", []) for s in ("suppressed", "down_tiered", "confirmed",
+                                                     "unchecked")}}  # fmt: skip
+        checks[f"{k}_practise"] = [f"[{d['tier']}] {d['text']}" for d in r["practise"]]
     checks["files"] = {k: [str(p) for p in v] for k, v in out.items()}
     (OUT / "sample_checks.json").write_text(json.dumps(checks, indent=1, default=float))
     print(json.dumps(checks, indent=1, default=float))

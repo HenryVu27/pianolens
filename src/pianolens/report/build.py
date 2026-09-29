@@ -63,8 +63,9 @@ from pianolens.features.interpretation import (
 from pianolens.features.tempo import _beats_per_bar, _measure_info, matched_onsets, tempo_model
 from pianolens.report import calibration as cal
 
-__all__ = ["SCHEMA", "ReportConfig", "ReportInputs", "build_report", "error_signatures",
-           "expert_error_keys",           "recurring_errors", "to_jsonable"]
+__all__ = ["SCHEMA", "ReportConfig", "ReportInputs", "bar_error_table", "build_report",
+           "error_signatures", "expert_bar_limits", "expert_error_keys", "recurring_errors",
+           "to_jsonable"]
 
 SCHEMA = "pianolens.report/1"
 TIERS = ("none", "notable", "strong")
@@ -90,6 +91,11 @@ class ReportConfig:
         recurring_min_experts: expert performances of the same score (``correctness_refs``
             plus ``same_score_refs``) needed to filter checker artefacts; with fewer, recurring
             errors are listed but not promoted.
+        expert_check_min_refs: per-bar expert check (F-08c): experts that must cover a bar
+            before its correctness tier is checked against them.
+        expert_check_q: per-bar expert quantiles that notable / strong must exceed.
+        extras_low_confidence: extra notes do not count towards correctness tiers (shown only).
+            None = automatic: True for transcribed input (A-01, ``rules/audio.md``).
     """
 
     interpretation: InterpretationConfig = field(default_factory=InterpretationConfig)
@@ -101,6 +107,9 @@ class ReportConfig:
     recurring_min_takes: int = cal.RECURRING_MIN_TAKES
     recurring_kinds: tuple[str, ...] = cal.RECURRING_KINDS
     recurring_min_experts: int = cal.RECURRING_MIN_EXPERTS
+    expert_check_min_refs: int = cal.EXPERT_CHECK_MIN_REFS
+    expert_check_q: tuple[float, float] = cal.EXPERT_CHECK_Q
+    extras_low_confidence: bool | None = None
 
 
 @dataclass(eq=False)
@@ -122,6 +131,10 @@ class ReportInputs:
         takes: repeated takes of the same passage by the same player (aligned performances).
         correctness_refs: expert performances aligned to the same score and repeat path, used
             only to remove checker artefacts from recurring errors (with ``same_score_refs``).
+        expert_bar_tables: per-bar error counts of expert performances of the same score
+            (:func:`bar_error_table`), for the per-bar expert check (F-08c). Their capture
+            method must match the target's (transcribed experts for transcribed input).
+        expert_bar_provenance: capture method of ``expert_bar_tables``.
         paths: file paths for the header (``score``, ``performance``, ``takes``, ...).
         notes: extra provenance notes for the header.
     """
@@ -136,6 +149,8 @@ class ReportInputs:
     same_score_provenance: str = "unknown"
     takes: Sequence[Any] = ()
     correctness_refs: Sequence[Any] = ()
+    expert_bar_tables: Sequence[pd.DataFrame] = ()
+    expert_bar_provenance: str = "unknown"
     paths: dict[str, Any] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
 
@@ -341,7 +356,18 @@ def timing_noise_bars(target_timing: np.ndarray, X: np.ndarray, bar: np.ndarray,
 # =========================================================================== sections
 
 
-def _correctness_tier(n_wrong: int, n_missed_extra: int, n_notes: int) -> tuple[str, float]:
+def global_correctness_limits(extras: bool = True) -> dict[str, float]:
+    """The expert limits for a bar's correctness quantities (``calibration.
+    CORRECTNESS_EXPERT_BARS``): wrong-pitch count, and missed (+ extra) notes per graded score
+    note. ``extras=False`` (extra notes low confidence) uses the missed-only limits."""
+    c = cal.CORRECTNESS_EXPERT_BARS
+    k = "missed_extra_per_note" if extras else "missed_per_note"
+    return {"wrong_q95": c["wrong_pitch_q95"], "wrong_q99": c["wrong_pitch_q99"],
+            "me_q95": c[f"{k}_q95"], "me_q99": c[f"{k}_q99"]}
+
+
+def _correctness_tier(n_wrong: int, n_missed_extra: int, n_notes: int,
+                      limits: dict[str, float] | None = None) -> tuple[str, float]:
     """Tier of a bar's correctness errors, and its magnitude (multiple of the notable limit).
 
     Both quantities are compared with what the same pipeline reports on clean expert playing
@@ -349,28 +375,100 @@ def _correctness_tier(n_wrong: int, n_missed_extra: int, n_notes: int) -> tuple[
     experts' 95th percentile, strong beyond the 99th. So a single wrong note is shown in the
     timeline but not tiered (7% of expert bars have one); two wrong notes are notable and three
     strong. The bar tier is the higher of the wrong-pitch and the missed + extra tiers.
+    ``limits`` (keys ``wrong_q95``, ``wrong_q99``, ``me_q95``, ``me_q99``) replaces the global
+    limits, e.g. raised to the per-bar expert quantiles (:func:`expert_bar_limits`).
     """
-    c = cal.CORRECTNESS_EXPERT_BARS
+    lim = limits or global_correctness_limits()
     rate = n_missed_extra / n_notes if n_notes > 0 else float("nan")
-    t1 = _tier(float(n_wrong), c["wrong_pitch_q95"], c["wrong_pitch_q99"])
-    t2 = _tier(rate, c["missed_extra_per_note_q95"], c["missed_extra_per_note_q99"])
+    t1 = _tier(float(n_wrong), lim["wrong_q95"], lim["wrong_q99"])
+    t2 = _tier(rate, lim["me_q95"], lim["me_q99"])
     tier = max(t1, t2, key=_TIER_RANK.get)
-    mag = max(n_wrong / c["wrong_pitch_q95"],
-              rate / c["missed_extra_per_note_q95"] if np.isfinite(rate) else 0.0)
+    mag = max(n_wrong / lim["wrong_q95"],
+              rate / lim["me_q95"] if np.isfinite(rate) and lim["me_q95"] > 0 else 0.0)
     return tier, float(mag)
 
 
-def _correctness_section(ap: Any, labels: list[str]) -> tuple[dict, pd.DataFrame, Any]:
+def bar_error_table(cr: Any, labels: Sequence[str]) -> pd.DataFrame:
+    """Per-bar error counts of one performance, keyed by bar label (:func:`bar_labels`), so
+    performances that take different repeat paths line up bar by bar. ``cr``: its
+    :class:`~pianolens.features.correctness.CorrectnessResult`. Columns: ``label``,
+    ``n_score_notes`` (graded), ``n_wrong_pitch``, ``n_missed``, ``n_extra``."""
+    b = cr.bars
+    return pd.DataFrame({"label": list(labels),
+                         "n_score_notes": b["n_score_notes"].to_numpy(int),
+                         "n_wrong_pitch": b["n_wrong_pitch"].to_numpy(int),
+                         "n_missed": b["n_missed"].to_numpy(int),
+                         "n_extra": b["n_extra"].to_numpy(int)})  # fmt: skip
+
+
+def expert_bar_limits(expert_tables: Sequence[pd.DataFrame], labels: Sequence[str],
+                      extras: bool = True, q: tuple[float, float] = cal.EXPERT_CHECK_Q,
+                      min_refs: int = cal.EXPERT_CHECK_MIN_REFS) -> pd.DataFrame:
+    """Per-bar expert error distribution (F-08c): for each bar label of the target, the number of
+    expert performances that played the bar and the ``q`` quantiles of their wrong-pitch count
+    and of their missed (+ extra, if ``extras``) notes per graded score note there.
+
+    Bars covered by fewer than ``min_refs`` experts get NaN quantiles (no check). A bar whose
+    target value is within these quantiles matches what experts of the same score show there:
+    most such bars are score, edition or checker artefacts (Op. 64 No. 2, A-01), not mistakes.
+    """
+    rows = {lab: [] for lab in labels}
+    for t in expert_tables:
+        for r in t.itertuples(index=False):
+            if r.label in rows and r.n_score_notes > 0:
+                me = r.n_missed + (r.n_extra if extras else 0)
+                rows[r.label].append((r.n_wrong_pitch, me / r.n_score_notes))
+    out = []
+    for lab in labels:
+        v = np.array(rows[lab], float).reshape(-1, 2)
+        ok = len(v) >= min_refs
+        qq = (np.quantile(v, q, axis=0) if ok else np.full((2, 2), np.nan))
+        out.append({"label": lab, "n_experts": len(v), "wrong_q95": qq[0, 0],
+                    "wrong_q99": qq[1, 0], "me_q95": qq[0, 1], "me_q99": qq[1, 1]})
+    return pd.DataFrame(out)
+
+
+def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
+                         expert: pd.DataFrame | None = None
+                         ) -> tuple[dict, pd.DataFrame, Any]:
+    """Correctness per bar with tiers. ``extras=False``: extra notes are shown but do not count
+    towards the tier (low confidence). ``expert`` (:func:`expert_bar_limits`): per-bar expert
+    check; the tier before it is kept in ``tier_global``."""
     c = correctness(ap)
     b = c.bars.copy()
-    b["n_missed_extra"] = b["n_missed"] + b["n_extra"]
-    tiers = [_correctness_tier(int(w), int(me), int(n)) for w, me, n in zip(
+    b["n_missed_extra"] = b["n_missed"] + (b["n_extra"] if extras else 0)
+    glim = global_correctness_limits(extras)
+    tiers = [_correctness_tier(int(w), int(me), int(n), glim) for w, me, n in zip(
         b["n_wrong_pitch"], b["n_missed_extra"], b["n_score_notes"], strict=True)]
-    b["tier"] = [t for t, _ in tiers]
+    b["tier_global"] = [t for t, _ in tiers]
+    b["tier"] = b["tier_global"]
     b["magnitude"] = [m for _, m in tiers]
+    b["n_experts"] = 0
+    b["expert_check"] = np.where(b["tier_global"] != "none", "unchecked", "none")
+    if expert is not None and len(expert) == len(b):
+        new_t, new_m, stat = [], [], []
+        for i in range(len(b)):
+            e = expert.iloc[i]
+            tg = b["tier_global"].iat[i]
+            if not np.isfinite(e["wrong_q95"]):
+                new_t.append(tg)
+                new_m.append(b["magnitude"].iat[i])
+                stat.append("unchecked" if tg != "none" else "none")
+                continue
+            lim = {k: max(glim[k], float(e[k])) for k in glim}
+            t, m = _correctness_tier(int(b["n_wrong_pitch"].iat[i]),
+                                     int(b["n_missed_extra"].iat[i]),
+                                     int(b["n_score_notes"].iat[i]), lim)
+            new_t.append(t)
+            new_m.append(m)
+            stat.append("none" if tg == "none" else "confirmed" if t == tg else
+                        "suppressed" if t == "none" else "down_tiered")
+        b["tier"], b["magnitude"], b["expert_check"] = new_t, new_m, stat
+        b["n_experts"] = expert["n_experts"].to_numpy(int)
     s = dict(c.summary)
     s["n_bars_strong"] = int((b["tier"] == "strong").sum())
     s["n_bars_notable"] = int((b["tier"] == "notable").sum())
+    s["extras_counted"] = bool(extras)
     s["expert_calibration"] = dict(cal.CORRECTNESS_EXPERT_BARS)
     er = _f(s.get("error_rate"))
     s["error_rate_tier"] = _tier(er, cal.CORRECTNESS_EXPERT_BARS["error_rate_q95"],
@@ -887,7 +985,20 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
     errors: dict[str, str] = {}
     perf = ap.performance
 
-    corr_summary, cbars, cres = _correctness_section(ap, labels)
+    extras = not (cfg.extras_low_confidence if cfg.extras_low_confidence is not None
+                  else inp.provenance == "transcribed")
+    expert = None
+    if inp.expert_bar_tables:
+        expert = expert_bar_limits(inp.expert_bar_tables, labels, extras, cfg.expert_check_q,
+                                   cfg.expert_check_min_refs)
+    corr_summary, cbars, cres = _correctness_section(ap, labels, extras, expert)
+    ec = {"n_expert_performances": len(inp.expert_bar_tables),
+          "provenance": inp.expert_bar_provenance if inp.expert_bar_tables else None,
+          "min_refs": cfg.expert_check_min_refs, "quantiles": list(cfg.expert_check_q),
+          "n_bars_checked": int((cbars["n_experts"] >= cfg.expert_check_min_refs).sum())}
+    for st in ("suppressed", "down_tiered", "confirmed", "unchecked"):
+        ec[f"bars_{st}"] = [labels[i] for i in np.flatnonzero(cbars["expert_check"] == st)]
+    corr_summary["expert_check"] = ec
     tc = tempo_model(ap)
     same_refs = []
     for r in inp.same_score_refs:
@@ -957,6 +1068,9 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
                             "n_missed": int(c["n_missed"]), "n_extra": int(c["n_extra"]),
                             "n_errors": int(c["n_errors"]), "tier": c["tier"],
                             "magnitude": _f(c["magnitude"]),
+                            "tier_global": c["tier_global"],
+                            "expert_check": c["expert_check"],
+                            "n_experts": int(c["n_experts"]),
                             "recurring": (takes or {}).get("recurring", {}).get(labels[i], [])},
         }  # fmt: skip
         for ch in ("tempo", "velocity"):
@@ -1024,7 +1138,8 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
                        if inp.same_score_refs else None},
         "confidence": {"velocity": vconf,
                        "alignment_suspect": bool(corr_summary.get("alignment_suspect")),
-                       "transcribed": inp.provenance == "transcribed"},
+                       "transcribed": inp.provenance == "transcribed",
+                       "extra_notes": "high" if extras else "low"},
         "correctness": corr_summary,
         "tempo": {k: _f(tc.summary.get(k)) for k in ("tempo_bpm_geomean", "tempo_bpm_overall",
                                                      "tempo_log_sd", "jitter_rms_ms")},

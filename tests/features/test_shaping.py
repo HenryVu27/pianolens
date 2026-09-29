@@ -653,3 +653,38 @@ def test_phrase_tempo_convex_arcs_and_unmatched_notes():
     # default boundaries come from the basis (proxy) and still run
     d = phrase_tempo_shaping(ap).summary
     assert d["n_phrases"] >= 1 and np.isfinite(d["arc_r2_within"])
+
+
+def test_merge_short_phrases_known_answer():
+    from pianolens.features.shaping import merge_short_phrases
+
+    # 3/4, phrases of 4 bars (12 beats) split into 2-bar halves -> merged back to 4 bars
+    halves = [0, 6, 12, 18, 24, 30]
+    assert merge_short_phrases(halves, 4, 3, 36) == [0.0, 12.0, 24.0]
+    # already long enough: unchanged; boundaries past the end are dropped
+    assert merge_short_phrases([0, 12, 24, 40], 4, 3, 36) == [0.0, 12.0, 24.0]
+    # a short phrase merges with its shorter neighbour (here the previous 1-bar phrase ...
+    # after the first merge the 2-bar phrase joins the following one on a tie)
+    assert merge_short_phrases([0, 12, 15, 18, 30], 4, 3, 42) == [0.0, 12.0, 30.0]
+    # the last phrase merges into the previous one; a single phrase is never removed
+    assert merge_short_phrases([0, 12, 21], 4, 3, 24) == [0.0, 12.0]
+    assert merge_short_phrases([0], 4, 3, 6) == [0.0]
+
+
+def test_merge_short_phrases_restores_concave_share():
+    """Concave 4-bar arcs marked as 2-bar halves: merging recovers the true phrases.
+
+    (Half of a parabola has the same curvature sign, so halving alone does not flip ``c2``;
+    the merge matters for the level of the arcs and for the shifted null.)"""
+    from pianolens.features.shaping import merge_short_phrases, phrase_tempo_shaping
+
+    part = build_part(melody_events(32))
+    bounds = list(range(0, 128, 16))  # 4-bar phrases in 4/4
+    ap = manual_ap(part, onset=arc_onsets(bounds, 0.15))
+    halves = sorted([*bounds, *[b + 8 for b in bounds]])
+    split = phrase_tempo_shaping(ap, halves).summary
+    merged = merge_short_phrases(halves, 4, 4, 128)
+    assert merged == [float(b) for b in bounds]
+    m = phrase_tempo_shaping(ap, merged).summary
+    assert split["n_phrases"] == 2 * m["n_phrases"]
+    assert m["concave_share"] == 1.0 and m["concave_excess"] > 0.2

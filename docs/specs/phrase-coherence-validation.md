@@ -504,3 +504,80 @@ Vienna K.331/1, mean over the 22 pianists:
 - The ±2-bar null is one choice. For phrases of 4 bars, a 2-bar shift is maximally out of phase;
   for 8-bar phrases it is not.
 - The Wilcoxon tests treat movements as independent.
+
+# F-05e: phrase measures with LLM boundaries
+
+Measured 2026-09-28 by `feature-engineer`. Pre-registered experiment
+`experiments/2026-09-28-F-05e-llm-phrase-measures/` (README has the rule, all tables, the run
+record and one disclosed deviation). Code: `shaping.merge_short_phrases` (new) and the one-off
+`run.py`. Status: Provisional until `eval-auditor` reviews it.
+
+## Answer
+
+- **Yes, on average, LLM boundaries recover most of the tempo-shaping signal that DCML
+  boundaries give.** Over the 8 movements that have both blind LLM annotations (R-08a/b/d) and
+  aligned performances, mean `concave_excess` is 0.418 with LLM phrase starts against 0.473 with
+  DCML starts: a paired difference of −0.055 (t [−0.138, +0.027]), within the pre-registered
+  −0.10 margin by point estimate. LLM beats the F-05c cadence detector in all 8 (+0.221,
+  t [+0.068, +0.374]).
+- **On Batik Mozart they match DCML** (0.437 vs 0.452, 5 movements, 4 LLM runs each). F-05c's
+  held-out reference (+0.42 annotated vs +0.21 detector) is reproduced on these 5: 0.452 DCML,
+  0.293 detector.
+- **On the 3 Romantic pieces with performances, LLM boundaries lose 0.124** (0.385 vs 0.508;
+  Tchaikovsky op. 37a/6 −0.147, Chopin op. 7/4 −0.210, Träumerei −0.015), more than the margin,
+  though still far above the detector (0.036). n = 3, transcribed PianoCoRe performances: a
+  warning, not a result.
+- **The over-segmentation fix is not needed on this evidence, and merging hurts on Romantic
+  pieces.** Merging LLM phrases shorter than 4 bars leaves Batik unchanged (+0.011) but lowers the
+  Romantic mean by 0.111; merging to 8 bars destroys the signal (−0.265 vs DCML). Two reasons:
+  - Half of a parabola has the same curvature sign, so marking a concave arc as two halves does
+    not make the halves convex. `concave_excess` is already fairly tolerant of a split phrase
+    (synthetic test `test_merge_short_phrases_restores_concave_share`).
+  - The LLM's losses are not about level. The oracle grouping (for each DCML start, the nearest
+    LLM start within a bar) recovers DCML's value almost exactly (−0.009). What costs signal is
+    where the LLM puts its extra and missing boundaries, which a length rule cannot find.
+  - Caveat: R-08d's clearly over-segmented piece (Liszt S.160/2, predicted/DCML ≈ 2.7) has no
+    aligned performances, so the case the merge was designed for was not tested.
+- **Phrase-aware coherence (tempo R² without markings) cannot be validated here.** On these 8
+  units DCML boundaries do not beat the proxy (+0.015, 4/8), so there is no signal to recover;
+  LLM − DCML is −0.017.
+
+## Recommendation
+
+1. For the H4 / R-09 secondary tempo channel, LLM phrase starts may replace the cadence
+   detector's (DECISIONS 2026-09-28, after F-05c) on Classical sonata movements: there they match
+   DCML. Use them raw, **without** `merge_short_phrases`.
+2. On Romantic repertoire, expect a loss of about a quarter of the DCML excess (0.12 of 0.51 on 3
+   pieces). LLM boundaries are still much better than the detector there. Report the boundary
+   source with every value, and do not compare excesses across boundary sources.
+3. `merge_short_phrases` stays available as an opt-in tool; it is not a default. A piece that is
+   clearly over-segmented (predicted/DCML phrase count above about 2) was not tested.
+4. Structural-coherence tempo R² stays limited to annotated phrases (F-05b/c), and F-05e adds no
+   evidence for LLM boundaries there.
+
+## Data and method (short)
+
+- LLM phrase events: R-08a (M1-M5), R-08b B1, B2 and the disguised run A (Batik, 4 runs), R-08d
+  A and B (R1-R3). Mapped with the scorers' own `map_events`. R-08c (J. C. Bach) has no
+  performances.
+- Performances: Batik (1 per movement); PianoCoRe tier A on the full refined score, 30 drawn per
+  piece (seed 20261002; Chopin op. 7/4 has 18). Grieg op. 57/1 and Liszt S.160/2 have no tier A
+  performances. MazurkaBL has no op. 7/4.
+- PianoCoRe boundaries are mapped by DTW over unique onsets (pitch-set Jaccard). Boundary
+  pitch-set agreement: 0.94-0.97 on the Romantic pieces.
+- Harness: the Batik DCML, detector, proxy and grid rows equal F-05c's exactly.
+
+## Code changes
+
+- `features/shaping.py`: `merge_short_phrases(starts, min_bars, beats_per_bar, end_beat)`,
+  which merges the shortest phrase with its shorter neighbour until every phrase is at least
+  `min_bars` bars long.
+- `tests/features/test_shaping.py`: a known-answer test of the merge rule, and a synthetic
+  split-arc test (halves keep a concave sign; merging restores the true phrases).
+
+## Not verified
+
+- n = 8 units; 5 are one pianist. Romantic n = 3, transcribed. Run-to-run variation of the LLM
+  excess reaches 0.2 in some movements (K.533/1, Tchaikovsky).
+- Over-segmented pieces (R-08d R5-like) are untested for tempo.
+- The ±2-bar null is weaker for long phrases, which partly explains the 8-bar merge loss.

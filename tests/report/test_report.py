@@ -326,3 +326,161 @@ def test_expert_errors_are_not_recurring():
     assert recurring_errors(takes, 2) == {"3": {key: 2}}
     ex = expert_error_keys([{"3": {key}}, {"4": {("extra", 60)}}])
     assert recurring_errors(takes, 2, exclude=ex) == {}
+
+
+# ---------------------------------------------------------------- F-08c: per-bar expert check
+
+
+def _expert_tables(bar_label: str, wrong: list[int], n_notes: int = 12, extra: int = 0):
+    """One per-bar table per expert: ``wrong[k]`` wrong notes at ``bar_label``, clean elsewhere."""
+    import pandas as pd
+
+    labels = [str(i + 1) for i in range(N_BARS)]
+    out = []
+    for w in wrong:
+        t = pd.DataFrame({"label": labels, "n_score_notes": n_notes, "n_wrong_pitch": 0,
+                          "n_missed": 0, "n_extra": 0})
+        t.loc[t["label"] == bar_label, ["n_wrong_pitch", "n_extra"]] = [w, extra]
+        out.append(t)
+    return out
+
+
+def test_expert_bar_limits_known_answer():
+    from pianolens.report.build import expert_bar_limits
+
+    lab = str(WRONG_BAR + 1)
+    labels = [str(i + 1) for i in range(N_BARS)]
+    lim = expert_bar_limits(_expert_tables(lab, [0, 1, 2, 3, 4, 5]), labels, q=(0.95, 0.99),
+                            min_refs=5).set_index("label")
+    assert lim.loc[lab, "n_experts"] == 6
+    # linear quantile of 0..5: 0.95 * 5 = 4.75, 0.99 * 5 = 4.95
+    assert lim.loc[lab, "wrong_q95"] == pytest.approx(4.75)
+    assert lim.loc[lab, "wrong_q99"] == pytest.approx(4.95)
+    assert lim.loc["1", "wrong_q95"] == 0 and lim.loc["1", "me_q95"] == 0
+    # fewer than min_refs experts at a bar: no check there
+    few = expert_bar_limits(_expert_tables(lab, [3, 3, 3, 3]), labels, min_refs=5)
+    assert few["wrong_q95"].isna().all() and (few["n_experts"] == 4).all()
+    # a bar an expert did not play (another repeat path) is not counted for it
+    t = _expert_tables(lab, [3] * 5)
+    t[0] = t[0][t[0]["label"] != lab]
+    assert expert_bar_limits(t, labels).set_index("label").loc[lab, "n_experts"] == 4
+
+
+@pytest.mark.parametrize("wrong, check, tier", [
+    ([3] * 6, "suppressed", "none"),  # experts show the same 3 wrong notes: score artefact
+    ([2] * 20 + [4], "down_tiered", "notable"),  # q95 2, q99 3.6: 3 wrong notes -> notable
+    ([0, 0, 0, 1, 1, 0], "confirmed", "strong"),  # experts clean here: stays strong
+    ([3] * 4, "unchecked", "strong"),  # too few experts: global tier
+])  # fmt: skip
+def test_expert_check_suppresses_or_down_tiers(wrong, check, tier):
+    lab = str(WRONG_BAR + 1)
+    inp = ReportInputs(ap=_target(), provenance="disklavier",
+                       expert_bar_tables=_expert_tables(lab, wrong),
+                       expert_bar_provenance="disklavier")
+    rep = to_jsonable(build_report(inp, CFG))
+    b = rep["bars"][WRONG_BAR]["correctness"]
+    assert b["n_wrong_pitch"] == 3 and b["tier_global"] == "strong"
+    assert b["expert_check"] == check and b["tier"] == tier
+    xc = rep["correctness"]["expert_check"]
+    assert xc["n_expert_performances"] == len(wrong)
+    assert xc[f"bars_{check}"] == [lab]
+    in_prac = any(d["category"] == "correctness" for d in rep["practise"])
+    assert in_prac == (tier != "none")
+    card = [c for c in rep["summary"] if c["title"] == "Correctness"][0]
+    html = render_html(rep)
+    if check == "suppressed":
+        assert any("matches expert recordings here (likely score/edition artefact)" in f
+                   for f in card["findings"])
+        assert "likely score/edition artefact" in html
+        assert rep["correctness"]["n_bars_strong"] == 0
+    if check == "down_tiered":
+        d = [d for d in rep["practise"] if d["category"] == "correctness"][0]
+        assert "also show errors here" in d["text"]
+    if check == "unchecked":
+        assert any("No per-bar expert check" in n for n in rep["confidence"]["notes"])
+
+
+def _with_extra_notes(ap, bar: int, k: int):
+    """Add ``k`` short extra notes (a semitone above RH notes) inside measure ``bar``."""
+    idx = [i for i, (b, _, _, st, _) in enumerate(NOTES) if st == 1 and 4 * bar <= b < 4 * bar + 4]
+    pn = ap.performance.notes
+    new = pn[idx[:k]].copy()
+    new["pitch"] += 1
+    new["onset_sec"] += 0.01
+    new["id"] = [f"x{i}" for i in range(len(new))]
+    ap.performance.notes = np.concatenate([pn, new])
+    pairs = [tuple(p) for p in ap.alignment.pairs.tolist()] + [("insertion", "", f"x{i}")
+                                                               for i in range(len(new))]
+    ap.alignment = types.Alignment(np.array(pairs, dtype=types.ALIGNMENT_DTYPE),
+                                   ap.alignment.score_id, ap.alignment.performance_id, False,
+                                   "test")
+    return ap
+
+
+def test_extra_notes_are_not_practised_on_transcribed_input():
+    """A-01 / rules/audio.md: extra notes from phone / transcribed input are low confidence.
+    8 extras in a 12-note bar (0.67 per note, beyond the expert 99th percentile of 0.634) are
+    strong on key-sensor input, but not ranked on transcribed input; still in the timeline."""
+    bar = 8
+    reps = {}
+    for prov in ("disklavier", "transcribed"):
+        ap = build(NOTES, _tempo_fn(0.25), pid=f"x_{prov}")
+        ap.performance.provenance = prov
+        reps[prov] = to_jsonable(build_report(ReportInputs(
+            ap=_with_extra_notes(ap, bar, 8), provenance=prov), CFG))
+    d, t = reps["disklavier"], reps["transcribed"]
+    assert d["bars"][bar]["correctness"]["n_extra"] == 8
+    assert d["bars"][bar]["correctness"]["tier"] == "strong"
+    assert d["confidence"]["extra_notes"] == "high"
+    assert t["bars"][bar]["correctness"]["n_extra"] == 8
+    assert t["bars"][bar]["correctness"]["tier"] == "none"
+    assert t["confidence"]["extra_notes"] == "low"
+    assert t["correctness"]["extras_counted"] is False
+    assert not any(d["category"] == "correctness" for d in t["issues"])
+    assert any("Extra notes are low confidence" in n for n in t["confidence"]["notes"])
+    assert "extra notes: low confidence" in render_html(t)
+
+
+def test_transcribed_missed_notes_still_tiered():
+    """Extras are dropped from the tier on transcribed input, missed notes are not: 3 wrong
+    notes stay strong, and the practise text does not mention extra notes."""
+    ap = _with_extra_notes(_target("transcribed"), WRONG_BAR, 2)
+    rep = to_jsonable(build_report(ReportInputs(ap=ap, provenance="transcribed"), CFG))
+    b = rep["bars"][WRONG_BAR]["correctness"]
+    assert b["n_extra"] == 2 and b["tier"] == "strong"
+    item = [d for d in rep["practise"] if d["category"] == "correctness"][0]
+    assert "3 wrong notes" in item["text"] and "extra" not in item["text"]
+
+
+def test_report_from_files_takes_expert_tables(tmp_path):
+    """Precomputed expert tables go through ``report_from_files`` (the A-01 floor path)."""
+    import pandas as pd
+    import partitura as pt
+
+    from pianolens.report import report_from_files
+    from tests.align.test_align import make_part, make_perf, melody
+
+    pitches = [60, 62, 64, 65, 67, 69, 71, 72] * 4
+    xml = tmp_path / "s.musicxml"
+    pt.save_musicxml(make_part(melody(pitches)), str(xml))
+    played = list(pitches)
+    played[8], played[9] = played[8] + 1, played[9] + 1  # 2 wrong notes in bar 3: notable
+    na = make_perf(np.arange(len(played)) * 0.5, played)
+    mid = tmp_path / "p.mid"
+    pt.save_performance_midi(pt.performance.PerformedPart.from_note_array(na), str(mid))
+    labels = [str(i + 1) for i in range(8)]
+    tabs = []
+    for _ in range(6):
+        t = pd.DataFrame({"label": labels, "n_score_notes": 4, "n_wrong_pitch": 0,
+                          "n_missed": 0, "n_extra": 0})
+        t.loc[2, "n_wrong_pitch"] = 2
+        tabs.append(t)
+    kw = dict(score=xml, provenance="transcribed", use_pianocore=False, config=CFG)
+    plain = report_from_files(mid, expert_check=False, **kw)
+    checked = report_from_files(mid, expert_tables=tabs, **kw)
+    assert plain["bars"][2]["correctness"]["tier"] == "notable"
+    assert checked["bars"][2]["correctness"]["tier"] == "none"
+    assert checked["bars"][2]["correctness"]["expert_check"] == "suppressed"
+    assert checked["correctness"]["expert_check"]["provenance"] == "transcribed"
+    card = [c for c in checked["summary"] if c["title"] == "Correctness"][0]
+    assert any("matches expert transcriptions here" in f for f in card["findings"])

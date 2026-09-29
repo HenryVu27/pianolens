@@ -216,7 +216,7 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   - Result: R-04 11 timing-coherence rows -> NaN, H3 verdicts unchanged; R-09 23-24 analysis rows
     per channel -> NaN, verdicts unchanged (velocity secondary effect 0.142 -> 0.019). Details in
     `.claude/agent-memory/feature-engineer/coherence-f05d.md`. `takes.py` n_blocks not changed.
-- **F-05e Phrase measures with LLM boundaries** (M). blocked_by: R-08d.
+- **F-05e Phrase measures with LLM boundaries** (M). blocked_by: R-08d. owner: feature-engineer. status: done 2026-09-28, verdict Provisional (needs eval-auditor; experiment `experiments/2026-09-28-F-05e-llm-phrase-measures/`, spec F-05e section). LLM starts recover DCML concave_excess by point estimate (-0.055 over 8 units; Batik -0.014, Romantic -0.124 on 3); the 4-bar merge does not help (-0.090) and hurts on Romantic pieces; use raw LLM starts; coherence R2 not validatable (DCML ~ proxy here). paths: `src/pianolens/features/shaping.py`, `tests/features/`, `experiments/2026-09-28-F-05e-llm-phrase-measures/`, `docs/specs/phrase-coherence-validation.md`.
   - Validate `phrase_tempo_shaping` (`concave_excess`) and phrase-aware coherence using LLM
     boundaries against DCML boundaries on Batik, J.C. Bach and the Romantic corpora where
     performances exist (MazurkaBL / PianoCoRe mazurkas).
@@ -243,11 +243,30 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   - Implement the recurring-error promotion and correctness-first ranking (DECISIONS 2026-09-28,
     after F-08).
 - **F-08c Per-bar expert check for single-take reports** (S). blocked_by: A-01.
+  owner: feature-engineer. status: in progress.
   - Suppress correctness flags at bars where expert transcriptions of the same score also show
     errors, as in Op. 64 No. 2 bars 78-79.
-- **A-01b Phone-audio extra-note filter** (M). blocked_by: A-01.
+- **A-01b Phone-audio extra-note filter** (M). blocked_by: A-01. owner: audio-engineer. status: in progress
+  (2026-09-28).
   - Uses register, fixed repeated pitches and the absence of a plausible source note.
   - Validate on audio with ground truth first (BL-13 / PianoVAM).
+- **P-01 Audible A/B comparison engine** (M). blocked_by: F-08, A-01. owner: feature-engineer.
+  status: done (2026-09-28; not committed). Integration into the report/app is P-02.
+  - For each flagged bar or passage in a report, produce aligned audio clips:
+    - the user's original audio cut to those bars (from alignment timestamps);
+    - the user's performance re-rendered with the fixed S-02 piano;
+    - a "typical expert": the reference whose curves are closest to the expert median in that
+      window, rendered with the same piano;
+    - optionally a second, contrasting expert.
+  - Clips get loudness matching, short fades, and pre- and post-roll of about 1 bar.
+  - Module: `src/pianolens/compare/`.
+  - Outputs are local only (DECISIONS: personal data and non-commercial reference data).
+- **P-02 Local web app** (L). blocked_by: P-01, F-08c. owner: feature-engineer. status: in progress
+  (2026-09-28).
+  - Upload audio or MIDI, choose a supported piece (searchable list of PianoCoRe/ASAP pieces with
+    scores and at least 50 references), run the pipeline with progress, and show the report with an
+    embedded A/B player (loop, instant A/B switch, curves for the window).
+  - Runs on localhost only, no external calls. Module: `src/pianolens/app/`.
 - **O-01 OWNER: Henry records MIDI** (S). Three takes each of one or two passages from a piece in
   (n)ASAP / PianoCoRe. Needs a piece choice and MIDI out.
 
@@ -305,6 +324,8 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
     - single-rater parity, on non-tied pairs; MuQ roughly matches one rater under leave-work-out;
     - panel-level split-half reliability of the mean.
 - **R-05 H8: recording-context shortcut check** (M). blocked_by: D-05 or a substitute design.
+  owner: ml-researcher. status: done, Provisional, awaiting eval-auditor (2026-09-28; substitute design: MAJEPPA MIDI rendered under simulated contexts). paths: `experiments/2026-09-28-R-05-context-shortcut/`.
+  - Result: H8 supported in simulation. Confounded AUC 0.943 vs 0.870 with context fixed (+0.073); 0.730 when test contexts are permuted; negative control +0.002.
   - MAJEPPA is public on Hugging Face (`kkwsts/MAJEPPA-Dataset`): MIDI plus context labels, no audio.
   - Getting audio means fetching it from YouTube. That is an OWNER decision.
   - Substitute: render MAJEPPA MIDI through several room and mic simulations, then test whether an
@@ -637,3 +658,5 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   `data/interim/henry_takes/` and any new scripts or `src/pianolens/audio/` files. No other agents
   are running.
 - 2026-09-28: A-01 (audio-engineer), resumed; reused all transcriptions and the baseline run. Controlled check (3 MAESTRO Disklavier perfs, S-02 render, phone sim + AAC): transcription adds +1.7 to +3.3 pts F-02 error rate, the phone sim under 1 pt; onset rsd 2.3 ms Transkun / 4.4 ms Aria. Floor (150 PianoCoRe refs): Transkun median error 6.7%, extras 1.3%. Henry's takes: wrong/missed near floor, extras 15-29% on 3 of 5 takes (both models agree), up to 19.5% of score notes at >= G6 on fixed pitches; not reproduced by the phone sim, cause unverified. 10 F-08 reports (Transkun + Aria cross-check) with floor and suspect-extras notes. Timing/tempo tiers stable across transcribers, velocity not. Spec `docs/specs/phone-audio-baseline.md`. pytest 439 passed, 1 skipped; ruff clean. Not committed.
+- 2026-09-28: P-01 (feature-engineer). `src/pianolens/compare/` (windows, timemap, experts, clips, engine, player + template), `scripts/build_compare_p01.py`, `tests/compare/` (+10). Reads only the report JSON. Up to 8 windows per report (strong first, merged to <= 4 bars, 1 bar pre/post), clips: user audio cut by isotonic alignment time map, user re-render (S-02, 44.1 kHz), typical expert (closest to window median on tempo/velocity shape + tempo level), contrasting expert (q90 distance); loudness-matched, 20 ms fades, mono MP3 96k; self-contained A/B player (bar-synced switching, loop, light/dark, no requests). Run on Henry's 5 Transkun reports + F-08 (a), (c): 56 windows, 208 clips, all 4 kinds in every Henry window; clip length error < 0.02 ms, ffmpeg decode within 0.9 ms; expert score-span match 1.0 (112/112); original audio vs render lag 0 ms (r 0.78-0.88) on all 5 takes; onset-train lag within 50 ms for 100% of clips (constant ~20 ms detector bias, same on exact renders). Outputs `data/interim/compare/` only. pytest 470 passed, 1 skipped; ruff clean. Not committed.
+- 2026-09-28: R-05 (ml-researcher), Provisional, awaiting eval-auditor. H8 substitute design: 1,500 MAJEPPA clips (250 per level), first 30 s of the Transkun MIDI rendered with the S-02 piano, 4 simulated contexts (clean / phone_room / recital_phone / concert_hall: `audio.phone.simulate_phone` + AAC), frozen MuQ L9-12, logistic regression, piece-grouped 5-fold CV. Beginner vs advanced AUC: context fixed 0.870; confounded as in MAJEPPA 0.943 (delta +0.073 [+0.055, +0.092]); confounded model with test contexts permuted 0.730 (delta +0.214 [+0.196, +0.232]); contexts swapped 0.475; negative control +0.002. Context decodable at 0.997. Supported by the pre-registered rule; holds for fold seeds 1-2 and layer 6. Pre-registration hash 7add1490...f0c5; reachability simulated first (falsified reachable only at score correlation about 0.9; observed 0.8). Build 36 min on MPS. pytest 470 passed, 1 skipped; ruff clean. Not committed.

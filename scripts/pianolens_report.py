@@ -8,6 +8,13 @@ Examples::
         --piece-id chopin_op10_no3 --provenance sensor \\
         --reference-midi other_pianists/*.mid --reference-provenance sensor --out r.html
     uv run python scripts/pianolens_report.py take1.mid --piece-id ... --take take2.mid take3.mid
+    uv run python scripts/pianolens_report.py phone.mid --piece-id ... --provenance transcribed \\
+        --filter-extras rule --out r.html
+
+``--filter-extras`` (off by default, transcribed input only) removes likely transcription extras
+before scoring (A-01b, ``pianolens.audio.extra_filter``; validation numbers in
+``docs/specs/phone-audio-baseline.md``). ``model`` needs the fitted filter under
+``data/interim/pianovam_a01b/`` (trained on non-commercial data, never committed).
 
 ``--piece-id`` looks the score up in ASAP when ``--score`` is not given, and loads the
 PianoCoRe expert references of that piece. See ``pianolens.report`` for what the report holds.
@@ -16,7 +23,9 @@ PianoCoRe expert references of that piece. See ``pianolens.report`` for what the
 from __future__ import annotations
 
 import argparse
+import json
 import logging
+import tempfile
 import warnings
 from pathlib import Path
 
@@ -41,21 +50,51 @@ def main() -> None:
                     help="PianoCoRe performance / source ids to leave out")
     ap.add_argument("--no-pianocore", action="store_true", help="do not load PianoCoRe refs")
     ap.add_argument("--note", action="append", default=[], help="extra provenance note")
+    ap.add_argument("--filter-extras", choices=["off", "rule", "model"], default="off",
+                    help="remove likely transcription extras first (transcribed input only)")
     ap.add_argument("--out", required=True, help="output .html (the .json goes beside it)")
     args = ap.parse_args()
     warnings.filterwarnings("ignore")
     logging.basicConfig(level=logging.WARNING)
+    td = tempfile.TemporaryDirectory()
+    if args.filter_extras != "off":
+        if args.provenance != "transcribed":
+            ap.error("--filter-extras applies to --provenance transcribed only")
+        args.performance, args.take = _filter_extras(args, Path(td.name))
     rep = report_from_files(
         args.performance, score=args.score, piece_id=args.piece_id, provenance=args.provenance,
         title=args.title, takes=args.take, reference_midis=args.reference_midi,
         reference_provenance=args.reference_provenance, use_pianocore=not args.no_pianocore,
         exclude_references=args.exclude_reference, notes=args.note)  # fmt: skip
+    td.cleanup()
     h, j = write_report(rep, Path(args.out))
     print(f"wrote {h}\nwrote {j}")
     for k, d in enumerate(rep["practise"], 1):
         print(f"{k}. [{d['tier']}] {d['text']}")
     if rep["errors"]:
         print("component errors:", rep["errors"])
+
+
+def _filter_extras(args: argparse.Namespace, tmp: Path) -> tuple[str, list[str]]:
+    """Filter the performance and takes into ``tmp``; add a provenance note saying so."""
+    from pianolens.audio.extra_filter import ExtraNoteFilter, filter_midi
+
+    base = Path(__file__).resolve().parents[1] / "data" / "interim" / "pianovam_a01b"
+    flt, params = None, None
+    if args.filter_extras == "model":
+        flt = ExtraNoteFilter.load(base / "extra_filter.pkl")
+    elif (base / "cv.json").is_file():
+        params = json.loads((base / "cv.json").read_text())["final"]["rule_params"]
+    out, removed, total = [], 0, 0
+    for k, f in enumerate([args.performance, *args.take]):
+        dst = tmp / f"{k:02d}_{Path(f).name}"
+        info = filter_midi(f, dst, flt, rule_params=params)
+        removed, total = removed + info["n_removed"], total + info["n_in"]
+        out.append(str(dst))
+    args.note.append(f"Extra-note filter ({args.filter_extras}, A-01b) removed {removed} of "
+                     f"{total} transcribed notes before scoring. It is validated to keep true "
+                     "notes, not to find every artefact; extra-note flags stay low confidence.")
+    return out[0], out[1:]
 
 
 if __name__ == "__main__":

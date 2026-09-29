@@ -32,3 +32,7 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   12 bars), extract override, R-04/R-09 impact, clip_to_train drift vs R-04 parquet.
 - [takes-f07.md](takes-f07.md) - F-07 repeated takes: decomposition design, pooled-deviation R² = 0; audit: consistent part is piece-shared, not intent
   trap, PianoCoRe duplicate facts (tempo-r rule over-merges), BLAS oversubscription, H5 numbers.
+- [f05e-llm-phrases.md](f05e-llm-phrases.md) - F-05e: LLM starts recover DCML concave_excess on
+  average (-0.055; Romantic -0.12, n=3); short-phrase merge does not help; PianoCoRe score DTW.
+- [compare-p01.md](compare-p01.md) - P-01 A/B clips: report-JSON-only coupling, window merge,
+  isotonic time map, expert choice, excerpt render, tuplet tolerance, check biases, measured.

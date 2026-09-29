@@ -130,3 +130,10 @@ paths:
 - **Check the reachability assumption after the run.** If the observed between-group SD is much
   larger than the one assumed in the pre-registration, say so in the results: the interval is
   then uninformative, and only the point-estimate rule decided.
+
+## Lesson from the F-05e audit (2026-09-28)
+
+- **Any boundary-based measure gets two controls:** random boundaries at the same density, and
+  the reference boundaries with each segment halved. The first shows density alone does not inflate
+  the measure. The second shows how the measure treats correct but finer segmentation. Report the
+  predicted-to-reference boundary-count ratio next to the measure.

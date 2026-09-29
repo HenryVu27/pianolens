@@ -13,10 +13,19 @@ import numpy as np
 from pianolens.align import align_performance, load_score_part
 from pianolens.data.midi_io import performance_from_midi
 from pianolens.data.types import PerformerId, PieceId, Score, score_from_partitura
-from pianolens.report.build import ReportConfig, ReportInputs, build_report, to_jsonable
+from pianolens.report import calibration as cal
+from pianolens.report.build import (
+    ReportConfig,
+    ReportInputs,
+    bar_error_table,
+    bar_labels,
+    build_report,
+    to_jsonable,
+)
 from pianolens.report.render import render_html
 
-__all__ = ["find_score", "load_performance", "load_score", "report_from_files", "write_report"]
+__all__ = ["expert_bar_tables", "find_score", "load_performance", "load_score",
+           "pianocore_expert_midis", "report_from_files", "write_report"]
 
 
 def find_score(piece_id: str) -> Path | None:
@@ -75,6 +84,12 @@ def report_from_files(
     notes: Sequence[str] = (),
     correctness_reference_midis: Sequence[Path | str] | None = None,
     max_correctness_references: int = 6,
+    expert_check: bool = True,
+    expert_tables: Sequence[Any] | None = None,
+    expert_check_midis: Sequence[Path | str] | None = None,
+    expert_check_provenance: str | None = None,
+    expert_capture_model: str | None = None,
+    max_expert_checks: int = cal.EXPERT_CHECK_MAX_REFS,
 ) -> dict[str, Any]:
     """Load, align and analyse. ``score`` or ``piece_id`` (ASAP lookup) must be given.
 
@@ -86,6 +101,16 @@ def report_from_files(
     checker artefacts from errors that recur across ``takes``. None = with takes, up to
     ``max_correctness_references`` ASAP performances of ``piece_id`` (the target's own source
     and ``exclude_references`` left out), if ASAP is available.
+
+    Per-bar expert check (F-08c, ``expert_check``): per-bar error counts of expert performances
+    of the same score with the target's capture method. ``expert_tables`` (precomputed,
+    :func:`expert_bar_tables`) or ``expert_check_midis`` (aligned here, capture method
+    ``expert_check_provenance``); by default, for transcribed input up to ``max_expert_checks``
+    PianoCoRe transcriptions of ``piece_id`` (``expert_capture_model``, e.g. ``"Transkun V2"``,
+    restricts them to one transcriber, as in the A-01 floor), otherwise up to
+    ``max_expert_checks`` ASAP (Disklavier) performances of ``piece_id``. ``reference_midis`` of
+    the same capture class (transcribed or key-sensor) are used instead when there are at least
+    ``calibration.EXPERT_CHECK_MIN_REFS`` of them on the target's repeat path.
     """
     cfg = config or ReportConfig()
     performance = Path(performance)
@@ -149,6 +174,43 @@ def report_from_files(
             continue
         if _same_variant(rap, ap):
             cref.append(rap)
+    xtabs: list[Any] = []
+    xprov = expert_check_provenance or ("transcribed" if provenance == "transcribed"
+                                        else "disklavier")
+    if expert_check:
+        if expert_tables is not None:
+            xtabs = list(expert_tables)
+        else:
+            xpaths: list[Path] = []
+            tmp = None
+            same_ok = [r for r in same if _capture_class(reference_provenance)
+                       == _capture_class(provenance)]
+            if expert_check_midis is not None:
+                xpaths = [Path(m) for m in expert_check_midis]
+            elif len(same_ok) >= cal.EXPERT_CHECK_MIN_REFS:
+                from pianolens.features.correctness import correctness
+
+                for r in same_ok:  # already aligned to the same performed score
+                    cr = correctness(r)
+                    if not cr.summary.get("alignment_suspect"):
+                        xtabs.append(bar_error_table(cr, bar_labels(r.score)))
+                xprov = expert_check_provenance or reference_provenance
+            elif piece_id and xprov == "transcribed":
+                import tempfile
+
+                tmp = tempfile.TemporaryDirectory()
+                for rid, data in pianocore_expert_midis(piece_id, expert_capture_model,
+                                                        max_expert_checks, exclude=excl):
+                    f = Path(tmp.name) / f"{rid}.mid"
+                    f.write_bytes(data)
+                    xpaths.append(f)
+            elif piece_id:
+                xpaths = _asap_performances(piece_id, excl, max_expert_checks)
+            if xpaths:
+                xtabs, xnote = expert_bar_tables(sc, xpaths, xprov, piece_id, skip=performance)
+                ref_note.extend(xnote)
+            if tmp is not None:
+                tmp.cleanup()
     tk = [align_performance(sc, load_performance(t, provenance, piece_id,
                                                  performance_id=f"take{k + 2}:{Path(t).stem}"))
           for k, t in enumerate(takes)]
@@ -156,12 +218,79 @@ def report_from_files(
         ap=ap, piece_id=piece_id, title=title or (piece_id or Path(score).stem),
         provenance=provenance, source_id=src, references=refs, same_score_refs=same,
         same_score_provenance=reference_provenance, takes=tk, correctness_refs=cref,
+        expert_bar_tables=xtabs, expert_bar_provenance=xprov,
         paths={"score": str(score), "performance": str(performance),
                "takes": [str(t) for t in takes], "n_reference_midis": len(reference_midis),
                "excluded_references": excl,
                "correctness_references": [str(p) for p in cref_paths]},
         notes=[*notes, *ref_note])  # fmt: skip
     return build_report(inp, cfg)
+
+
+def _capture_class(provenance: str) -> str:
+    """Transcribed MIDI and key-sensor MIDI are checked only against their own kind (A-01)."""
+    return "transcribed" if provenance == "transcribed" else "key"
+
+
+def expert_bar_tables(score: Score, midis: Sequence[Path | str], provenance: str,
+                      piece_id: str | None = None, skip: Path | str | None = None
+                      ) -> tuple[list[Any], list[str]]:
+    """Align expert performances to ``score`` and return their per-bar error tables
+    (:func:`pianolens.report.build.bar_error_table`) and notes on the ones left out.
+    Performances whose alignment is suspect (match ratio below 0.8) are left out, as in the A-01
+    floor."""
+    from pianolens.features.correctness import correctness
+
+    tabs, notes, bad = [], [], 0
+    for m in midis:
+        m = Path(m)
+        if skip is not None and m.resolve() == Path(skip).resolve():
+            continue
+        try:
+            rap = align_performance(score, load_performance(m, provenance, piece_id))
+            cr = correctness(rap)
+        except Exception as e:  # noqa: BLE001 - an expert that fails to align is skipped
+            notes.append(f"Expert check: {m.name} could not be aligned ({e!r}).")
+            continue
+        if cr.summary.get("alignment_suspect"):
+            bad += 1
+            continue
+        tabs.append(bar_error_table(cr, bar_labels(rap.score)))
+    if bad:
+        notes.append(f"Expert check: {bad} expert performance(s) with a suspect alignment were "
+                     "left out.")
+    return tabs, notes
+
+
+def pianocore_expert_midis(piece_id: str, capture_model: str | None = None, n: int = 15,
+                           seed: int = 0, exclude: Sequence[str] = ()
+                           ) -> list[tuple[str, bytes]]:
+    """Up to ``n`` raw PianoCoRe tier A transcriptions of a piece (seeded draw), as
+    ``(id, MIDI bytes)``. ``capture_model`` (e.g. ``"Transkun V2"``, ``"Aria-AMT"``) restricts
+    them to one transcriber; otherwise any transcription. Ids or performance ids in ``exclude``
+    are left out."""
+    import zipfile
+
+    from pianolens.data import pianocore as pcm
+
+    if not pcm.data_available():
+        return []
+    idx = pcm.PianoCoRe().index
+    rows = idx[(idx["piece_id"] == piece_id) & idx["is_transcription"].astype(bool)]
+    if capture_model:
+        rows = rows[rows["capture_model"] == capture_model]
+    ex = set(exclude)
+    rows = rows[~rows["id"].isin(ex) & ~rows["performance_id"].isin(ex)].sort_values("id")
+    if not len(rows):
+        return []
+    pick = np.sort(np.random.default_rng(seed).choice(len(rows), size=min(n, len(rows)),
+                                                      replace=False))
+    out = []
+    with zipfile.ZipFile(pcm.DEFAULT_ROOT / pcm.RAW_ZIP) as z:
+        for i in pick:
+            r = rows.iloc[int(i)]
+            out.append((str(r["id"]), z.read(pcm.RAW_PREFIX + str(r["performance_midi_path"]))))
+    return out
 
 
 def _asap_performances(piece_id: str, exclude: Sequence[str], k: int) -> list[Path]:

@@ -53,6 +53,35 @@ RECURRING_MIN_TAKES = 2
 RECURRING_KINDS: tuple[str, ...] = ("wrong_pitch",)
 RECURRING_MIN_EXPERTS = 2
 
+#: Missed notes per graded score note in a bar, on the same expert set (clean D-08 copies,
+#: ``correctness_bars.parquet`` of ``scripts/calibrate_report_f08.py``; 27% of expert bars have
+#: a missed note). Used instead of missed + extra when extra notes are low confidence
+#: (transcribed / phone input, A-01; ``rules/audio.md``).
+CORRECTNESS_EXPERT_BARS["missed_per_note_q95"] = 0.158
+CORRECTNESS_EXPERT_BARS["missed_per_note_q99"] = 0.286
+
+#: Per-bar expert check for single-take reports (F-08c). A bar's correctness tier is set against
+#: the larger of the global expert limit (above) and the same quantity's quantile over the expert
+#: performances of the same score at that bar: notable needs more than the per-bar
+#: EXPERT_CHECK_Q[0] quantile, strong more than EXPERT_CHECK_Q[1]. So a bar where the target's
+#: errors are within what experts of the same score (same provenance: transcribed experts for
+#: transcribed input, A-01) show there is not ranked; it is reported as a likely score or edition
+#: artefact. At least EXPERT_CHECK_MIN_REFS experts must cover the bar, otherwise the bar keeps
+#: the global tier. Calibrated by ``scripts/calibrate_expert_check_f08c.py`` (2026-09-28; see
+#: ``docs/specs/report-validation.md``, section 4). A bar must exceed both limits, so the
+#: joint rate is below either alone. Notable / strong share of expert bars, global -> checked:
+#:   key-sensor (40 clean D-08 copies, 28 pieces, 5-15 other ASAP experts): 6.8/1.7% -> 3.7/0.67%
+#:   (per-bar q95 instead of q80: 2.8/0.67%);
+#:   transcribed (150 A-01 floor transcriptions, leave-one-out, extras not counted):
+#:   11.8/3.0% -> 5.3/1.4%.
+#: Injected D-08 mistakes (rate 0.05): 85.5% of the bars tiered without the check stay tiered
+#: (74.9% with q95).
+EXPERT_CHECK_MIN_REFS = 5
+EXPERT_CHECK_Q = (0.80, 0.99)
+#: Default number of expert performances loaded for the check (ASAP for key-sensor input,
+#: PianoCoRe transcriptions for transcribed input, as in the A-01 floor).
+EXPERT_CHECK_MAX_REFS = 15
+
 #: D-10 (DECISIONS 2026-09-27): on transcribed MIDI the apparent tier A error rate doubles
 #: (0.039 -> 0.080) and velocity residual SD is about 9 MIDI units.
 TRANSCRIBED_ERROR_RATE = (0.039, 0.080)
