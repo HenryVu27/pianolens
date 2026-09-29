@@ -147,7 +147,130 @@ Means over the 3 pieces, with the range in brackets.
 - **Calibrate the phone simulation against a real phone and room**, for example a Disklavier or
   PianoVAM recording captured by a phone (BL-13). It currently reproduces neither the level nor
   the kind of the takes' extras.
-- **Consider an extra-note filter for phone input** (register, fixed-pitch recurrence, no
-  plausible source note), validated on audio with ground truth before use.
+- ~~Consider an extra-note filter for phone input~~: done as A-01b (below). It is safe but
+  removes only part of the artefacts.
 - **The A-02 fine-tune target** should include far-field grand audio, not only MAESTRO-like
   close-miked audio.
+
+## A-01b: extra-note filter (2026-09-28)
+
+Can the phone-take extras be removed before scoring without deleting real notes? Measured on
+audio with ground truth first, then applied to the 5 takes.
+
+### Ground truth: PianoVAM microphone audio
+
+- **Data.** PianoVAM v1.2: a dedicated microphone on a Disklavier in a practice room, mono
+  44.1 kHz WAV, Disklavier MIDI as truth, amateur players (DATASETS.md). Subset: 84 of 107
+  recordings (4.4 GB), 10 pianists (Advanced 47 recordings, Intermediate 27, Beginner 10), 343,550
+  true notes. The Beginner recordings are short (2,644 notes in all).
+- **Transcription.** Transkun 2.0.1 on MPS (`scripts/a01b_transcribe_pianovam.py`; 92 min of summed run time, two workers).
+- **Label.** A transcribed note with no true note of the same pitch within 50 ms, after removing
+  the per-file constant offset (-18 to +7 ms), is a false extra.
+- Code: `pianolens.audio.extra_filter`, `scripts/a01b_extra_filter.py` (`prep`, `cv`, `henry`).
+  Outputs under `data/interim/pianovam_a01b/` and `data/interim/henry_takes/a01b/`.
+
+### Real-room audio does not reproduce the takes' extras
+
+| | PianoVAM, Transkun | Henry's takes, Transkun (A-01) |
+|---|---|---|
+| Note F1 at 50 ms, per file | median 0.989 [0.939, 1.000] | no ground truth |
+| False extras per true note | 0.26% (per file 0-0.7%) | 3.0-29.3% extra rate against the score |
+| Extras at G6 or above per true note | 0.007% | up to 19.5% of score notes |
+| Share of extras at G6 or above | 2.8% (25 notes) | 35.5% (422 of 1,189) |
+| Share of extras with a harmonic source | 43.5% (a played note a harmonic step below) | 17% of the high extras |
+
+- **Extras on PianoVAM are ordinary transcriber errors.** They are spread over the middle
+  register (octaves 3-4 hold half of them). They are quieter than their context (median 15
+  velocity units below the local median, against 0 for true notes) and short (median 52 ms
+  against 125 ms). About 44% sit a harmonic step above a sounding note.
+- **Rates barely depend on skill:** 0.27% Advanced, 0.26% Intermediate, 0% Beginner (few notes).
+- **Timing and velocity floor (BL-13, `a01b_extra_filter.py floor`), per recording:**
+  - onset error robust SD median 3.1 ms [1.5, 10.0];
+  - velocity slope 0.92 [0.80, 1.15], Spearman 0.92, residual robust SD 4.5 MIDI [3.2, 6.8];
+  - no skill effect on these numbers.
+- **Real-room microphone audio of a Disklavier does not reproduce the high fixed-pitch extras.**
+  Neither did the simulated phone (A-01). What remains is the phone itself (far-field, automatic
+  gain, codec), the YouTube re-encode, or something sounding in Henry's room. Nobody has listened
+  to the audio yet.
+- **The takes' high extras have a clear signature.** They sit on G6, C7, D7 and E7 (MIDI 91, 96,
+  98, 100) in all takes. They are short (median 67 ms), no quieter than their context, and 83% have
+  no harmonic source.
+
+### Two filters, held out by pianist
+
+Leave-one-pianist-out over the 10 PianoVAM pianists. Everything is chosen on the training
+pianists only.
+
+1. **Classifier trained on PianoVAM** (gradient boosting on 13 features: register, velocity,
+   relative velocity, duration, harmonic source at onset or still sounding, chord size, density,
+   gap to neighbouring pitches, time since the same pitch, fixed-pitch spike). The threshold is
+   the lowest one keeping true-note loss at or below 0.5% on out-of-fold training scores.
+2. **Signature rule** for the A-01 artefact. A note is removed if it is at or above a pitch
+   floor, has no harmonic source, is shorter than a duration cap, and sits on a pitch that recurs
+   more than its neighbours. The grid covers pitch floor, duration cap, spike and relative
+   velocity (240 points).
+   - A safety budget was fixed first: at most 0.1% of true notes removed, and at most 5% of true
+     notes at G6 or above. Removing a real note creates a false "missed note" flag.
+   - Among the grid points within budget, the tie-break is the one that removes the most notes
+     from Henry's Transkun takes. It is label-free, and the score labels are not used.
+
+| Held-out (pooled over 10 folds) | Classifier | Signature rule |
+|---|---|---|
+| Notes removed | 1,742 | 338 |
+| of which false extras (removal precision) | 194 (11%) | 0 (0%) |
+| Share of false extras removed | 21% | 0% |
+| True notes lost, all | 0.46% | 0.10% (budget 0.1%; one fold chose a looser rule) |
+| True notes lost, at G6 or above (7,782) | 0.4% | 4.3% |
+| Note F1, before -> after | 0.9853 -> 0.9833 | 0.9853 -> 0.9848 |
+
+- **On clean real-room audio, any filter costs more than it gains.** Extras are too rare there
+  (0.26%). The classifier learns PianoVAM's own extras (quiet, short, harmonic), which are not the
+  phone-take kind.
+- **The rule finds no PianoVAM extras,** because none have the phone-take signature. PianoVAM
+  therefore validates only its safety, not its recall.
+- **Chosen rule (all pianists):** pitch at or above C7 (96), no harmonic source, shorter than
+  100 ms, fixed-pitch spike at least 0.5, any velocity. In-sample loss is 0.087% of all true notes
+  and 3.7% of true notes at G6 or above. These are the defaults of `rule_scores`.
+
+### Applied to the 5 takes and to the floor
+
+Takes re-aligned to the score after filtering (same code as A-01). Transkun:
+
+| Take | Extra rate before -> after | Missed rate before -> after | Removed notes | of which score extras / correct |
+|---|---|---|---|---|
+| Op. 27 No. 2 | 4.7% -> 4.7% | 4.9% -> 4.9% | 0 | - |
+| Op. 64 No. 2 | 3.0% -> 3.0% | 6.9% -> 6.9% | 1 | 0 / 1 |
+| Op. 9 No. 3 | 19.5% -> 17.6% | 8.2% -> 8.2% | 48 | 48 / 0 |
+| Op. posth. | 29.3% -> 22.2% | 9.0% -> 8.8% | 69 | 69 / 0 |
+| Op. 9 No. 1 | 15.5% -> 14.1% | 3.7% -> 3.7% | 24 | 24 / 0 |
+
+- **The removals are almost all score extras:** 141 of 142 over the 5 takes. The rule removes
+  33% of the extras at G6 or above (141 of 422) and 12% of all extras (141 of 1,189).
+  - It does not reach G6 (91). It keeps longer artefacts, and the middle-register extras are a
+    different problem.
+- **Extra rates stay at 14-22% on the three affected takes,** against a floor of 1-2%.
+- **Aria-AMT:** the rule removes 2 notes in all. The tie-break used Transkun output, and Aria-AMT's
+  artefacts do not pass the 100 ms duration cap. The rule is validated for Transkun only.
+- **Floor (150 PianoCoRe references, all with match ratio at least 0.8):**
+  - Transkun: the rule removes 55 of 129,981 notes (0.04%, at most 5 per performance). All 55 were
+    correct notes. It removes nothing from Aria-AMT references.
+  - The PianoVAM classifier removes 449 Transkun notes (365 of them correct) and 811 Aria-AMT
+    notes (580 of them correct). It raises the missed rate, so it is not used.
+- **The classifier on the takes (Transkun)** removes 36 notes, of which 15 were extras, and
+  raises the missed rate of Op. 64 No. 2 from 6.9% to 7.5%.
+
+### Decision and integration
+
+- **The rule is safe but does not solve the problem.** It is an optional step:
+  - `scripts/pianolens_report.py --filter-extras rule`, for `--provenance transcribed` only;
+  - `pianolens.audio.extra_filter.filter_midi` for scripts.
+- **Off by default.** Validation numbers: held-out true-note loss 0.10% (4.3% at G6 or above),
+  0.04% on professional references, 1 correct note removed on the takes; removes 33% of the takes'
+  high extras.
+- The report says how many notes the filter removed.
+- **Extra-note flags on phone input stay low confidence and out of practise items.** Wrong and
+  missed notes are unaffected by the filter (the missed rate changed by at most 0.2 points).
+- **Next:**
+  - Listen to the high extras in Op. posth. to tell a room sound from the phone chain.
+  - Record one phone take next to a MIDI capture (O-01) to get phone ground truth.
+  - A phone-and-room augmentation for the A-02 fine-tune.

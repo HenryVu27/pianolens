@@ -467,3 +467,14 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - Check this per user under O-01.
   - **O-01 guidance for Henry:** record 2-3 takes of the same passage in one sitting.
   - A second beginner is still needed to separate skill from player identity.
+- **2026-09-28, lead: after A-01b.**
+  - **Keep the 4.4 GB PianoVAM audio subset on the Mac.** It is a documented exception to "audio
+    corpora on the GPU box": total raw data is 16 GB, against a 60 GB budget.
+  - **The extra-note rule filter** (Transkun only) is safe on real-room ground truth: 0.10% of true
+    notes lost. It stays **opt-in**, because its effect on Henry's artefact cannot be measured
+    without phone ground truth.
+  - Extra-note flags remain low confidence.
+  - **Finding:** real-room microphone recordings (PianoVAM) do not produce Henry's high,
+    fixed-pitch extras. The artefact is specific to his recording chain (phone, YouTube encoding)
+    or his room.
+  - Next: Henry's listening check. A phone-plus-MIDI simultaneous take would give ground truth.

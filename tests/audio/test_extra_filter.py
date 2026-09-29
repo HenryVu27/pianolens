@@ -116,3 +116,13 @@ def test_filter_midi_keeps_pedal(tmp_path):
     out = pretty_midi.PrettyMIDI(str(tmp_path / "b.mid"))
     assert sorted(n.pitch for n in out.instruments[0].notes) == [60, 62, 64]
     assert [c.number for c in out.instruments[0].control_changes] == [64]
+
+
+def test_rule_defaults_are_the_a01b_choice():
+    import inspect
+
+    sig = inspect.signature(rule_scores)
+    got = {k: sig.parameters[k].default for k in ("min_pitch", "max_dur", "min_spike",
+                                                  "max_vel_rel")}  # fmt: skip
+    # changing these invalidates the A-01b validation in docs/specs/phone-audio-baseline.md
+    assert got == {"min_pitch": 96, "max_dur": 0.1, "min_spike": 0.5, "max_vel_rel": 99.0}

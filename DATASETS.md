@@ -367,7 +367,7 @@ values among the A rows.
 - **PianoVAM audio (A-01b)** is a dedicated microphone on the Disklavier in a practice room
   (paper: "a dedicated microphone and a Disklavier piano provided the audio and MIDI"; mic model
   and placement not stated), down-mixed to mono, and aligned to the MIDI by the authors (global
-  offset + DTW). Measured offset after that is a few ms (see `docs/specs/phone-audio-baseline.md`,
+  offset + DTW). Transkun onsets vs the MIDI after that: constant offset -18 to +7 ms per file (median -5), note F1 0.94-1.00 (median 0.989) (see `docs/specs/phone-audio-baseline.md`,
   A-01b). The audio is on this Mac by the lead's A-01b ticket (subset budget about 5 GB), an
   exception to `rules/audio.md`; bulk audio work still belongs on the GPU box.
 - **Rach3** file names end in `mi` before `.mid` (the README's 25-character description omits

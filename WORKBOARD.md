@@ -246,10 +246,17 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   owner: feature-engineer. status: done (2026-09-28). Spec: `docs/specs/report-validation.md` section 4.
   - Suppress correctness flags at bars where expert transcriptions of the same score also show
     errors, as in Op. 64 No. 2 bars 78-79.
-- **A-01b Phone-audio extra-note filter** (M). blocked_by: A-01. owner: audio-engineer. status: in progress
-  (2026-09-28).
+- **A-01b Phone-audio extra-note filter** (M). blocked_by: A-01. owner: audio-engineer.
+  status: done (2026-09-28; not committed). Spec: `docs/specs/phone-audio-baseline.md`, A-01b.
   - Uses register, fixed repeated pitches and the absence of a plausible source note.
   - Validate on audio with ground truth first (BL-13 / PianoVAM).
+  - Result: PianoVAM microphone audio (84 recordings, Transkun) has 0.26% false extras, and only
+    0.007% at G6 or above. It does not reproduce the phone-take artefact.
+  - The signature rule is safe: held-out true-note loss is 0.10% (4.3% at G6 or above), and it
+    removes 0.04% of the notes of professional references. It removes 141 extras and 1 correct
+    note on the takes, cutting extra rates from 19.5/29.3/15.5% to 17.6/22.2/14.1%.
+  - It is optional (`--filter-extras rule`) and off by default. Extras stay low confidence.
+  - A PianoVAM-trained classifier was net harmful and is not used.
 - **P-01 Audible A/B comparison engine** (M). blocked_by: F-08, A-01. owner: feature-engineer.
   status: done (2026-09-28; not committed). Integration into the report/app is P-02.
   - For each flagged bar or passage in a report, produce aligned audio clips:

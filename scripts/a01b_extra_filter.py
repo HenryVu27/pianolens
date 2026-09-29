@@ -3,6 +3,7 @@
     uv run python scripts/a01b_extra_filter.py prep     # labels + features per transcribed note
     uv run python scripts/a01b_extra_filter.py cv       # characterise, leave-one-pianist-out CV
     uv run python scripts/a01b_extra_filter.py henry    # apply to the 5 takes (+ floor refs)
+    uv run python scripts/a01b_extra_filter.py floor    # BL-13: onset / velocity floor by skill
 
 Inputs:
 * ``data/interim/pianovam_a01b/transkun/<record_time>.mid`` from
@@ -292,6 +293,7 @@ def _henry_one(k: str, t: str, src: Path, dst: Path, mode: str, label: str) -> d
         return row
     flt = ExtraNoteFilter.load(PV / "extra_filter.pkl") if mode == "model" else None
     params = json.loads((PV / "cv.json").read_text())["final"]["rule_params"]
+    # "rule" uses the parameters chosen by the cv stage (the module defaults match them)
     info = filter_midi(src, dst, flt, rule_params=params if mode == "rule" else None)
     row = analyse(k, label, dst, t, "transcribed")
     rp, ro = np.array(info["removed_pitches"], int), np.array(info["removed_onsets"], float)
@@ -369,15 +371,44 @@ def henry(workers: int, n_refs: int) -> None:
           .median().round(4).to_string())  # fmt: skip
 
 
+def _floor_one(rt: str) -> dict:
+    from pianolens.audio.transcription import match_notes, note_f1, velocity_agreement
+
+    est = _pm_notes(PV / "transkun" / f"{rt}.mid")
+    ref = _pm_notes(ROOT / "data" / "raw" / "pianovam" / "MIDI" / f"{rt}.mid")
+    f = note_f1(ref, est, estimate_offset=True)
+    m = match_notes(ref, est, 0.05, offset=f["offset_sec"])
+    va = ref["velocity"].to_numpy(float)[[i for i, _ in m]]
+    vb = est["velocity"].to_numpy(float)[[j for _, j in m]]
+    return {"record_time": rt, **{k: f[k] for k in ("f1", "precision", "recall",
+                                                    "onset_err_rsd_ms", "n_ref")},
+            **velocity_agreement(va, vb)}  # fmt: skip
+
+
+def floor() -> None:
+    """BL-13: per-recording onset error and velocity fit of Transkun vs the Disklavier truth."""
+    pf = pd.read_csv(PV / "per_file.csv")
+    with ProcessPoolExecutor(10) as ex:
+        rows = list(ex.map(_floor_one, pf["record_time"]))
+    df = pf[["record_time", "pianist", "skill"]].merge(pd.DataFrame(rows), on="record_time")
+    df.to_csv(PV / "floor_by_file.csv", index=False)
+    cols = ["f1", "onset_err_rsd_ms", "vel_slope", "vel_spearman", "vel_resid_rsd_midi"]
+    g = df.groupby("skill").agg(n=("f1", "size"), notes=("n_ref", "sum"),
+                                n_pianists=("pianist", "nunique"),
+                                **{c: (c, "median") for c in cols})  # fmt: skip
+    print(g.round(3).to_string())
+    print(df[cols].describe().round(3).to_string())
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("stage", choices=["prep", "cv", "henry"])
+    ap.add_argument("stage", choices=["prep", "cv", "henry", "floor"])
     ap.add_argument("--max-loss", type=float, default=0.005)
     ap.add_argument("--workers", type=int, default=10)
     ap.add_argument("--n-refs", type=int, default=15)
     a = ap.parse_args()
     {"prep": prep, "cv": lambda: cv(a.max_loss),
-     "henry": lambda: henry(a.workers, a.n_refs)}[a.stage]()
+     "henry": lambda: henry(a.workers, a.n_refs), "floor": floor}[a.stage]()
 
 
 if __name__ == "__main__":

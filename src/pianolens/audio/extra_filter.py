@@ -19,13 +19,15 @@ This module scores every transcribed note with features computed from the transc
   "fixed pitch" signature of the A-01 takes.
 
 :func:`label_false_extras` labels transcribed notes against ground-truth MIDI (unmatched at 50 ms
-after removing a constant offset = false extra). :func:`rule_scores` is a transparent rule
-baseline; :class:`ExtraNoteFilter` wraps a fitted classifier. Fitted models trained on
-PianoVAM (CC BY-NC-SA 4.0) are data-derived and never committed; they live under ``data/``.
+after removing a constant offset = false extra). :func:`rule_scores` is the A-01b filter, a
+transparent rule for the high fixed-pitch signature. :class:`ExtraNoteFilter` wraps a fitted
+classifier; the one trained on PianoVAM (CC BY-NC-SA 4.0, kept under ``data/``, never
+committed) removed more true notes than false ones and is not used.
 
-Validation (PianoVAM, leave-one-pianist-out) is in ``docs/specs/phone-audio-baseline.md``,
-section A-01b. The filter is **off by default**: nothing in the report pipeline calls it unless
-asked (``scripts/pianolens_report.py --filter-extras``).
+Validation is in ``docs/specs/phone-audio-baseline.md``, section A-01b. The rule is safe (few
+true notes removed) but removes only part of the phone-take extras, so it is **off by
+default** and extra-note flags stay low confidence (``scripts/pianolens_report.py
+--filter-extras rule`` turns it on).
 """
 
 from __future__ import annotations
@@ -123,13 +125,18 @@ def label_false_extras(ref, est, onset_tol: float = 0.05  # noqa: ANN001
     return y, f
 
 
-def rule_scores(feat: pd.DataFrame, min_pitch: int = 91, max_vel_rel: float = 99.0,
-                min_spike: float = 0.0, max_dur: float = 0.15) -> np.ndarray:
+def rule_scores(feat: pd.DataFrame, min_pitch: int = 96, max_vel_rel: float = 99.0,
+                min_spike: float = 0.5, max_dur: float = 0.1) -> np.ndarray:
     """Rule for the A-01 phone-take signature: 1.0 for a note that is at or above ``min_pitch``
-    (G6), has no harmonic source (no note a harmonic step below starts with it or is still
+    (C7), has no harmonic source (no note a harmonic step below starts with it or is still
     down), is shorter than ``max_dur`` seconds, is at most ``max_vel_rel`` louder than the local
     median, and sits on a pitch that recurs at least as often as its neighbours
-    (``pitch_spike >= min_spike``); else 0.0."""
+    (``pitch_spike >= min_spike``); else 0.0.
+
+    The defaults are the A-01b choice: the grid point that stays within a safety budget on
+    PianoVAM (at most 0.1% of true notes removed overall and 5% of true notes at G6 or above)
+    and removes the most notes from Henry's Transkun takes (a label-free tie-break). Validated
+    for Transkun output only."""
     return ((feat["pitch"] >= min_pitch)
             & (feat["harm_onset"] == 0) & (feat["harm_sounding"] == 0)
             & (feat["log_dur"] < np.log(max_dur + 1e-3))

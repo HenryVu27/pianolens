@@ -25,3 +25,14 @@ paths:
   until a phone-audio extra filter is validated (BL-13 / PianoVAM).
 - **Logs and outputs that name personal recordings never go in the repo root.** `*.log` is
   gitignored. Personal data lives only under `data/`.
+
+## From A-01b (2026-09-28)
+
+- **Real-room microphone audio does not reproduce the phone-take extras.** Transkun on PianoVAM
+  has 0.26% false extras, and almost none at G6 or above. Do not tune a phone extra filter on
+  clean real-room audio: extras there are too rare, and a classifier trained on them removed more
+  true notes than false ones. Use such audio to check a filter's *safety* (true notes lost),
+  counting the high register separately.
+- **The extra-note rule (`pianolens.audio.extra_filter.rule_scores`) is optional and off by
+  default,** and is validated for Transkun only. Changing its defaults invalidates the A-01b
+  numbers. Extras stay low confidence with or without it.
