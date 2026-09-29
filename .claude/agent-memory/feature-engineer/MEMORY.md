@@ -27,7 +27,8 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   typicality (log magnitude), LW mixed-scale trap, Horn vs sequential PA on real data, calibration.
 - [report-f08.md](report-f08.md) - F-08 report: tier plumbing, correctness calibration on clean
   D-08 copies, too-flat ranking, timing-noise convention, sample results (a)-(d); F-08b
-  provenance check (no Disklavier over-flagging) and recurring-error calibration (expert filter).
+  provenance check (no Disklavier over-flagging) and recurring-error calibration (expert filter);
+  F-08c per-bar expert check (q80/q99, matched capture) and no extras on transcribed input.
 - [coherence-f05d.md](coherence-f05d.md) - F-05d: coherence min-length rule (n_written_bars,
   12 bars), extract override, R-04/R-09 impact, clip_to_train drift vs R-04 parquet.
 - [takes-f07.md](takes-f07.md) - F-07 repeated takes: decomposition design, pooled-deviation R² = 0; audit: consistent part is piece-shared, not intent

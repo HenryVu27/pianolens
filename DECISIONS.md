@@ -446,3 +446,11 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - Always report the phrase-count ratio next to `concave_excess`. The measure penalises
     correct but finer segmentation, so "recovered" means recovered at the DCML level.
   - `merge_short_phrases` stays opt-in; it did not help.
+- **2026-09-28, lead: after F-08c.**
+  - **Accept per-bar expert quantiles q80 (notable) and q99 (strong).** A bar must exceed both the
+    global limit and the per-bar expert limit. q80 keeps notable near the nominal 5% (3.7%
+    key-sensor, 5.3% transcribed).
+  - **Accept:** extra notes never count toward correctness tiers for any transcribed input.
+  - **Known gap (BL-18):** strong runs at 1.4-2.3% on transcribed input, against a nominal 1%,
+    because with 14-15 experts the q99 is close to the per-bar maximum. The fix is more experts per
+    bar, or a margin above the maximum.

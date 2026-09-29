@@ -30,3 +30,6 @@ never commit or upload Henry's audio, MIDI or reports.
   (0-0.67). Top-3 practise items: 15/15 also tiered by Aria.
 - Op64/2 bars 78-79 practise item: experts also show errors there (median 6 vs 8) = score artefact
   likely; single-take reports have no per-bar expert filter.
+- F-08c (feature-engineer, 2026-09-28): single-take reports now have the per-bar expert check
+  (the A-01 floor transcriptions, cached in `data/interim/reports/calibration/f08c_floor_tables.pkl`)
+  and extras never count on transcribed input. Op64/2 bar 78 now suppressed as an edition artefact.

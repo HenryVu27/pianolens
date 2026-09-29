@@ -54,3 +54,24 @@ calibration = constants), CLI `scripts/pianolens_report.py`, samples + known-ans
   report_from_files auto-loads up to 6 ASAP perfs when takes are given.
 - Chopin Op.10/3 has ONE ASAP performance: sample (e) uses Op.10/4 (22 perfs).
 - The harness blocks Write of new .md files from subagents; the spec text went to the lead.
+
+## F-08c (2026-09-28): per-bar expert check + extras rule
+- `build.expert_bar_limits` / `bar_error_table` (keyed by bar LABEL, so other repeat paths line
+  up); `ReportInputs.expert_bar_tables` + `expert_bar_provenance`; bar fields `tier_global`,
+  `expert_check` (none/unchecked/confirmed/down_tiered/suppressed), `n_experts`;
+  `correctness.expert_check` summary with `bars_<status>` label lists.
+- Rule: tier vs max(global limit, per-bar expert quantile); `EXPERT_CHECK_Q = (0.80, 0.99)`,
+  min 5 experts per bar, max 15 loaded. Matched capture class only (transcribed vs key).
+- `report_from_files`: `expert_tables=` (precomputed), `expert_check_midis=`, else same-score
+  refs of matching class (>= 5), else PianoCoRe transcriptions (transcribed; `expert_capture_model`)
+  or ASAP perfs. `expert_check=False` to disable.
+- Transcribed input: extras never count toward correctness tiers (`extras_low_confidence`,
+  auto); missed-only limits 0.158 / 0.286 per note (from correctness_bars.parquet).
+- Calibration `scripts/calibrate_expert_check_f08c.py` (cache `f08c_*.pkl`, `--from-cache`
+  seconds; full run ~40 min under load). Key-sensor expert bars global 6.8/1.7% -> 3.7/0.67%;
+  transcribed floor LOO 11.8/3.0% -> 5.3/1.4% (Aria strong 2.3%: small-n q99 ~ per-bar max,
+  unfixed). D-08 rate .05: tiered injected bars 18.1% -> 15.5% (85.5% kept).
+- Only 40/100 D-08 clean perfs (28 pieces) have >= 6 ASAP perfs. Op.10/3 samples get no check.
+- Henry: `a01_henry_reports.py` loads `f08c_floor_tables.pkl` (same draw as A-01 floor).
+  Op64/2 bar 78: experts median 5 wrong -> suppressed; bar 84 (experts 0) new top item.
+- Machine was at load ~40 from other agents: long runs 3-4x slower than solo.

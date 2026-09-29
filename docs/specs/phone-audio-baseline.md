@@ -138,7 +138,7 @@ Means over the 3 pieces, with the range in brackets.
     affected bars and practise items.
   - A single take cannot separate these artefacts from real errors. Repeated takes (F-07 /
     recurring errors, wrong pitch only) can.
-- **Per-bar expert checks are needed.** One practise item sits in bars where expert transcriptions
+- **Per-bar expert checks are implemented in F-08c (see report-validation.md section 4).** One practise item sits in bars where expert transcriptions
   also show errors (median 6 against the take's 8). The recurring-error expert filter would catch
   this with several takes; a single-take report does not.
 
