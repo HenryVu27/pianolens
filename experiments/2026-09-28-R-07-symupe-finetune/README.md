@@ -441,7 +441,351 @@ Run 1, started 2026-09-29 by a lead session on Henry's RTX 5080 box.
   (`job/outputs/`: per-item scores, generations, token shards, checkpoints) stay local on the RTX
   5080 box and are not in git (license and size).
 
-## Audit
+## Audit (2026-10-05, eval-auditor)
+
+**Verdict: Confirmed with caveats.** Every pre-registered reading follows from the outputs, and
+every audited number reruns exactly from the local outputs. The readings are: (a) **harms** on P,
+so R-10 uses the frozen model; (c) S-LR **pass**, S-DEV **flatness detector only**, S-TYP
+**fail**; (b) E **at the H1b falsification level**. Four caveats change what the readings
+license, and the REPORT must state them (see "Required corrections"):
+1. (b) cannot reach 0.50 at K = 16. Sixteen held-out *real* performances, scored as if they were
+   model samples, capture a median of only 0.273 of the shared variance.
+2. S-LR's pass is real, but it is the sum of two parts: a flatness detector (F) and a
+   noise-sensitive likelihood (E). Among human performances its ranking is mostly "distance from
+   flat".
+3. "Harms" on P holds across the 3 works as fixed groups. The 3-work t-interval includes 0, and
+   one work shows no change.
+4. Ten of the 91 R10u pieces were seen paired in pretraining. The REPORT calls all of R10u
+   unseen.
+
+Read-only audit, CPU only. Nothing was run on the GPU, and no process was started or stopped.
+Audit scripts are in the session scratchpad (`a.py`, `half.py`, `slr.py`, `slr2.py`, `pt.py`,
+`h.py`, `au.py`, `ceil2.py`, `sty.py`, `tf.py`). They import `job/summarize_eval.py` unchanged
+and run with `C:/Users/Vuduc/r07/venv-symupe/Scripts/python.exe`. Nothing in `src/`, `job/` or
+`results/` was changed.
+
+### 0. Pre-registration and code
+
+- The README up to `## Run record` is byte-identical to the version committed in `e4becf8`
+  (2026-09-28 00:13 -0500, before the run on 2026-09-29). Checked with `diff` of
+  `git show e4becf8:README.md` against the working copy, both cut at `## Run record`.
+- `summarize_eval.py`, `symupe_eval.py`, `make_eval_items.py`, `pt_train.py`,
+  `symupe_train.py`, `prep_data.py` and `trainlib.py` are unchanged since `e4becf8`.
+  `git diff e4becf8 HEAD --stat` lists only `eval.sh`, `run.sh`, `setup.sh` and
+  `src/pianolens/data/pianocore.py`, and the diffs are the platform fixes described in the run
+  record. The analysis code was therefore fixed before any result existed.
+- The committed `results/<set>/{summary.json, auc.csv, a_per_rendition.csv}` are byte-identical
+  to `job/outputs/results/<set>/` for all five sets (`cmp`).
+
+### 1. (a) "harms" on P: Confirmed with caveats
+
+- **The bootstrap is as pre-registered.** `two_way_weights` multiplies passage and performer
+  resampling multiplicities (pigeonhole two-way). Each resample's statistic is the per-work
+  weighted mean, then the unweighted mean of the 3 works. 2,000 resamples, seed 0. Rerun from
+  `a_per_rendition.csv` with the script's own `boot_ci`:
+  - composite −0.0509 [−0.0720, −0.0287];
+  - velocity +0.027 [−0.001, 0.056], log IOI −0.063 [−0.102, −0.026], log articulation −0.116
+    [−0.152, −0.082].
+
+  All identical to `summary.json`. Pairing is an inner join on `stem`: n = 981, 0 NaN. The
+  cluster structure is real: 86 passages and 24 performers (12 per work, 12 of them span 2
+  works), median 40.5 rows per performer. In 2,000 resamples no work ever got zero weight, so
+  the estimand never changed.
+- **Per work** (E − frozen): WoO 80 −0.045, D960 mv2 −0.105, D960 mv3 −0.003 (516 of the 981
+  renditions).
+  - Leaving one work out: −0.054 (without WoO 80), −0.024 (without mv2), −0.075 (without mv3).
+    All are negative.
+  - **Per target and work:** articulation −0.121 / −0.210 / −0.018 and log IOI −0.056 / −0.118 /
+    −0.014. Velocity is +0.042 / +0.014 / +0.024: E is slightly better on velocity in every work.
+  - The t-interval over the 3 works, [−0.178, 0.076], includes 0, as the REPORT says.
+  - The bootstrap holds the 3 works fixed. "Harms" is therefore a statement about these three
+    works. Whether it generalises to other works rests on the secondary sets, which agree:
+    V −0.098 [−0.135, −0.063], with all 4 excerpts negative (t-interval [−0.171, −0.026]), and
+    A −0.094 [−0.145, −0.053].
+- **Robustness to the K = 8 sample draw** (my addition). The composite was recomputed from the
+  first and second halves of each arm's 8 samples (K = 4 each):
+  - E − frozen = −0.041 [−0.064, −0.019] and −0.063 [−0.086, −0.039];
+  - crossed halves: −0.039 [−0.064, −0.017] and −0.065 [−0.088, −0.043].
+
+  Every sample split keeps the whole CI below 0.
+- **Reproduction gate: applied correctly.**
+  - Frozen P composite 0.3987 vs R-06's 0.388. The difference is 0.0107 > 0.01, so the gate is
+    missed. The paired comparison uses the re-run frozen arm (`summarize_eval` joins on this
+    run's frozen rows), and R-06's value is shown alongside in REPORT 4b, as the rule requires.
+  - The shift is in all three works: per work 0.436 / 0.424 / 0.336 against R-06's
+    0.428 / 0.416 / 0.320. It is mostly in articulation (0.351 vs 0.319); velocity (0.515 vs
+    0.512) and log IOI (0.330 vs 0.333) reproduce.
+  - The size is within sample-draw variability. The two K = 4 halves of this same frozen run
+    differ by up to 0.025 in a single work (D960 mv2 0.393 vs 0.413).
+  - R-06's per-item generations are not on this machine, so GPU-vs-CPU sampling cannot be
+    separated from item rebuilding. The rebuilt items have the counts of R-06's prepare, and its
+    `prepare.py` and its (a) code (`analyze.py` `target_r`, `passage_predictions`) compute the
+    same quantities as `summarize_eval.py`.
+- **Downstream rule:** "harms" means E is not used, so R-10 uses the frozen model. This is
+  correctly applied.
+
+### 2. (c) S-LR "pass": Confirmed with caveats (genuine, but it is a flatness detector plus a noise penalty)
+
+- **The rules are applied as pre-registered.** `pass_fail.json` checks the following:
+  - R1: AUC ≥ 0.75, lower CI > 0.5 and per-work point AUC ≥ 0.5, on the 7 required variants;
+  - R2: the same rule on jitT20, jitT40, jitV8 and jitV16;
+  - R3: point AUC ≥ 0.75 on V for the 7 R1 variants, no CI required.
+
+  E:S-LR results:
+  - R1 on P: every variant 1.000 [1.000, 1.000], minimum work AUC 1.000.
+  - R2 on P: 0.946 / 0.949 / 0.927 / 0.916, CIs above 0.87, minimum work AUC 0.880.
+  - R3 on V: all 1.000.
+- **The separations are not knife-edge.** No paired comparison is tied.
+  - The smallest paired margin (S-LR real − S-LR variant, nats per note) over all 7 R1 variants
+    on P is 1.26 (half_flat_velocity). Median margins run from 3.1 to 8.3.
+  - Every real P rendition has S-LR ≥ 1.42.
+  - The same holds on V (minimum margin 0.45), A (1.94), R10u (0.95) and R10s (2.22).
+- **What does the separating:** whichever field is flat. No single field dominates.
+  - Per-field log ratios (ℓ_E − ℓ_F per field) on P:
+    - deadpans: TimeShift, Velocity and TimeDuration each separate at 1.000 on their own;
+    - half_flat_timing: TimeShift 1.000, TimeDuration 1.000, Velocity 0.443;
+    - half_flat_velocity: Velocity 1.000, TimeShift 0.629, TimeDuration 0.536.
+  - F assigns near-certainty to any constant field. Median ℓ_F of the core fields on exact
+    deadpans is −0.09 to −0.27 nats per field, against −3.7 to −5.0 on real renditions.
+- **The two halves of S-LR.**
+  - **−ℓ_F alone** passes R1: AUC 1.000 on every R1 variant on P and V. It fails R2 completely
+    (0.000-0.033), because jitter makes a rendition slightly *less* F-like.
+  - **ℓ_E alone** (S-RAW) passes R2 (1.000) and fails R1, as in R-06.
+  - S-LR passes both because the F gap on flat variants is large (median 4-12 nats) while E's
+    jitter penalty is small and has the right sign (0.3-1.5 nats). This is the intended
+    construction, not an artefact. But it means S-LR's R1 result tests F, and its R2 result
+    tests E.
+- **F's "narrow family" did not make the offset variants a generalisation test.** F scores
+  deadpan_vel+12, vel−12 and slow15 as well as the exact deadpan (core ℓ_F −0.50 to −0.56 vs
+  −0.53 on P). Being autoregressive, F detects *constancy* and copies the previous velocity and
+  IOI, whatever the conditioning token says. Only deadpan_noise20_8 is genuinely out of family
+  (ℓ_F −7.3, against about −13 on real). It is still separated at 1.000, through its flat
+  durations.
+- **No construction artefact found.**
+  - Real and variant share notes, note count, conditioning tempo and conditioning velocity
+    (`item_variants` uses `_with` on the same item).
+  - S-LR is a per-note mean, so note count cannot enter.
+  - The exact deadpan's velocity equals the conditioning velocity, but vel±12 (not equal to it)
+    behaves identically, so equality with the conditioning token is not what separates.
+  - Deadpans drop the pedal, but TimeDurationSustain is not in the core score.
+  - The PercePiano Score renditions (different notes) give 0.988 [0.971, 0.998].
+- **Caveats for any use of S-LR.**
+  - Among real renditions, S-LR rank-correlates 0.83 (P) and 0.95 (V) with −ℓ_F. As a ranking
+    of human performances it is mostly "how far from flat under F", not typicality.
+  - It does not prefer the real rendition to the same rendition with its expression halved:
+    scale0.5 AUC 0.491 (P), 0.545 (V), 0.388 (A). It does penalise exaggeration: scale1.5 0.915
+    (P).
+  - Passing is the pre-registered condition for use, not evidence that S-LR tracks quality.
+    Any quality use needs its own test.
+
+### 3. S-DEV "flatness detector only" and S-TYP "fail": Confirmed
+
+- **S-DEV.**
+  - R1 on P is met: AUCs 0.852-0.990, lowest CI 0.793 (half_flat_timing), minimum work AUC
+    0.775.
+  - R2 on P is not met: jitT20 0.660 and jitT40 0.678, below 0.75.
+  - R3 on V is met: all 1.000.
+
+  So the reading is "flatness detector only". R2 is required on P only; S-DEV happens to meet R2
+  on V, which does not change the reading.
+  - Caveat: the trivial baseline B-amount meets R1 (1.000 on all 7) and R3 as well, with higher
+    AUCs than S-DEV. For the F-06 "too flat" flag, S-DEV adds nothing over B-amount.
+  - S-DEV cannot penalise exaggeration (scale1.5 0.474), as the threats section anticipated.
+- **S-TYP.**
+  - R1 on P fails: half_flat_velocity 0.236 [0.175, 0.302]. The whole CI is below 0.5, and the
+    minimum work AUC is 0.023.
+  - R3 on V fails: half_flat_velocity 0.239.
+
+  So the reading is "fail". The frozen model's S-TYP happens to pass R1 and R3 on V but fails
+  R1 on P. It is reference only, by the pre-registration.
+
+### 4. (b) H1b preview on R10u: Confirmed with caveats (the 0.50 bar is unreachable at K = 16)
+
+- **The implementation matches the pre-registration.**
+  - Inputs: majority score; first 3,000 distinct score notes; onsets kept if observed in at
+    least half of the renditions; velocity centred per rendition.
+  - Shared components:
+    - velocity and log IOI blocks, each scaled to unit s.d.;
+    - envelope-preserving surrogate: rows phase-randomised per block, columns rescaled to the
+      real s.d.;
+    - 100 surrogates, 95th percentile, seed 0;
+    - k = leading eigenvalues above the null.
+  - Captured share: the share of the expert variance in the k components that lies in the
+    model's sample-deviation span. That span has 15 dimensions (median `model_dims` 15).
+  - Random 15-dim subspace baseline: 200 draws.
+  - The summary is the median over pieces with k > 0. One piece has k = 0, so the median is over
+    84 of the 85 pieces with ≥ 20 renditions. Six R10u pieces have fewer than 20 renditions
+    (3-17) and are excluded, as pre-registered.
+  - Numbers reproduce: E 0.098 (random 0.012 / p95 0.015), median k 6, reliability 0.981 /
+    0.980.
+- **The unseen-only subset does not change the reading.**
+  - The 85 H1b pieces are:
+    - 74 of the 76 pre-registered "unseen" pieces;
+    - 3 R-02 work-mates paired in PERiScoPe (Mozart K. 545 mv1-3);
+    - 4 non-R-02 work-mates paired in PERiScoPe;
+    - 4 unpaired non-R-02 work-mates.
+  - Unseen only (74):
+    - E: captured 0.096, R²c velocity 0.439, R²c log IOI 0.053;
+    - frozen: 0.112 / 0.328 / 0.127;
+    - pt_E: 0.124 / 0.495 / 0.259.
+
+    Every threshold reading is the same as in the pooled summary.
+  - Of the 76 unseen pieces, Glinka *La séparation* has no evaluation item, and one has fewer
+    than 20 renditions.
+- **Ceiling (my addition; CLAUDE.md rule 2 asks for one).**
+  - Method: on the 72 R10u pieces with ≥ 36 renditions, I held out 16 real renditions as
+    "samples". The shared components were computed from the remaining 20-34 renditions (median
+    k 4.3), with the summariser's own `h1b_passage`, 3 random splits, seed 1.
+  - Result: 16 real performances capture a median of **0.273** of the shared variance.
+  - On the same splits and the same components:
+    - E: 0.097, about 0.39 of the expert level;
+    - frozen: 0.114 (0.46);
+    - pt_E: 0.119 (0.48).
+  - Consequences:
+    - "Consistent with H1b" (≥ 0.50) was unreachable for any model with K = 16 under this
+      statistic. Even a perfect sampler of the performer distribution would read "inconclusive",
+      close to the 0.20 falsification line.
+    - E's 0.098 is at the falsification level as worded. Against the reachable level, the
+      correct summary is: E captures about 40% of what 16 real performances capture.
+  - R²c is not affected in the same way. The mean of 16 real performances reaches R²c 0.90
+    (velocity) and 0.90 (log IOI) against the other performers. E's 0.41 / 0.07 is therefore a
+    real gap, and the R²c readings stand.
+  - This is the R-09 lesson (check that every verdict branch can be reached). R-10 must
+    calibrate the captured-share thresholds against this expert-sampler ceiling, or use larger
+    K, before using them for the H1b verdict.
+
+### 5. Post-hoc pt_E − pt_frozen: Confirmed, and properly disclosed
+
+- I recomputed it with `boot_ci` and `t_interval` from `summarize_eval.py` on the committed
+  `a_per_rendition.csv`. Results:
+  - P +0.0128 [−0.0133, 0.0394], t [−0.086, 0.111];
+  - V −0.072 [−0.240, 0.095];
+  - A +0.031 [0.001, 0.064];
+  - R10u +0.100 [0.089, 0.114];
+  - R10s +0.059 [0.037, 0.083].
+
+  All identical to `results/pt_E_vs_pt_frozen*.json`, with n matching (981 / 88 / 80 / 3,808 /
+  1,812).
+- The run record and REPORT state that the pre-registered secondary comparison was missing from
+  the summariser and was computed afterwards with its own functions. No other statistic was
+  added.
+- Unseen-only R10u gives +0.101 [0.088, 0.114].
+
+### 6. R10u (+0.041) vs P / V / A ("harms"), and the "transcription style" reading: Confirmed as labelled (possible, untested); must not be upgraded
+
+- E − frozen on R10u reruns as +0.041 [0.028, 0.051]; unseen only it is +0.042 [0.030, 0.055].
+  The gain is mostly articulation (+0.085), velocity +0.023, log IOI +0.014 (CI includes 0).
+- **Descriptive support (my addition).** These are medians over renditions of each rendition's
+  median log articulation (`sty.py`; 150 real renditions per set, 4 samples x 40 passages per
+  arm, up to 40 passages).
+
+  | | P | R10u |
+  |---|---|---|
+  | real performances | −0.69 | +0.02 |
+  | frozen samples | −0.56 | −0.30 |
+  | E samples | **+0.15** | ≈ 0.00 |
+
+  - E's samples on P have transcription-like articulation (V: E −0.05 vs real −0.70).
+  - E's sampled log IOI s.d. on P is 0.30, against 0.23 for the P performances and 0.31 for R10u
+    performances.
+  - Pearson r ignores a constant offset, so this does not by itself explain the r loss. But it
+    shows E's sampled durations are in the transcribed regime.
+- **Against, or confounded.**
+  - R10s is also transcribed PianoCoRe, yet shows no change (+0.002 [−0.016, 0.015]). Its
+    frozen baseline is higher (0.511 vs 0.431), consistent with pretraining exposure.
+  - The R10 sets also differ from P / V / A in repertoire, segment length (up to 3,000 notes vs
+    8-16 bars) and K (16 vs 8).
+- The REPORT words this correctly ("one possible reading (not tested here)"). It is plausible
+  for articulation and remains untested. A test would compare E's articulation error on
+  Disklavier vs transcribed renditions of the *same* pieces.
+
+### 7. Data and leakage: Confirmed
+
+- `leakage_report.json`: `ok: true`, 0 unknown ids, 0 held-out pieces or works in train, 0
+  performances in two splits, 37,295 rows on 1,285 training pieces. The tokenizers' re-check is
+  also `ok`.
+- **Split hash.**
+  - `git show HEAD:.../split/pieces.csv | sha256sum` = `3341bfa5...296b86`.
+  - The checked-out file hashes to `d7ec539c...` with CRLF and to `3341bfa5...296b86` with CR
+    stripped.
+
+  Same split, different line endings, as stated.
+- **Token-order guard.** The 636 skipped training items fall in 21 pieces.
+  - 8 pieces lose every item: Chopin Op. 60, Debussy L. 136/8, L. 123/1 and /12, Schubert D935
+    no. 4, Beethoven Op. 31/1 mv2, Ravel Alborada, Lyapunov Op. 8.
+  - The skipped items are long (median 3,694 notes vs 1,338 overall). They are 3.5% of training
+    notes (1.7% of items).
+  - They are 586 PianoCoRe and 50 (n)ASAP items, with capture models roughly in proportion to the
+    training set.
+  - Effects:
+    - The guard is score-dependent, removes training data only, and cannot leak.
+    - It slightly narrows E's and F's training repertoire.
+    - pt_E had 0 failures, so the two arms' training sets differ by these 636 items.
+    - No evaluation item failed scoring in any set.
+- **`pianocore.py` fix: behaviour-neutral.** The bytes are written, the file is closed (flushed)
+  on leaving the `with` block, then loaded by name and deleted in `finally`. On POSIX the loader
+  reads the same bytes as before; only the deletion moves.
+
+### 8. Run integrity: Confirmed
+
+- **Counts.** For every arm x set, `score/` holds exactly the eval set's item count:
+  P 16,780; V 1,496; A 1,360; R10u 64,736; R10s 30,804.
+  - `gen/` holds every generation item: 86 / 4 / 16 / 91 / 48 for frozen, E, pt_frozen and
+    pt_E. F has no generations, by design.
+  - `typset/` holds every real item for frozen and E on P (981) and V (88).
+  - `scores.csv` has equal rows per arm in every set.
+  - S-LR is NaN only for non-E arms. S-TYP is NaN for E only on the 103 PercePiano Score items,
+    which have no typset, by design (all five sets). `a_per_rendition.csv` has 0 NaN.
+- **Checkpoints.** No E, F or pt_E output is older than that arm's final `best.pt` (`find !
+  -newer`: 0 of 116,490, 115,176 and 115,421 files). pt_E's `best.pt` is dated 2026-10-01 09:39
+  UTC (step 8,000). No output from an intermediate pt_E checkpoint entered any summary.
+- **Partial files.** Every summary is newer than all of its inputs. `summarize_eval.py` loads
+  every score, generation and typset file it uses (`np.load` raises on a truncated archive). The
+  rebuilt summaries (P / V / A on 2026-10-01, R10s on 10-05 04:22, R10u on 10-05 08:29) therefore
+  read every output without error.
+- **pt_E resume.** `train_log.jsonl` has one `resume` event at step 1,500 and no duplicated
+  steps. Validation loss falls monotonically to 0.9762 at step 8,000.
+- **`_log_*.json` is weak evidence.** Each run overwrites it with only the items that run
+  processed, and most were rewritten by later runs that skipped everything ("0 items, 0 errors").
+  The informative ones:
+  - pt_E P / V / A: 16,780 / 1,496 / 1,360 scored, 86 / 4 / 16 generated, 0 errors;
+  - pt_E R10u generation retry: 91 items, 0 errors;
+  - R10s, every arm: full item counts logged, 0 errors.
+
+  Completeness rests on the counts above, not on the logs.
+
+### Required corrections
+
+To `REPORT.md`. The factual errors were corrected in place and each is marked "[audit
+2026-10-05]":
+1. Section 1 "Secondary sets" and the R10u heading in 4b called R10u "76 R-02 pieces unseen" and
+   "unseen by pretraining and fine-tuning". The R10u evaluation set has 91 pieces:
+   - 75 of the 76 unseen pieces;
+   - 3 R-02 work-mates paired in PERiScoPe;
+   - 7 non-R-02 work-mates paired in PERiScoPe;
+   - 6 unpaired non-R-02 work-mates.
+
+   So 10 of the 91 were seen paired in pretraining.
+2. The pt_E section said "The only set with a detectable change is A". That was written before
+   R10u and R10s; both now improve. Now limited to P, V and A.
+3. R10s section: "the same level as on R10u (0.098-0.118)". With pt_E it is 0.098-0.124.
+4. "Gaps": the bullet "No evaluation numbers exist yet" is marked as superseded by section 4b.
+
+For the lead (interpretation; not edited by me):
+- (b): add the expert-sampler ceiling (0.273) next to E's 0.098. State that 0.50 was unreachable
+  at K = 16. R-10 must calibrate before its H1b verdict.
+- (c): state that S-LR's R1 result comes from F and its R2 result from E. Among human
+  renditions it ranks mostly by distance from flat (ρ 0.83 / 0.95 with −ℓ_F). It is indifferent
+  to halved expression (scale0.5 0.49 on P).
+- (a): give the per-target split, which shows velocity slightly better in every work. Add the
+  leave-one-work-out values and the K-half robustness next to "harms".
+- S-DEV: the trivial B-amount meets R1 and R3 at least as well, so prefer it for the F-06 "too
+  flat" flag, or justify S-DEV over it.
+- The README header line still says "Status: Provisional (pre-registered; job prepared, not
+  run)". It is part of the hashed pre-registration and was left as is. The audited status is
+  this section.
+
+## Second audit (Mac, committed statistics only; full text in `AUDIT.md`)
 
 **Confirmed with caveats (scoped)**, eval-auditor 2026-10-05. Full audit, box-only checks B1-B4
 and their scripts: `AUDIT.md` in this folder. The status in line 2 is inside the hashed header and
@@ -458,5 +802,25 @@ is left as written.
   "outside F's training family" is wrong.
 - SyMuPe samples here were drawn at top-p 0.95 (EncDec-base ignores `lm_top_p`), including the
   S-TYP reference samples registered at 1.0; S-TYP failed regardless.
-- Author fixes pending: AUDIT.md section 9 (REPORT sections 4, 5 and "Gaps" are stale; commit the
-  pt_E - pt_frozen script; per-transcriber table, post hoc).
+- Author fixes still pending after the box audit's REPORT corrections: AUDIT.md section 9 (REPORT
+  sections 4 and 5 are stale; commit the pt_E - pt_frozen script; per-transcriber table, post hoc).
+
+### Reconciling the two audits (lead, 2026-10-05)
+
+The two audits were independent: the box audit had the full per-item outputs, the Mac audit only
+the committed statistics. Both reach **Confirmed with caveats**, and every number they share agrees.
+
+- **(b) wording.** The box audit keeps "at the falsification level as worded" and adds that E
+  reaches about 0.39 of the expert-sampler level (0.273). The Mac audit reads the preview as
+  uninformative (oracle about 0.25). The lead's reading (DECISIONS 2026-10-05) is
+  **uninformative for H1b**: a bar that real performers cannot reach cannot falsify. R-10 uses
+  mean-curve R²c against an expert oracle as the primary statistic.
+- **Box-only checks B1-B4 (AUDIT.md section 10).** B1 is answered by the box audit section 2
+  (S-LR per-field decomposition and margins), B4 by section 8 (counts, checkpoints, partial
+  files). B3 is answered in part by section 1: the gate miss is within sample-draw variability and
+  sits in articulation; R-06's generations are not on the box, so item rebuild vs GPU sampling
+  stays unseparated. B2 (log IOI R²c with R-06's centering) was not run; R-10's `dev_r07` stage
+  recomputes it.
+- **R10u composition.** The box audit counts 10 of 91 pieces seen paired by id; the Mac audit and
+  the R-10 pre-run review add 5 of the 74 "unseen" pieces with paired content inside whole-set ids.
+  Neither changes a reading.

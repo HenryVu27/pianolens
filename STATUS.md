@@ -21,7 +21,7 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 | F-05e | Do LLM boundaries recover the per-phrase tempo measure? | Yes at the pooled level: concave_excess 0.418 (LLM) vs 0.473 (DCML), paired -0.055; LLM beats the detector by +0.221. Carried by Batik (one pianist); on Romantic pieces the LLM loses -0.124 (placement loss). Merging short phrases does not help. |
 | R-09 | Does coherence rise with skill (H4)? | Inconclusive. No trend within matched contexts from beginner to advanced student; the top levels are confounded with concert/demo context. |
 | F-07 | Is a pianist's take-consistent timing personal intent (H5)? | No: a cross-pianist control passes too, so the consistent part is shared piece timing. A pianist's own take-to-take variation is mostly unstructured, which justifies treating it as noise. |
-| R-07 | Does fine-tuning SyMuPe on piece-disjoint PianoCoRe help, and is there a usable typicality score? | No: fine-tuning harms per-note prediction on PercePiano (-0.051), Vienna and (n)ASAP, so R-10 uses frozen SyMuPe. S-LR passes the deadpan battery, but so does a model-free amount-of-expression baseline, and it cannot tell halved expression from real (AUC 0.491): not used. The H1b preview is uninformative (its 0.50 bar is out of reach even for held-out real experts); H1b is now measured by mean-curve R²c against an expert oracle (DECISIONS 2026-10-05). |
+| R-07 | Does fine-tuning SyMuPe on piece-disjoint PianoCoRe help, and is there a usable typicality score? | No: fine-tuning harms per-note prediction on unseen sensor/Disklavier pieces (PercePiano -0.051; Vienna and (n)ASAP agree), slightly helps on transcribed MIDI, so R-10 uses frozen SyMuPe. S-LR passes the deadpan battery but is a flatness detector plus a noise penalty, matched by a model-free amount-of-expression baseline, and blind to halved expression (AUC 0.491): not used. The H1b preview is uninformative (16 held-out real experts reach only 0.25-0.27 of the 0.50 bar); H1b is now measured by mean-curve R²c against an expert oracle (DECISIONS 2026-10-05). Two independent audits agree. |
 | R-11 | Do expert performances and the report follow what teachers mark (3 tonebase annotated scores, pilot)? | Encoding is reliable (two blind encoders, category kappa 0.97, bar maps identical). Experts following the marks: inconclusive (0.634 [0.503, 0.750]; 0.598 with the waltz hand fix). The report does not notice a removed marked effect: its per-bar tempo/loudness channels cannot see single-note demands even at 4x (BL-32). About a third of annotations are MIDI-observable. |
 | BL-16 | Can repeated takes estimate a learner's noise floor (Rach3 Hanon)? | Yes, within one sitting. Across days, takes carry structured drift, so timing noise uses same-sitting takes only (O-01 guidance: 2-3 takes in one sitting). A second beginner is still needed. |
 
@@ -98,6 +98,8 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 
 ## Waiting on Henry (OWNER)
 
+Done 2026-10-05: O-03. The RTX 5080 box runs the R-07 job natively on Windows (CUDA 12.8 PyTorch; see the R-07 run record). R-10 and the audio front end can use it.
+
 | Ticket | What | Unblocks |
 |---|---|---|
 | O-01 | Your own takes: 2-3 takes of 1-2 passages **in one sitting** (BL-16), ideally MIDI and phone together, of a piece in ASAP/PianoCoRe | A real learner's noise floor, ground truth for the phone extras, the first fully trustworthy report |
@@ -107,8 +109,8 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 | BL-29 | Check tonebase's terms of use for your export; until then it is personal research use only, nothing committed or published | Any publication that uses the tonebase annotations |
 | O-04 | A cloud GPU budget (if any) | Runs too large for the 5080 |
 | Optional | Email the SKY-Piano authors; Globus access for MAESTRO-E; Zenodo request for CIPI | Better validation data |
-| Git | The 2026-09-29 wave and D-14 are uncommitted, and origin/main (R-07 results, 881f9f9) is not merged. Decide whether the tonebase loader/test go in (BL-29), commit, pull | Merging R-07 into the main tree |
-| R-07 B1-B4 | Run the four audit checks on the RTX 5080 box (`AUDIT.md` section 10 and appendix) | S-LR field dominance, corrected log IOI R²c, the reproduction-gate cause, output integrity |
+| Push | `.claude/settings.json` still denies `git push`; remove that line, or push yourself (`git push origin main`) | Sharing results with the RTX box |
+| BL-29 tonebase files | Decide whether `src/pianolens/data/tonebase.py`, its test and `scripts/extract_tonebase.py` (code and file-to-piece metadata only) are committed | A complete repo on the box |
 
 O-03 (GPU box) is done: R-07 ran there (2026-09-29 to 2026-10-05).
 

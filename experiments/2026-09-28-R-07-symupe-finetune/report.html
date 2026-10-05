@@ -48,9 +48,9 @@ padding:0 0 16px;margin-bottom:24px}}
 @media print{nav.toc,.theme{display:none}.wrap{display:block}}
 </style></head>
 <body><button class="theme" type="button">Light / dark</button>
-<div class="wrap"><nav class="toc"><div class="title">Contents</div><a class="h2" href="#1-what-r-07-is-and-why">1. What R-07 is and why</a><a class="h3" href="#the-problem-it-follows-from">The problem it follows from</a><a class="h3" href="#the-questions-readme-question">The questions (README &quot;Question&quot;)</a><a class="h3" href="#decision-rules-fixed-before-any-results">Decision rules (fixed before any results)</a><a class="h3" href="#the-split-readme-splits-split-summary-json">The split (README &quot;Splits&quot;, split/summary.json)</a><a class="h2" href="#2-the-models">2. The models</a><a class="h3" href="#symupe-encdec-base-arms-frozen-e-and-f">SyMuPe EncDec-base (arms &quot;frozen&quot;, &quot;E&quot; and &quot;F&quot;)</a><a class="h3" href="#pianist-transformer-rendering-arms-pt-frozen-and-pt-e">Pianist Transformer rendering (arms &quot;pt_frozen&quot; and &quot;pt_E&quot;)</a><a class="h3" href="#fine-tuning-recipe-readme-method-job-run-sh-train-config-json-files">Fine-tuning recipe (README &quot;Method&quot;; job/run.sh; train_config.json files)</a><a class="h2" href="#3-what-was-done-in-order">3. What was done, in order</a><a class="h2" href="#4-results-so-far-training-only-no-evaluation-results-yet">4. Results so far (training only; no evaluation results yet)</a><a class="h3" href="#data-job-outputs-data-prep-meta-json-leakage-report-json">Data (job/outputs/data/prep_meta.json, leakage_report.json)</a><a class="h3" href="#cost-question-d">Cost (question (d))</a><a class="h3" href="#training-curves">Training curves</a><a class="h2" href="#4b-first-evaluation-results-set-p-provisional-not-audited">4b. First evaluation results: set P (provisional, not audited)</a><a class="h3" href="#reproduction-gate-missed-by-0-001">Reproduction gate: missed by 0.001</a><a class="h3" href="#a-per-note-prediction-on-p-harms">(a) Per-note prediction on P: harms</a><a class="h3" href="#c-typicality-scores-e-on-p">(c) Typicality scores, E on P</a><a class="h3" href="#set-v-vienna-4x22-added-about-02-00-utc-job-outputs-results-v">Set V (Vienna 4x22), added about 02:00 UTC (job/outputs/results/V/)</a><a class="h3" href="#set-a-n-asap-80-renditions-16-works-added-about-03-00-utc-job-outputs-results-a">Set A ((n)ASAP, 80 renditions, 16 works), added about 03:00 UTC (job/outputs/results/A/)</a><a class="h3" href="#secondary-arm-fine-tuned-pianist-transformer-pt-e-added-about-12-30-utc-2026-10-01">Secondary arm: fine-tuned Pianist Transformer (pt_E), added about 12:30 UTC 2026-10-01</a><a class="h3" href="#set-r10u-b-h1b-preview-and-secondary-a-added-2026-10-04-00-20-utc-results-r10u">Set R10u: (b) H1b preview and secondary (a), added 2026-10-04 00:20 UTC (results/R10u/)</a><a class="h3" href="#set-r10s-added-2026-10-05-04-25-utc-results-r10s-all-five-arms">Set R10s, added 2026-10-05 04:25 UTC (results/R10s/, all five arms)</a><a class="h2" href="#5-what-is-still-running-and-what-each-result-will-decide">5. What is still running, and what each result will decide</a><a class="h3" href="#running-at-the-time-of-writing">Running at the time of writing</a><a class="h3" href="#arms-and-sets-that-remain">Arms and sets that remain</a><a class="h3" href="#what-each-pending-result-decides-the-pre-registered-readings-no-other-reading-applies">What each pending result decides (the pre-registered readings; no other reading applies)</a><a class="h2" href="#gaps-and-things-not-verified">Gaps and things not verified</a></nav>
+<div class="wrap"><nav class="toc"><div class="title">Contents</div><a class="h2" href="#1-what-r-07-is-and-why">1. What R-07 is and why</a><a class="h3" href="#the-problem-it-follows-from">The problem it follows from</a><a class="h3" href="#the-questions-readme-question">The questions (README &quot;Question&quot;)</a><a class="h3" href="#decision-rules-fixed-before-any-results">Decision rules (fixed before any results)</a><a class="h3" href="#the-split-readme-splits-split-summary-json">The split (README &quot;Splits&quot;, split/summary.json)</a><a class="h2" href="#2-the-models">2. The models</a><a class="h3" href="#symupe-encdec-base-arms-frozen-e-and-f">SyMuPe EncDec-base (arms &quot;frozen&quot;, &quot;E&quot; and &quot;F&quot;)</a><a class="h3" href="#pianist-transformer-rendering-arms-pt-frozen-and-pt-e">Pianist Transformer rendering (arms &quot;pt_frozen&quot; and &quot;pt_E&quot;)</a><a class="h3" href="#fine-tuning-recipe-readme-method-job-run-sh-train-config-json-files">Fine-tuning recipe (README &quot;Method&quot;; job/run.sh; train_config.json files)</a><a class="h2" href="#3-what-was-done-in-order">3. What was done, in order</a><a class="h2" href="#4-results-so-far-training-only-no-evaluation-results-yet">4. Results so far (training only; no evaluation results yet)</a><a class="h3" href="#data-job-outputs-data-prep-meta-json-leakage-report-json">Data (job/outputs/data/prep_meta.json, leakage_report.json)</a><a class="h3" href="#cost-question-d">Cost (question (d))</a><a class="h3" href="#training-curves">Training curves</a><a class="h2" href="#4b-first-evaluation-results-set-p-provisional-not-audited">4b. First evaluation results: set P (provisional, not audited)</a><a class="h3" href="#reproduction-gate-missed-by-0-001">Reproduction gate: missed by 0.001</a><a class="h3" href="#a-per-note-prediction-on-p-harms">(a) Per-note prediction on P: harms</a><a class="h3" href="#c-typicality-scores-e-on-p">(c) Typicality scores, E on P</a><a class="h3" href="#set-v-vienna-4x22-added-about-02-00-utc-job-outputs-results-v">Set V (Vienna 4x22), added about 02:00 UTC (job/outputs/results/V/)</a><a class="h3" href="#set-a-n-asap-80-renditions-16-works-added-about-03-00-utc-job-outputs-results-a">Set A ((n)ASAP, 80 renditions, 16 works), added about 03:00 UTC (job/outputs/results/A/)</a><a class="h3" href="#secondary-arm-fine-tuned-pianist-transformer-pt-e-added-about-12-30-utc-2026-10-01">Secondary arm: fine-tuned Pianist Transformer (pt_E), added about 12:30 UTC 2026-10-01</a><a class="h3" href="#set-r10u-b-h1b-preview-and-secondary-a-added-2026-10-04-00-20-utc-results-r10u">Set R10u: (b) H1b preview and secondary (a), added 2026-10-04 00:20 UTC (results/R10u/)</a><a class="h3" href="#set-r10s-added-2026-10-05-04-25-utc-results-r10s-all-five-arms">Set R10s, added 2026-10-05 04:25 UTC (results/R10s/, all five arms)</a><a class="h2" href="#5-what-is-still-running-and-what-each-result-will-decide">5. What is still running, and what each result will decide</a><a class="h3" href="#running-at-the-time-of-writing">Running at the time of writing</a><a class="h3" href="#arms-and-sets-that-remain">Arms and sets that remain</a><a class="h3" href="#what-each-pending-result-decides-the-pre-registered-readings-no-other-reading-applies">What each pending result decides (the pre-registered readings; no other reading applies)</a><a class="h2" href="#gaps-and-things-not-verified">Gaps and things not verified</a><a class="h2" href="#audit-verdict-eval-auditor-2026-10-05-confirmed-with-caveats">Audit verdict (eval-auditor, 2026-10-05): Confirmed with caveats</a></nav>
 <main><h1 id="r-07-report-fine-tuning-symupe-and-pianist-transformer-on-piece-disjoint-pianocore">R-07 report: fine-tuning SyMuPe (and Pianist Transformer) on piece-disjoint PianoCoRe</h1>
-<p>Written 2026-09-29, about 22:10 UTC (17:10 local), while the job was still running. This is a readable companion to <code>README.md</code>, which holds the pre-registration and the lead's run record. <strong>Nothing here is a verdict.</strong> Every number cites the file it came from, and paths are relative to this folder unless they start with <code>C:\</code>. Section 4b (added later) has the first evaluation results, for set P; they are provisional and not audited.</p>
+<p>Written 2026-09-29, about 22:10 UTC (17:10 local), while the job was still running. This is a readable companion to <code>README.md</code>, which holds the pre-registration and the lead's run record. <strong>Audited 2026-10-05 by <code>eval-auditor</code>: Confirmed with caveats</strong> (details in README <code>## Audit</code>; the key caveats are summarised in the "Audit verdict" section at the end). Every number cites the file it came from, and paths are relative to this folder unless they start with <code>C:\</code>. Section 4b (added later) has the first evaluation results, for set P; they are provisional and not audited.</p>
 <hr />
 <h2 id="1-what-r-07-is-and-why">1. What R-07 is and why</h2>
 <h3 id="the-problem-it-follows-from">The problem it follows from</h3>
@@ -107,7 +107,7 @@ padding:0 0 16px;margin-bottom:24px}}
 </tr>
 </tbody>
 </table>
-<p>Secondary sets (reported, not deciding): <strong>R10u</strong> (76 R-02 pieces unseen by pretraining and by fine-tuning; transcribed MIDI), <strong>R10s</strong> (held out here but seen in pretraining), <strong>V</strong> (Vienna 4x22), <strong>A</strong> ((n)ASAP, Pianist Transformer's test folders).</p>
+<p>Secondary sets (reported, not deciding): <strong>R10u</strong> (transcribed MIDI; [audit 2026-10-05] the evaluation set has 91 pieces: 75 of the 76 R-02 pieces unseen by pretraining and fine-tuning, plus 16 work-mates, 10 of which were seen paired in SyMuPe pretraining), <strong>R10s</strong> (held out here but seen in pretraining), <strong>V</strong> (Vienna 4x22), <strong>A</strong> ((n)ASAP, Pianist Transformer's test folders).</p>
 <h3 id="the-split-readme-splits-split-summary-json">The split (README "Splits", <code>split/summary.json</code>)</h3>
 <p>The unit of the split is the <strong>work</strong>: all movements of a sonata, or a prelude with its fugue, go to one side. Test: 257 piece ids in 129 works. Validation: 91 piece ids in 59 works, used only for early stopping. Quarantine: 81 piece ids that might alias a test piece. Train: everything else. The split is committed in <code>split/pieces.csv</code>.</p>
 <hr />
@@ -1117,12 +1117,16 @@ statistic was added.</p>
 <li>V per excerpt: Chopin Op. 10/3 +0.100, Op. 38 +0.088, Mozart K. 331 −0.383, Schubert D783 −0.092.
   The wide CI comes from the Mozart drop.</li>
 <li>So fine-tuning Pianist Transformer does not show the clear loss that fine-tuning SyMuPe shows
-  (E − frozen: "harms" on P). The only set with a detectable change is A, Pianist Transformer's
-  own shipped test folders, and that CI only just clears 0. P and V are not decided.</li>
+  (E − frozen: "harms" on P). Among P, V and A, the only set with a detectable change is A,
+  Pianist Transformer's own shipped test folders, and that CI only just clears 0. P and V are not
+  decided. [audit 2026-10-05: written before R10u / R10s; both later show an improvement, below.]</li>
 <li>For reference, against frozen SyMuPe on P: pt_E 0.4076 vs frozen 0.3987.</li>
 </ul>
 <h3 id="set-r10u-b-h1b-preview-and-secondary-a-added-2026-10-04-00-20-utc-results-r10u">Set R10u: (b) H1b preview and secondary (a), added 2026-10-04 00:20 UTC (<code>results/R10u/</code>)</h3>
-<p>R10u = PianoCoRe pieces unseen by pretraining and fine-tuning (transcribed MIDI). Arms in this
+<p>R10u = PianoCoRe pieces held out from fine-tuning, mostly unseen by pretraining (transcribed MIDI;
+[audit 2026-10-05] 91 pieces: 75 of the 76 pre-registered "unseen" R-02 pieces, 3 R-02 work-mates
+and 7 other work-mates that are paired in PERiScoPe, and 6 unpaired work-mates; the unseen-only
+subset gives the same readings, see README "Audit"). Arms in this
 summary: frozen, E, F, pt_frozen. <strong>pt_E is missing:</strong> all 91 of its generation items failed with
 "CUDA error: out of memory" while a game held about 5 GB of VRAM (<code>eval/pt_E/R10u/gen/_log_gen.json</code>).
 Failed items are not written, so a rerun retries exactly those 91.</p>
@@ -1245,7 +1249,7 @@ It is the pre-registered exposure contrast for R-10, not a decision set.</p>
 </tr>
 </tbody>
 </table>
-<p>The captured share is about 0.09-0.11 for every arm, the same level as on R10u (0.098-0.118).
+<p>The captured share is about 0.09-0.11 for every arm, the same level as on R10u (0.098-0.124 with pt_E; [audit 2026-10-05] was "0.098-0.118").
 Exposure in pretraining does not lift it. E's velocity mean-curve R²c reaches 0.52 here
 (0.41 on R10u), while its timing R²c stays near zero.</p>
 <p><strong>(a) on R10s (secondary):</strong>
@@ -1322,10 +1326,37 @@ Exposure in pretraining does not lift it. E's velocity mean-curve R²c reaches 0
 <hr />
 <h2 id="gaps-and-things-not-verified">Gaps and things not verified</h2>
 <ul>
-<li><strong>No evaluation numbers exist yet.</strong> The results folder was empty when this was written, so nothing on questions (a) to (c) is reported here.</li>
+<li><strong>No evaluation numbers exist yet.</strong> The results folder was empty when this was written, so nothing on questions (a) to (c) is reported here. [audit 2026-10-05: superseded; the results are in section 4b and audited in README "Audit".]</li>
 <li><strong><code>TimeShift</code> / <code>TimeDuration</code> units</strong> in the SyMuPe tokenizer were not checked. The encoder's exact field composition is taken from the config and the job code, not traced through symupe's source.</li>
 <li><strong>Frozen typset.</strong> <code>eval/frozen/P/typset</code> exists, but it was not checked for completeness.</li>
 <li><strong>E and F step times</strong> were measured while the frozen evaluation shared the GPU, so they are not clean cost figures.</li>
+</ul>
+<hr />
+<h2 id="audit-verdict-eval-auditor-2026-10-05-confirmed-with-caveats">Audit verdict (eval-auditor, 2026-10-05): Confirmed with caveats</h2>
+<p>Every pre-registered reading holds and every number reruns exactly from the local outputs; the
+pre-registration is unchanged since commit e4becf8. What the caveats change:</p>
+<ul>
+<li><strong>(a) Harms on P</strong> is robust to the sampling draw (each half of the K = 8 samples: −0.041 and
+  −0.063, both CIs below 0) and to leaving out any one work. It is a statement about these three
+  works (the 3-work t-interval includes 0); V and A agree. R-10 uses the frozen model.</li>
+<li><strong>(c) S-LR's pass is genuine but narrower than it looks.</strong> The smallest paired margin on P is
+  1.26 nats per note, so it is not an artefact. It decomposes into two parts: −ℓ_F alone catches
+  every deadpan (R1) and ℓ_E alone catches added noise (R2). It is a flatness detector plus a noise
+  penalty. Among human performances it ranks mostly by distance from flat (rank correlation 0.83
+  with −ℓ_F on P, 0.95 on V), and it does not penalise halved expression (scale0.5 AUC 0.49). F
+  scores velocity-offset and slower deadpans as in-family, so those variants did not test
+  generalisation. For the F-06 "too flat" flag, the trivial B-amount does at least as well as S-DEV.</li>
+<li><strong>(b) The captured-share bar of 0.50 could not be reached at K = 16.</strong> Treating 16 held-out
+  <em>real</em> expert performances as the "samples" captures a median of only 0.273. On that scale E's
+  0.097 is about 0.39 of what real performers achieve. The pre-registered reading ("at the
+  falsification level") stands as written, but R-10 must calibrate this threshold (or use more
+  samples) before any H1b verdict. R²c is unaffected (the expert mean curve reaches 0.90). The
+  unseen-only subset (74 pieces) gives the same readings.</li>
+<li><strong>Transcription-style reading:</strong> plausible (E's sampled articulation on P sits in the
+  transcribed range, +0.15 vs −0.69 for the P performances) but untested; R10s, also transcribed,
+  shows no change.</li>
+<li><strong>Data and run integrity:</strong> confirmed. The 636 skipped training items are long items in 21
+  pieces (3.5% of training notes); they affect training only.</li>
 </ul></main></div>
 <script>
 (function(){var r=document.documentElement,b=document.querySelector('.theme');

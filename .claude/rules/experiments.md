@@ -294,3 +294,18 @@ paths:
   after a registered-but-late fix.
 - **Strata of one row are never resampled.** A bootstrap stratified by piece, with one row in a
   stratum, treats that row as fixed. With 6 or fewer rows, add the t-interval over rows.
+
+## Lessons from the R-07 audit on the RTX box (2026-10-05, full outputs)
+
+- **A "captured share" or subspace statistic needs an expert-as-sampler ceiling.** Hold out as
+  many real performances as the model has samples, and score them with the same statistic. In
+  R-07, 16 real performances captured only 0.273 of the shared variance, so the 0.50 bar was
+  unreachable at K = 16. Calibrate the thresholds to that ceiling, or raise K, before any H1b
+  verdict.
+- **Decompose a likelihood ratio against a "flat" model into its two terms.** In R-07, −ℓ_F alone
+  passed the deadpan battery and ℓ_E alone passed the noise battery. Also report:
+  - the rank correlation of the ratio with −ℓ_F among real performances;
+  - an under-expression variant (expression scaled by 0.5).
+
+  An autoregressive flat model detects constancy, so offset and tempo variants are in-family for
+  it.

@@ -3904,6 +3904,7 @@ it each time.
 | R-03 | The published result reproduces | Their headline averaged 3 of 4 test folds, their leak fix made the leak worse, and about 60% of the remaining signal came from spotting flat computer renditions. |
 | R-04 | Both models are near the ceiling | The wrong ceiling was used. There is large headroom. |
 | R-06 | Keep both expression models | The pre-registered rule picks one. Flat playing also beats experts on likelihood even when perturbed. |
+| R-07 | The likelihood ratio S-LR passes, so it is a typicality score; the H1b preview falsifies H1b | S-LR is a flatness detector plus a noise penalty, and cannot tell halved expression from real. Real performers capture only about a quarter of the shared variance at 16 samples, so the 0.50 bar was out of reach and the preview says nothing about H1b. |
 | R-08a | The confidence interval clears the target | Too optimistic with only 5 pieces. A more appropriate interval touches the target. |
 | R-08b | Recognised pieces scored lower | An artefact of mixing movements. Within a movement, recognition helped slightly. |
 | R-09 / D-10 | The skill effect vanishes once context is fixed | Fixing context also removes the top skill levels, so context and skill cannot be separated. |
