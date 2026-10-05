@@ -73,7 +73,8 @@ paths:
 - **LLM annotation of famous repertoire requires a memorisation control:** disguised or transposed
   renderings, or unfamiliar repertoire, plus run-to-run variance. Record `recognised_piece`, and
   break results down by it.
-- **Blind annotators never receive a repo path.** Their inputs are copied outside the repo, and
+- **Blind annotators never receive a repo path**, not even inside a "never access" line (R-11
+  encoder B's prompt named it once). Their inputs are copied outside the repo, and
   their transcripts are audited for file access. Save annotations into the experiment folder
   immediately; scratchpads do not persist.
 
@@ -272,3 +273,24 @@ paths:
   correlate above 0.9.
 - **Report R²c with its amplitude ratio.** For centered curves R²c = 2rb - b², with b = sd(pred) /
   sd(target). A negative R²c with a positive r is amplitude miscalibration, not wrong shape.
+
+## Lessons from the R-11 audit (2026-10-05)
+
+- **A "does the band flag the removal" test needs a gain sweep before registering.** Apply the
+  degradation at gain 1 (removal), 3 (reversed at 2x) and 5 (reversed at 4x). Report rows that
+  stay near the false-alarm rate at gain 5 as unreachable by the channel, separately from rows
+  that are not. R-11: 4 of 6 rows (one or two IOIs, one note's velocity, a three-note slope)
+  stayed at 0.15 or less at 4x on the smoothed per-bar channels. The pooled bar of 0.25 was
+  reachable only with every effect reversed at 2x (0.266).
+- **Count admissible null positions per row before registering.** The count depends only on
+  the score and the encoding. R-11 lost 4 of 11 nocturne primary rows to a 15-measure null
+  pool. 3 of the 4 would have had r = 0, so the mechanical drop favoured the estimate.
+- **Check MusicXML hands per piece before using staffs as reference sets.** Count lower-staff
+  notes per measure. A part can hold the other hand's chords (R-11 waltz: 19 measures, 62
+  notes). Fixing it moved the waltz mean null percentile from 0.620 to 0.486.
+- **Deviation timing must match the transcript.** "Fixed before reading the outcome" is false
+  if a run printed the outcome first. When a fix follows a printed result, report the pre-fix
+  number and the rows the fix moved. In R-11 the encoder B sensitivity rose from 0.504 to 0.588
+  after a registered-but-late fix.
+- **Strata of one row are never resampled.** A bootstrap stratified by piece, with one row in a
+  stratum, treats that row as fixed. With 6 or fewer rows, add the t-interval over rows.

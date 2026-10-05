@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-R-11 status (2026-10-05): gate passed, (a)-(c) run, verdict Provisional (needs eval-auditor).
+R-11 status (2026-10-05): gate passed, (a)-(c) run, eval-auditor: Confirmed with caveats; six README text fixes applied (Post-audit corrections). Audit lessons are in rules/experiments.md (gain sweep before registering a removal test, count null positions, check MusicXML hands, honest deviation timing, one-row strata).
 Prereg section sha256 390903481b69...29ca; inputs + encoder B hashes in
 `experiments/2026-10-05-R-11-teacher-annotations/artifacts/prereg_sha256.txt`.
 Numbers: `artifacts/gate.json`, `a_summary.json`, `a_rows.csv`, `b_summary.json`, `c_summary.json`;
@@ -41,3 +41,9 @@ including the primary timing row NOC-A-027.
 
 Env: `.venv` core-only (no pyloudnorm); R-10 shares it, do not `uv sync` other extras.
 See [[r08a-llm-phrase-pilot]] for blind-annotator hygiene.
+
+Audit corrections to my own practice (2026-10-05): I wrote "fixed before reading the outcome" for
+a fix made 8 s after a printed gate fail, and "only corrected numbers reported" for a fix that
+moved an estimate by +0.084. **How to apply:** when a run prints a result and I then fix code,
+report the pre-fix number and what the fix moved, and title deviation sections by when they were
+written. My (a) verdict sentence also claimed a direction the intervals did not support.

@@ -3946,6 +3946,18 @@ it each time.
   pieces (about 0.64) is below 0.70 as a point estimate, and single pieces vary widely.
 - **Naming the exact wrong note in fast runs.** A same-pitch repair step helps a little, but wrong
   keys that equal a nearby written note are still named less reliably than in slow passages.
+- **Hearing what a teacher marks at the level of single notes (R-11).** We compared three
+  teachers' annotated scores (Chopin's Nocturne Op. 9 No. 2, Waltz Op. 64 No. 1 and Etude Op. 10
+  No. 4, from tonebase lessons) with hundreds of expert recordings of the same pieces. Two people
+  encoding the same score independently agreed closely, so the annotations are usable data. Do
+  experts do what the teacher marks more than elsewhere in the piece? Perhaps a little, but the
+  evidence is inconclusive (0.63 where 0.5 means no difference; interval 0.50 to 0.75), and
+  weaker where the teacher asks for something the printed score does not. When we removed a
+  marked effect from expert performances, the report did not notice. The reason is structural:
+  the report reads smoothed tempo and loudness per bar, so one held note, one accent or one
+  voiced melody note is invisible to it even when exaggerated fourfold. Only whole-bar timing and
+  beat-level loudness contrasts were caught. Only about a third of the annotations are things
+  MIDI can observe at all; the rest are fingering, practice advice, analysis and character.
 
 ### Known gaps that have never been tested
 
@@ -3979,7 +3991,8 @@ Each chapter in Part 2 ends with its own list. The ones that matter most for a l
 
 | Step | What it unblocks |
 |---|---|
-| Run the expression model fine-tune on the RTX 5080 | Tests whether the shared expert core can be predicted from the score (H1b) |
+| Run R-10 on the RTX 5080: does the frozen expression model predict the experts' average curve on 56 fresh pieces? (The fine-tune ran in R-07 and did not help.) | The H1b verdict |
+| Decide whether the report needs note-level channels (voice-separated loudness, per-note timing against the expert band) | Teacher-style feedback on single notes (R-11, BL-32) |
 | Record 2 to 3 takes of a passage in one sitting, MIDI and phone together | A real learner's noise floor and the first fully trustworthy personal report |
 | Listen to the flagged passages of the owner's takes, and check the original phone files | Where the second melody comes from (BL-22) |
 | Run the listening study, starting with a pilot | Which flaws listeners actually mind (H6), and the ground truth any grade needs |

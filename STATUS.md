@@ -22,6 +22,7 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 | R-09 | Does coherence rise with skill (H4)? | Inconclusive. No trend within matched contexts from beginner to advanced student; the top levels are confounded with concert/demo context. |
 | F-07 | Is a pianist's take-consistent timing personal intent (H5)? | No: a cross-pianist control passes too, so the consistent part is shared piece timing. A pianist's own take-to-take variation is mostly unstructured, which justifies treating it as noise. |
 | R-07 | Does fine-tuning SyMuPe on piece-disjoint PianoCoRe help, and is there a usable typicality score? | No: fine-tuning harms per-note prediction on PercePiano (-0.051), Vienna and (n)ASAP, so R-10 uses frozen SyMuPe. S-LR passes the deadpan battery, but so does a model-free amount-of-expression baseline, and it cannot tell halved expression from real (AUC 0.491): not used. The H1b preview is uninformative (its 0.50 bar is out of reach even for held-out real experts); H1b is now measured by mean-curve R²c against an expert oracle (DECISIONS 2026-10-05). |
+| R-11 | Do expert performances and the report follow what teachers mark (3 tonebase annotated scores, pilot)? | Encoding is reliable (two blind encoders, category kappa 0.97, bar maps identical). Experts following the marks: inconclusive (0.634 [0.503, 0.750]; 0.598 with the waltz hand fix). The report does not notice a removed marked effect: its per-bar tempo/loudness channels cannot see single-note demands even at 4x (BL-32). About a third of annotations are MIDI-observable. |
 | BL-16 | Can repeated takes estimate a learner's noise floor (Rach3 Hanon)? | Yes, within one sitting. Across days, takes carry structured drift, so timing noise uses same-sitting takes only (O-01 guidance: 2-3 takes in one sitting). A second beginner is still needed. |
 
 ## Engineering results accepted by the lead (tickets, not audited experiments)
@@ -87,8 +88,8 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
   about 0.88; every verdict reachable). Pre-run review done, amendments A1-A4 / R1-R5 applied
   (56 pieces in 54 works; amendment hash 6215a057...4089). Ready: OWNER runs
   `experiments/2026-10-05-R-10-h1b/job/` on the RTX 5080 (about 1-7 h) after commit and push.
-- **R-11** (tonebase teacher annotations vs the expert band and the report): encoding protocol,
-  encodings of three pilot pieces and pre-registration in progress (ml-researcher).
+- **R-11:** audited (Confirmed with caveats); author README text fixes in progress. Follow-ups
+  BL-31 (anchor rule), BL-32 (note-level channels, OWNER input), BL-33 (MusicXML hands).
 - **R-07 follow-ups:** author text fixes (AUDIT section 9) after the origin/main merge.
 - The 2026-09-29 wave from the research-log restructure: DF-02 (LLM phrase source in the report),
   BL-18 (strong tier on transcribed input), BL-19 / BL-20 (tier A gaps), BL-21 / BL-22 (audio
