@@ -4,11 +4,16 @@ Usage: uv run --with markdown python scripts/build_research_log.py [--open]
 Pages (no external requests; light and dark themes):
   docs/SCORING_MODEL.md -> docs/scoring-model.html  (how a performance is scored, as it stands)
   docs/RESEARCH_LOG.md  -> docs/research-log.html   (what was tried, in full)
+
+Any other markdown file renders the same way, without the tab bar (images stay relative to the
+output file):
+    uv run --with markdown python scripts/build_research_log.py SRC.md OUT.html "Title" [--open]
 """
 
 from __future__ import annotations
 
 import html
+import os
 import re
 import subprocess
 import sys
@@ -182,8 +187,8 @@ def diagrams(body: str) -> str:
     return re.sub(r"<!--\s*DIAGRAM:([\w-]+)\s*-->", sub, body)
 
 
-def build_page(src: str, out: str, title: str, description: str) -> Path:
-    md = (DOCS / src).read_text(encoding="utf-8")
+def build_page(src: Path, out: Path, title: str, description: str, tabs: bool = True) -> Path:
+    md = src.read_text(encoding="utf-8")
     body = markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"])
 
     toc: list[tuple[int, str, str]] = []
@@ -208,24 +213,36 @@ def build_page(src: str, out: str, title: str, description: str) -> Path:
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(description)}">
 <style>{CSS}</style></head>
-<body>{tab_bar(out)}
+<body>{tab_bar(out.name) if tabs else ''}
 <div class="wrap"><nav class="toc"><div class="title">Contents</div>{toc_markup(toc)}</nav>
 <main>{body}</main></div>
 <script>{JS}</script></body></html>
 """
-    path = DOCS / out
-    path.write_text(page, encoding="utf-8")
-    return path
+    out.write_text(page, encoding="utf-8")
+    return out
 
 
 def build() -> list[Path]:
-    return [build_page(src, out, title, desc)
+    return [build_page(DOCS / src, DOCS / out, title, desc)
             for src, out, _, title, desc in PAGES if (DOCS / src).exists()]
 
 
+def open_file(path: Path) -> None:
+    if sys.platform == "win32":
+        os.startfile(path)
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.run([opener, str(path)], check=False)
+
+
 if __name__ == "__main__":
-    outs = build()
+    args = [a for a in sys.argv[1:] if a != "--open"]
+    if args:
+        title = args[2] if len(args) > 2 else Path(args[0]).stem
+        outs = [build_page(Path(args[0]), Path(args[1]), title, title, tabs=False)]
+    else:
+        outs = build()
     for o in outs:
         print(o)
     if "--open" in sys.argv and outs:
-        subprocess.run(["open", str(outs[0])], check=False)
+        open_file(outs[0])

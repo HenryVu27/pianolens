@@ -300,5 +300,163 @@ Notebook for Anna Magdalena minuet) stay in R10u.
 
 ## Run record
 
-(To be filled after the run: machine, commit or diff hash, `calibrate.json`, wall time per stage,
-interruptions and resumes, deviations.)
+Run 1, started 2026-09-29 by a lead session on Henry's RTX 5080 box.
+
+- **Machine.** Windows 11 (native, no WSL), Git Bash, RTX 5080 16 GB (sm_120), driver 616.56;
+  24 CPU threads. torch 2.7.1+cu128 in both venvs (`setup.sh`: "cuda 12.8 available True",
+  capability (12, 0), bf16 matmul ok). The GPU is shared with the desktop (games, browser):
+  about 7 GB of VRAM was in use by other processes during the run.
+- **Code.** Commit dd13ab2 plus uncommitted changes, diff sha256 `c71b7d83be77...` at launch. The
+  changes are platform fixes only; no recipe, split, selection or decision rule changed:
+  - `job/*.sh`: LF line endings; `wpwd` (native Windows paths for Python) and `vpy` (a uv venv
+    on Windows keeps python in `Scripts/`); `setup.sh` reinstalls pianolens on every run and, on
+    Windows only, installs a no-op stub of the Unix `resource` module into the SyMuPe venv
+    (symupe imports it only to cap memory in its parangonar aligner, which this job never calls).
+  - `src/pianolens/data/pianocore.py` `_midi_from_bytes`: the temp MIDI file is closed before
+    loading and deleted after. On Windows the old code failed every load (a NamedTemporaryFile
+    cannot be reopened while open). A first prep run with the old code recorded 47,732
+    `load_error` rows; it was discarded (logs kept in `job/outputs/logs_failed_run1/`).
+- **Data.** `fetch_data.sh`: all three PianoCoRe checksums OK; (n)ASAP at 4097b45.
+- **Split.** `prep_data.py` hashed the checked-out `split/pieces.csv` as `d7ec539c...` because git
+  (`core.autocrlf=true`) checked it out with CRLF endings. With LF endings the file hashes to
+  `3341bfa5...86`, identical to the committed blob: same split, different line endings.
+- **prep** (12 workers, 784 s): 48,373 rows, 45,670 items, 2,703 excluded for matched share
+  < 0.8. Train 36,686 PianoCoRe items (1,280 pieces) + 609 (n)ASAP (118 pieces); val 2,318 + 32
+  (78 + 11 pieces); test 6,025 PianoCoRe items (139 pieces). Leakage check OK (0 held-out pieces
+  or works in train, 0 performances in two splits).
+- **tokenize** (E): train 37,295 items -> 146 shards, 636 failed (1.7%); val 2,350 -> 10 shards,
+  9 failed. Every failure is the R-06 adapter's guard "performance token order differs from
+  interchange order"; those items are skipped. The rate was not anticipated in the
+  pre-registration and is disclosed here.
+- **R-06 evaluation items (P / V / A)** were not on this machine (gitignored, on the Mac). They
+  were rebuilt here with the unchanged R-06 `prepare.py` from PercePiano e672299, Vienna 4x22
+  1033ade and (n)ASAP 4097b45. Counts match the R-06 README exactly: P 981 renditions in 86
+  passages (1 excluded for matched share) and 103 external deadpans, A 80, V 88. The
+  reproduction gate in (a) is the numeric check.
+- **calibrate** (`outputs/calibrate/calibrate.json`): 0.150 s per step (median of 25 timed),
+  64 windows per step, peak 2.77 GB, projected 1.25 h for 30,000 steps. No cloud GPU needed.
+- **train E** (21:15-21:47 UTC, no interruptions): step-0 validation loss (the pretrained
+  weights) 3.2450 on 2,048 windows; 2.4675 at step 1,000; best 2.4395 at step 9,000; early stop at
+  step 11,000 (5 evaluations without a 0.1% relative improvement). `best.pt` = step 9,000. The
+  "minimum for use downstream" validation-loss condition (best below step 0) holds; the P
+  condition is decided by (a).
+- **tokenize_flat**: same 636 / 9 skipped items as tokenize (same guard), so E and F see the
+  same item set.
+- **train F** (21:49-22:06 UTC): step-0 validation loss 2.0242 (flat validation renditions);
+  best 0.9327 at step 5,000 (the cap; not stopped early).
+- **tokenize_pt**: 37,295 / 2,350 items, 0 failures.
+- **calibrate_pt**: 3.14 s per step (32 windows of 4,096 tokens, micro-batch 2 x 16), peak
+  8.32 GB, projected 6.98 h for 8,000 steps. Measured while the frozen evaluation shared the GPU,
+  so the time is an upper bound. Fits without the fallbacks.
+- **eval**: frozen and pt_frozen started 21:21 UTC while E trained (they do not depend on E; the
+  recipe and decision rules were fixed before); E and F started 22:08 UTC.
+- **train_pt** started 22:08 UTC alongside both evaluations (7.2 s per step while sharing the GPU,
+  against 3.14 calibrated). Validation loss: step 0 1.6420, 500 1.0578, 1,000 1.0294, 1,500 1.0176.
+- **Interruption (about 23:50 UTC).** With three GPU jobs and their CPU workers running, the machine
+  ran low on RAM (4.1 of 31.7 GB free) and the Claude Code session stopped the three launching
+  shells; the Python jobs kept running without them. They were stopped deliberately at 00:01 UTC,
+  right after pt_E saved `last.pt` at step 1,500 (`last.pt` and `best.pt` both step 1,500, checked
+  by loading them). All 5,212 evaluation outputs written in the preceding hour load cleanly (the
+  writes are not atomic, so this was checked). Nothing was recomputed or discarded.
+- **Restart (00:03 UTC), one job at a time**, from a detached driver: eval (frozen, E, F,
+  pt_frozen; existing per-item outputs are skipped), then train_pt resumed from step 1,500, then
+  eval of all arms including pt_E. pt_E's data order after the resume follows the documented
+  resume rule (re-seeded from (seed, step)).
+- **results/P** written 00:58 UTC (arms frozen, E, F, pt_frozen). Provisional readings, before any
+  audit: reproduction gate missed by 0.001 (frozen P composite 0.3987 vs 0.388; pt_frozen 0.3948
+  vs 0.393); (a) E − frozen −0.0509 [−0.0720, −0.0287] = **harms**, so R-10 uses the frozen model;
+  (c) on P, S-LR meets R1 and R2 (R3 on V pending), S-DEV and B-amount meet R1 only, S-TYP and
+  S-RAW fail R1. Details in `REPORT.md` section 4b.
+- **results/V** written 01:58 UTC. Provisional: R3 met for S-LR and S-DEV (every R1 variant AUC
+  1.000), not for S-TYP (half_flat_velocity 0.239). Pre-registered readings, before audit: S-LR
+  **pass**; S-DEV **flatness detector only**; S-TYP **fail**. Secondary (a) on V: E − frozen
+  −0.098 [−0.135, −0.063].
+- **results/A** written about 03:00 UTC. Secondary: E − frozen −0.094 [−0.145, −0.053];
+  pt_frozen − frozen −0.162 [−0.229, −0.100]; S-LR AUC 1.000 on every R1 variant.
+- **Pause, about 06:03-17:01 UTC 2026-09-30.** The PC entered a low-power state (Kernel-Power
+  events) despite AC sleep and hibernate being set to "never"; the jobs were suspended, not killed,
+  and resumed on wake. No outputs lost. R10u frozen scoring was at 25,197 of 64,736 items on
+  resume. The R-07 processes run at BelowNormal CPU priority so the machine stays usable; this
+  changes speed only.
+- **train_pt resumed 04:30 UTC 2026-10-01** from `last.pt` (step 1,500), in a second detached
+  process running in parallel with the evaluation driver (same `run.sh` stage and arguments,
+  including 4 data workers; it writes `.done_train_pt` on completion, so the driver's later
+  train_pt stage skips). 2.78 s per step at step 1,525, peak 8.33 GB, while sharing the GPU.
+- **train_pt finished 09:40 UTC 2026-10-01** at the 8,000-step cap (not stopped early; 4 bad
+  evaluations at the end). Validation loss: step 0 1.6420, 1,500 1.0176, 6,500 0.9786, 8,000 0.9762
+  (best; `best.pt` = step 8,000). No sleep events during the night.
+- **eval pt_E on P / V / A** started 11:02 UTC 2026-10-01 in parallel with the driver (which was
+  on F for R10u), listing all five arms so the P / V / A summaries are rebuilt with every arm.
+  Finished 12:05 UTC. `summarize_eval.py` only differences against frozen SyMuPe, so the
+  pre-registered secondary pt_E − pt_frozen was computed afterwards with its own `boot_ci` and
+  `t_interval` on `a_per_rendition.csv` (`results/pt_E_vs_pt_frozen.json`). Provisional: P +0.013
+  [−0.013, 0.039] no detectable change; V −0.072 [−0.240, 0.095] no detectable change; A +0.031
+  [0.001, 0.064] improves.
+- **Paused 21:30 UTC 2026-10-01** at the owner's request (machine running hot): the R-07 python
+  processes were suspended in place (NtSuspendProcess), during pt_frozen generation on R10u (61 of
+  91 pieces). Done at that point on R10u: frozen, E, F (all), pt_frozen scoring. Resuming continues
+  from the same item; nothing is recomputed.
+- **Resumed 2026-10-02** at the owner's request (NtResumeProcess), still at BelowNormal priority;
+  pt_frozen R10u generation continued from 64 of 91 pieces. Paused again later on 2026-10-02 at
+  the owner's request, at 71 of 91 pieces.
+- **Stopped 2026-10-02** at the owner's request to free VRAM (a suspended process keeps its GPU
+  memory): the driver and all R-07 processes were terminated. The 71 completed generation outputs
+  load cleanly (newest three checked). To finish, rerun the driver script; eval.sh skips every
+  existing per-item output, so only the in-progress piece is redone. Remaining: pt_frozen R10u
+  generation (20 pieces), pt_E on R10u, all arms on R10s.
+- **Restarted 05:30 UTC 2026-10-03** (owner asleep; full resources, Normal priority) as two
+  per-set streams (`SETS=R10u` and `SETS=R10s`, all arms). Running both at once oversubscribed
+  VRAM (the Pianist Transformer generation process alone reached 14.5 GB dedicated) and both
+  crawled, so the R10s stream was stopped after 2 items and queued to start when the R10u stream
+  exits. R10s eval set: 1,812 renditions in 48 passages (30,804 items).
+- **results/R10u** written 00:18 UTC 2026-10-04. pt_E generation on R10u failed for all 91 items
+  with CUDA out of memory (a game held about 5 GB of VRAM at the time); pt_E is therefore absent from
+  this summary, and a retry is queued after R10s. Provisional readings: (b) H1b preview for E,
+  median captured share 0.098 (random 0.012 / p95 0.015) → "at the H1b falsification level"; R²c
+  velocity 0.413 (inconclusive), log IOI 0.065 (falsification level); frozen reads the same
+  (0.118, 0.325, 0.142). Secondary (a) E − frozen +0.041 [0.028, 0.051] (improves on R10u, unlike
+  P / V / A).
+- **Paused 03:19 UTC 2026-10-04** at the owner's request (processes suspended in place) during
+  frozen scoring of R10s; last output written 22:19:30 local, none after. Resumed later at the
+  owner's request; frozen R10s scoring continued from where it stopped.
+- **2026-10-04 ~00:20 local**, owner asleep, "make use of everything": R-07 processes set to Normal
+  priority, and a keep-awake helper (SetThreadExecutionState, ES_SYSTEM_REQUIRED) started that
+  exits when no R-07 process remains, after two nights were lost to sleep (about 11 h each).
+  Power settings unchanged. Execution environment only; no effect on results.
+- **Paused 20:20 UTC 2026-10-04** at the owner's request (suspended in place) during pt_E
+  generation on R10s; frozen, E, F and pt_frozen are complete on R10s. Resumed later at the
+  owner's request (43 of 48 pieces done at the pause).
+- **results/R10s** written 04:22 UTC 2026-10-05 (all five arms; 0 generation errors). Provisional:
+  captured share E 0.086, frozen 0.110, pt_E 0.107, pt_frozen 0.103 (random p95 0.010); R²c
+  velocity E 0.523; (a) E − frozen +0.002 [−0.016, 0.015], pt_E − pt_frozen +0.059 [0.037, 0.083]
+  (computed afterwards with the summariser's `boot_ci`). The R10u retry of pt_E generation started
+  at the same time.
+- **Run complete 08:29 UTC 2026-10-05.** pt_E R10u generation retry: 91 of 91, 0 errors; R10u
+  re-summarised with all five arms (E and frozen unchanged). Provisional: pt_E captured share
+  0.124, R²c velocity 0.492, log IOI 0.260; (a) pt_E − pt_frozen on R10u +0.100 [0.089, 0.114].
+  Every planned arm x set now has outputs. Verdict: Provisional, awaiting `eval-auditor`.
+- **Committed artefacts** (for review on another machine): `results/<set>/` holds copies of each
+  set's `summary.json`, `pass_fail.json`, `auc.csv`, `h1b.csv` and `a_per_rendition.csv`
+  (statistics only, about 6 MB), plus `results/pt_E_vs_pt_frozen*.json`. The full outputs
+  (`job/outputs/`: per-item scores, generations, token shards, checkpoints) stay local on the RTX
+  5080 box and are not in git (license and size).
+
+## Audit
+
+**Confirmed with caveats (scoped)**, eval-auditor 2026-10-05. Full audit, box-only checks B1-B4
+and their scripts: `AUDIT.md` in this folder. The status in line 2 is inside the hashed header and
+is left as written.
+
+- (a) on P: harms, as registered; R-10 uses frozen SyMuPe. Reproduction gate missed: 0.3987 vs
+  0.3882 (+0.0105, tolerance 0.01), not "by 0.001".
+- (b) H1b preview: **uninformative for H1b**, not "at the falsification level". Captured share
+  measures sample diversity; 16 held-out real experts reach only about 0.25, so the 0.50 bar was
+  unreachable. Log IOI R²c omits R-06's centering of the predicted curve (lower bounds). 5 of the
+  74 "unseen" R10u pieces contain paired content.
+- (c) S-LR "pass" stands as registered, but R1 is matched by B-amount and S-LR is at chance
+  against halved expression (P 0.491); not used anywhere (DECISIONS 2026-10-05). The REPORT's
+  "outside F's training family" is wrong.
+- SyMuPe samples here were drawn at top-p 0.95 (EncDec-base ignores `lm_top_p`), including the
+  S-TYP reference samples registered at 1.0; S-TYP failed regardless.
+- Author fixes pending: AUDIT.md section 9 (REPORT sections 4, 5 and "Gaps" are stale; commit the
+  pt_E - pt_frozen script; per-transcriber table, post hoc).
