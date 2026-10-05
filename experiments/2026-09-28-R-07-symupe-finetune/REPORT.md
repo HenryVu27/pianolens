@@ -1,6 +1,6 @@
 # R-07 report: fine-tuning SyMuPe (and Pianist Transformer) on piece-disjoint PianoCoRe
 
-Written 2026-09-29, about 22:10 UTC (17:10 local), while the job was still running. This is a readable companion to `README.md`, which holds the pre-registration and the lead's run record. **Nothing here is a verdict.** Every number cites the file it came from, and paths are relative to this folder unless they start with `C:\`. Section 4b (added later) has the first evaluation results, for set P; they are provisional and not audited.
+Written 2026-09-29, about 22:10 UTC (17:10 local), while the job was still running. This is a readable companion to `README.md`, which holds the pre-registration and the lead's run record. **Audited 2026-10-05 by `eval-auditor`: Confirmed with caveats** (details in README `## Audit`; the key caveats are summarised in the "Audit verdict" section at the end). Every number cites the file it came from, and paths are relative to this folder unless they start with `C:\`. Section 4b (added later) has the first evaluation results, for set P; they are provisional and not audited.
 
 ---
 
@@ -33,7 +33,7 @@ The primary evaluation set is **P**: PercePiano segments of Beethoven WoO 80 and
 | (c) typicality | Four scores: S-RAW (reference), S-LR = ℓ_E − ℓ_F, S-TYP (typical-set distance), S-DEV (shape-only agreement). Each gets a paired AUC against each variant in the deadpan / noise battery. | **pass** needs R1 (deadpan battery: AUC ≥ 0.75, CI above 0.5, ≥ 0.5 in each P work), R2 (still detects jitter) and R3 (replicates on Vienna). R1 + R3 without R2 means **flatness detector only**. Anything else is **fail**, and that score is used nowhere. |
 | (d) cost | Seconds per step and peak memory from `calibrate`; wall time per stage. | Descriptive. |
 
-Secondary sets (reported, not deciding): **R10u** (76 R-02 pieces unseen by pretraining and by fine-tuning; transcribed MIDI), **R10s** (held out here but seen in pretraining), **V** (Vienna 4x22), **A** ((n)ASAP, Pianist Transformer's test folders).
+Secondary sets (reported, not deciding): **R10u** (transcribed MIDI; [audit 2026-10-05] the evaluation set has 91 pieces: 75 of the 76 R-02 pieces unseen by pretraining and fine-tuning, plus 16 work-mates, 10 of which were seen paired in SyMuPe pretraining), **R10s** (held out here but seen in pretraining), **V** (Vienna 4x22), **A** ((n)ASAP, Pianist Transformer's test folders).
 
 ### The split (README "Splits", `split/summary.json`)
 
@@ -382,13 +382,17 @@ statistic was added.
 - V per excerpt: Chopin Op. 10/3 +0.100, Op. 38 +0.088, Mozart K. 331 −0.383, Schubert D783 −0.092.
   The wide CI comes from the Mozart drop.
 - So fine-tuning Pianist Transformer does not show the clear loss that fine-tuning SyMuPe shows
-  (E − frozen: "harms" on P). The only set with a detectable change is A, Pianist Transformer's
-  own shipped test folders, and that CI only just clears 0. P and V are not decided.
+  (E − frozen: "harms" on P). Among P, V and A, the only set with a detectable change is A,
+  Pianist Transformer's own shipped test folders, and that CI only just clears 0. P and V are not
+  decided. [audit 2026-10-05: written before R10u / R10s; both later show an improvement, below.]
 - For reference, against frozen SyMuPe on P: pt_E 0.4076 vs frozen 0.3987.
 
 ### Set R10u: (b) H1b preview and secondary (a), added 2026-10-04 00:20 UTC (`results/R10u/`)
 
-R10u = PianoCoRe pieces unseen by pretraining and fine-tuning (transcribed MIDI). Arms in this
+R10u = PianoCoRe pieces held out from fine-tuning, mostly unseen by pretraining (transcribed MIDI;
+[audit 2026-10-05] 91 pieces: 75 of the 76 pre-registered "unseen" R-02 pieces, 3 R-02 work-mates
+and 7 other work-mates that are paired in PERiScoPe, and 6 unpaired work-mates; the unseen-only
+subset gives the same readings, see README "Audit"). Arms in this
 summary: frozen, E, F, pt_frozen. **pt_E is missing:** all 91 of its generation items failed with
 "CUDA error: out of memory" while a game held about 5 GB of VRAM (`eval/pt_E/R10u/gen/_log_gen.json`).
 Failed items are not written, so a rerun retries exactly those 91.
@@ -446,7 +450,7 @@ It is the pre-registered exposure contrast for R-10, not a decision set.
 | pt_frozen | 0.103 | 0.325 | −0.237 |
 | pt_E | 0.107 | 0.472 | 0.181 |
 
-The captured share is about 0.09-0.11 for every arm, the same level as on R10u (0.098-0.118).
+The captured share is about 0.09-0.11 for every arm, the same level as on R10u (0.098-0.124 with pt_E; [audit 2026-10-05] was "0.098-0.118").
 Exposure in pretraining does not lift it. E's velocity mean-curve R²c reaches 0.52 here
 (0.41 on R10u), while its timing R²c stays near zero.
 
@@ -503,7 +507,37 @@ After the evaluation, the verdict stays **Provisional** until `eval-auditor` sig
 
 ## Gaps and things not verified
 
-- **No evaluation numbers exist yet.** The results folder was empty when this was written, so nothing on questions (a) to (c) is reported here.
+- **No evaluation numbers exist yet.** The results folder was empty when this was written, so nothing on questions (a) to (c) is reported here. [audit 2026-10-05: superseded; the results are in section 4b and audited in README "Audit".]
 - **`TimeShift` / `TimeDuration` units** in the SyMuPe tokenizer were not checked. The encoder's exact field composition is taken from the config and the job code, not traced through symupe's source.
 - **Frozen typset.** `eval/frozen/P/typset` exists, but it was not checked for completeness.
 - **E and F step times** were measured while the frozen evaluation shared the GPU, so they are not clean cost figures.
+
+---
+
+## Audit verdict (eval-auditor, 2026-10-05): Confirmed with caveats
+
+Every pre-registered reading holds and every number reruns exactly from the local outputs; the
+pre-registration is unchanged since commit e4becf8. What the caveats change:
+
+- **(a) Harms on P** is robust to the sampling draw (each half of the K = 8 samples: −0.041 and
+  −0.063, both CIs below 0) and to leaving out any one work. It is a statement about these three
+  works (the 3-work t-interval includes 0); V and A agree. R-10 uses the frozen model.
+- **(c) S-LR's pass is genuine but narrower than it looks.** The smallest paired margin on P is
+  1.26 nats per note, so it is not an artefact. It decomposes into two parts: −ℓ_F alone catches
+  every deadpan (R1) and ℓ_E alone catches added noise (R2). It is a flatness detector plus a noise
+  penalty. Among human performances it ranks mostly by distance from flat (rank correlation 0.83
+  with −ℓ_F on P, 0.95 on V), and it does not penalise halved expression (scale0.5 AUC 0.49). F
+  scores velocity-offset and slower deadpans as in-family, so those variants did not test
+  generalisation. For the F-06 "too flat" flag, the trivial B-amount does at least as well as S-DEV.
+- **(b) The captured-share bar of 0.50 could not be reached at K = 16.** Treating 16 held-out
+  *real* expert performances as the "samples" captures a median of only 0.273. On that scale E's
+  0.097 is about 0.39 of what real performers achieve. The pre-registered reading ("at the
+  falsification level") stands as written, but R-10 must calibrate this threshold (or use more
+  samples) before any H1b verdict. R²c is unaffected (the expert mean curve reaches 0.90). The
+  unseen-only subset (74 pieces) gives the same readings.
+- **Transcription-style reading:** plausible (E's sampled articulation on P sits in the
+  transcribed range, +0.15 vs −0.69 for the P performances) but untested; R10s, also transcribed,
+  shows no change.
+- **Data and run integrity:** confirmed. The 636 skipped training items are long items in 21
+  pieces (3.5% of training notes); they affect training only.
+

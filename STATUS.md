@@ -1,6 +1,6 @@
 # PianoLens status
 
-Last updated 2026-09-28 by the lead session. Details live in `EXPERIMENTS.md`, `DECISIONS.md`
+Last updated 2026-10-05 by the lead session. Details live in `EXPERIMENTS.md`, `DECISIONS.md`
 and `WORKBOARD.md`. This page is the short version.
 
 ## What we have learned (audited results only)
@@ -11,6 +11,7 @@ and `WORKBOARD.md`. This page is the short version.
 | R-02 | Is expert expression low-dimensional (H1)? | Not as stated: whole-piece curves need about 19 components for 80% of variance. But the part experts *share* is low-rank (3-5 components, about 35-46% of variance). The rest is individuality. | Confirmed w/ caveats |
 | R-03 | Does CrescendAI's audio (MuQ) result hold? | It reproduces (0.509 vs 0.536) but collapses on unseen works (pooled R² below 0). Within-passage ranking is 59-62%. | Confirmed w/ caveats |
 | R-04 | Can interpretable MIDI features match MuQ (H3)? | Yes, non-inferior on unseen works in all 4 variants. Pedalling, dynamics, tempo shape and voicing drive it. Both models sit at single-rater level; the ceiling (about 0.74 WP rho) is far higher. | Confirmed w/ caveats |
+| R-07 | Does fine-tuning the expression model help (Phase 5; H1b preview)? | No. Fine-tuned SyMuPe predicts expert expression **worse** on unseen sensor/Disklavier pieces (P −0.051 [−0.072, −0.029]; V, A agree), slightly better on transcribed MIDI. R-10 keeps the frozen model. S-LR (likelihood ratio vs a flat model) passes the deadpan battery, but it is a flatness detector plus a noise penalty. H1b preview: model samples capture about 0.10 of the shared expert variance, but real performers capture only 0.27 at K = 16, so the 0.50 bar needs recalibrating in R-10. | Confirmed w/ caveats |
 | R-06 | Which expression model: SyMuPe or Pianist Transformer? | They tie on unseen pieces, and the pre-registered tie-break picks SyMuPe. Raw model likelihood rates deadpan playing above every expert, so it can never be used as a quality score. | Confirmed w/ caveats |
 
 ## What we have built
@@ -108,14 +109,15 @@ and `WORKBOARD.md`. This page is the short version.
 
 ## Waiting on Henry (OWNER)
 
+Done 2026-10-05: O-03. The RTX 5080 box runs the R-07 job natively on Windows (CUDA 12.8 PyTorch; see the R-07 run record). R-10 and the audio front end can use it.
+
 | Ticket | What | Unblocks |
 |---|---|---|
 | O-01 | Your own MIDI takes (3 takes of 1-2 passages; a piece in ASAP/PianoCoRe) | Clean tier B validation, H5 on a real learner, the first real report |
-| O-03 | RTX 5080: CUDA 12.8+ PyTorch, plus a job transfer method. **The R-07 job folder is ready**: `experiments/2026-09-28-R-07-symupe-finetune/job/` (setup.sh, fetch_data.sh, run.sh calibrate, then train, then eval) | R-07 fine-tune, R-10 (H1b), audio front end |
 | O-04 | A cloud GPU budget (if any) | Runs too large for the 5080 |
 | O-02 | Listening study S-03 is **built** (app in `study/app/`, protocol in `study/protocol-S03.md`, 592 pilot clips). Decisions needed: N (96 / 160 / B2), format, consent and payment, ethics. **First step: you do the pilot** (about 75 min, protocol section 8) | Phases 3-4 (H6) |
 | Optional | Email the SKY-Piano authors; Globus access for MAESTRO-E; Zenodo request for CIPI | Better validation data |
-| Git | Nothing is committed yet | A baseline commit |
+| Push | Lead sessions commit; pushing to GitHub is blocked by Claude Code's auto-mode classifier, so run `git push origin main` yourself | Sharing results with other machines |
 
 ## How to resume (for the next lead session)
 

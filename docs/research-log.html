@@ -48,7 +48,7 @@ padding:0 0 16px;margin-bottom:24px}}
 @media print{nav.toc,.theme{display:none}.wrap{display:block}}
 </style></head>
 <body><button class="theme" type="button">Light / dark</button>
-<div class="wrap"><nav class="toc"><div class="title">Contents</div><a class="h2" href="#1-the-question">1. The question</a><a class="h2" href="#2-how-the-work-was-organised">2. How the work was organised</a><a class="h2" href="#3-what-was-built">3. What was built</a><a class="h2" href="#4-the-experiments-in-order">4. The experiments, in order</a><a class="h3" href="#r-01-do-expert-ratings-of-piano-playing-reduce-to-a-few-dimensions">R-01. Do expert ratings of piano playing reduce to a few dimensions?</a><a class="h3" href="#r-02-is-expert-expression-low-dimensional">R-02. Is expert expression low-dimensional?</a><a class="h3" href="#r-03-does-a-published-audio-model-s-result-hold-up">R-03. Does a published audio model&#x27;s result hold up?</a><a class="h3" href="#r-04-can-simple-explainable-midi-features-match-the-audio-model">R-04. Can simple, explainable MIDI features match the audio model?</a><a class="h3" href="#r-06-which-expression-model-should-we-fine-tune">R-06. Which expression model should we fine-tune?</a><a class="h3" href="#r-09-does-structural-coherence-rise-with-skill">R-09. Does structural coherence rise with skill?</a><a class="h3" href="#f-07-does-repeated-timing-reveal-a-pianist-s-intent">F-07. Does repeated timing reveal a pianist&#x27;s intent?</a><a class="h3" href="#r-08a-to-r-08d-can-an-llm-claude-read-musical-phrase-structure-from-a-score">R-08a to R-08d. Can an LLM (Claude) read musical phrase structure from a score?</a><a class="h3" href="#a-01-phone-recordings-of-a-real-learner-henry-5-chopin-pieces-kawai-grand">A-01. Phone recordings of a real learner (Henry, 5 Chopin pieces, Kawai grand)</a><a class="h3" href="#r-05-do-audio-skill-models-cheat-on-recording-quality-h8">R-05. Do audio skill models cheat on recording quality? (H8)</a><a class="h3" href="#f-05e-do-the-llm-s-phrase-boundaries-feed-the-tempo-measures">F-05e. Do the LLM&#x27;s phrase boundaries feed the tempo measures?</a><a class="h3" href="#f-08c-stop-blaming-the-player-for-the-score">F-08c. Stop blaming the player for the score</a><a class="h3" href="#p-01-audible-comparison">P-01. Audible comparison</a><a class="h3" href="#bl-16-what-does-the-same-passage-played-twice-tell-us">BL-16. What does &quot;the same passage played twice&quot; tell us?</a><a class="h2" href="#5-supporting-checks-not-headline-experiments">5. Supporting checks (not headline experiments)</a><a class="h2" href="#6-where-the-auditor-changed-our-minds">6. Where the auditor changed our minds</a><a class="h2" href="#7-what-is-still-open">7. What is still open</a><a class="h2" href="#8-reproducing-anything">8. Reproducing anything</a></nav>
+<div class="wrap"><nav class="toc"><div class="title">Contents</div><a class="h2" href="#1-the-question">1. The question</a><a class="h2" href="#2-how-the-work-was-organised">2. How the work was organised</a><a class="h2" href="#3-what-was-built">3. What was built</a><a class="h2" href="#4-the-experiments-in-order">4. The experiments, in order</a><a class="h3" href="#r-01-do-expert-ratings-of-piano-playing-reduce-to-a-few-dimensions">R-01. Do expert ratings of piano playing reduce to a few dimensions?</a><a class="h3" href="#r-02-is-expert-expression-low-dimensional">R-02. Is expert expression low-dimensional?</a><a class="h3" href="#r-03-does-a-published-audio-model-s-result-hold-up">R-03. Does a published audio model&#x27;s result hold up?</a><a class="h3" href="#r-04-can-simple-explainable-midi-features-match-the-audio-model">R-04. Can simple, explainable MIDI features match the audio model?</a><a class="h3" href="#r-06-which-expression-model-should-we-fine-tune">R-06. Which expression model should we fine-tune?</a><a class="h3" href="#r-07-does-fine-tuning-the-expression-model-on-lots-of-performances-help">R-07. Does fine-tuning the expression model on lots of performances help?</a><a class="h3" href="#r-09-does-structural-coherence-rise-with-skill">R-09. Does structural coherence rise with skill?</a><a class="h3" href="#f-07-does-repeated-timing-reveal-a-pianist-s-intent">F-07. Does repeated timing reveal a pianist&#x27;s intent?</a><a class="h3" href="#r-08a-to-r-08d-can-an-llm-claude-read-musical-phrase-structure-from-a-score">R-08a to R-08d. Can an LLM (Claude) read musical phrase structure from a score?</a><a class="h3" href="#a-01-phone-recordings-of-a-real-learner-henry-5-chopin-pieces-kawai-grand">A-01. Phone recordings of a real learner (Henry, 5 Chopin pieces, Kawai grand)</a><a class="h3" href="#r-05-do-audio-skill-models-cheat-on-recording-quality-h8">R-05. Do audio skill models cheat on recording quality? (H8)</a><a class="h3" href="#f-05e-do-the-llm-s-phrase-boundaries-feed-the-tempo-measures">F-05e. Do the LLM&#x27;s phrase boundaries feed the tempo measures?</a><a class="h3" href="#f-08c-stop-blaming-the-player-for-the-score">F-08c. Stop blaming the player for the score</a><a class="h3" href="#p-01-audible-comparison">P-01. Audible comparison</a><a class="h3" href="#bl-16-what-does-the-same-passage-played-twice-tell-us">BL-16. What does &quot;the same passage played twice&quot; tell us?</a><a class="h2" href="#5-supporting-checks-not-headline-experiments">5. Supporting checks (not headline experiments)</a><a class="h2" href="#6-where-the-auditor-changed-our-minds">6. Where the auditor changed our minds</a><a class="h2" href="#7-what-is-still-open">7. What is still open</a><a class="h2" href="#8-reproducing-anything">8. Reproducing anything</a></nav>
 <main><h1 id="pianolens-research-log">PianoLens research log</h1>
 <p>A plain-language record of everything done in this project so far, written as source material for
 a research blog post. Written 2026-09-28. Every number here comes from an experiment folder in
@@ -186,6 +186,20 @@ modest number of measurable features and a small model, without a giant audio ne
   playing to every real pianist</strong>. A raw likelihood can never be used as a quality score.</li>
 <li><strong>Verdict:</strong> confirmed with caveats. The lead's first "keep both models" was overruled by the
   pre-registered rule.</li>
+</ul>
+<h3 id="r-07-does-fine-tuning-the-expression-model-on-lots-of-performances-help">R-07. Does fine-tuning the expression model on lots of performances help?</h3>
+<ul>
+<li><strong>Setup:</strong> SyMuPe fine-tuned on about 37,000 PianoCoRe performances, with whole works held out,
+  on Henry's RTX 5080. The same for Pianist Transformer.</li>
+<li><strong>Result:</strong> fine-tuned SyMuPe predicts how experts shape notes <strong>worse</strong> on unseen pieces recorded
+  on real pianos (timing and articulation get worse; velocity is unchanged). It does slightly better
+  on transcribed MIDI, which is what it was trained on. So the project keeps the frozen model.</li>
+<li><strong>Good news:</strong> comparing a performance's likelihood against a model of <em>flat</em> playing finally
+  separates real playing from every deadpan variant, the problem R-06 found.</li>
+<li><strong>Audit twist:</strong> that score is mostly a "how far from flat" meter plus a noise penalty, not a
+  general quality score. And the H1b bar (capture 50% of what experts share) turns out to be out of
+  reach even for real pianists at this sample size (27%), so R-10 must recalibrate it.</li>
+<li><strong>Verdict:</strong> confirmed with caveats.</li>
 </ul>
 <h3 id="r-09-does-structural-coherence-rise-with-skill">R-09. Does structural coherence rise with skill?</h3>
 <ul>
@@ -380,6 +394,11 @@ modest number of measurable features and a small model, without a giant audio ne
 <td>The pre-registered rule picks one. Also, flat playing beats experts on likelihood even when perturbed.</td>
 </tr>
 <tr>
+<td>R-07</td>
+<td>"S-LR passes, so it is a typicality score"; H1b bar of 0.50</td>
+<td>It is a flatness detector plus a noise penalty. Real performers capture only 0.27 at K = 16, so the 0.50 bar was unreachable.</td>
+</tr>
+<tr>
 <td>R-08a</td>
 <td>Confidence interval above the bar</td>
 <td>Too optimistic with 5 items. The t-interval touches the bar.</td>
@@ -412,8 +431,9 @@ auditor caught it every time.</p>
 <ul>
 <li><strong>Does the tool measure skill, not just recording context?</strong> This needs recordings where skill
   varies but the setting does not. Henry's own recordings are ideal.</li>
-<li><strong>H1b:</strong> can a fine-tuned expression model predict the shared expert core from the score? The
-  GPU job is ready.</li>
+<li><strong>H1b:</strong> can an expression model predict the shared expert core from the score? R-07 says
+  fine-tuning does not help on real-piano recordings, and the H1b threshold must be recalibrated
+  (R-10).</li>
 <li><strong>H6:</strong> which flaws do listeners actually mind most? The study is built, with no listeners yet.</li>
 <li><strong>H7:</strong> what explains preference among good performances? This needs the pairwise listening study.</li>
 <li><strong>H8:</strong> do audio skill models cheat on recording quality? This is planned.</li>

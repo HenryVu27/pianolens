@@ -105,6 +105,19 @@ Each entry gives the question, what was done, the result, and the verdict after 
 - **Verdict:** confirmed with caveats. The lead's first "keep both models" was overruled by the
   pre-registered rule.
 
+### R-07. Does fine-tuning the expression model on lots of performances help?
+- **Setup:** SyMuPe fine-tuned on about 37,000 PianoCoRe performances, with whole works held out,
+  on Henry's RTX 5080. The same for Pianist Transformer.
+- **Result:** fine-tuned SyMuPe predicts how experts shape notes **worse** on unseen pieces recorded
+  on real pianos (timing and articulation get worse; velocity is unchanged). It does slightly better
+  on transcribed MIDI, which is what it was trained on. So the project keeps the frozen model.
+- **Good news:** comparing a performance's likelihood against a model of *flat* playing finally
+  separates real playing from every deadpan variant, the problem R-06 found.
+- **Audit twist:** that score is mostly a "how far from flat" meter plus a noise penalty, not a
+  general quality score. And the H1b bar (capture 50% of what experts share) turns out to be out of
+  reach even for real pianists at this sample size (27%), so R-10 must recalibrate it.
+- **Verdict:** confirmed with caveats.
+
 ### R-09. Does structural coherence rise with skill?
 - **Data:** MAJEPPA, 1,081 performances from beginner to virtuoso.
 - **Result:** pooled, advanced players look more coherent. **Within the same recording context**
@@ -237,6 +250,7 @@ The project's most useful habit was letting an independent agent try to break ev
 | R-03 | Headline reproduction | Their headline averaged 3 of 4 folds, and their "leak fix" made the leak worse. About 60% of MuQ's remaining signal came from spotting flat computer renditions. |
 | R-04 | "Everything is near the ceiling" | Wrong ceiling. There is large headroom. |
 | R-06 | Keep both models | The pre-registered rule picks one. Also, flat playing beats experts on likelihood even when perturbed. |
+| R-07 | "S-LR passes, so it is a typicality score"; H1b bar of 0.50 | It is a flatness detector plus a noise penalty. Real performers capture only 0.27 at K = 16, so the 0.50 bar was unreachable. |
 | R-08a | Confidence interval above the bar | Too optimistic with 5 items. The t-interval touches the bar. |
 | R-08b | "Recognised pieces scored lower" | A mix-of-movements artefact. Within a movement, recognition helped slightly. |
 | R-09 / D-10 | "The effect vanishes with context fixed" | It also drops the top skill levels. Context and skill cannot be separated there. |
@@ -250,8 +264,9 @@ auditor caught it every time.
 
 - **Does the tool measure skill, not just recording context?** This needs recordings where skill
   varies but the setting does not. Henry's own recordings are ideal.
-- **H1b:** can a fine-tuned expression model predict the shared expert core from the score? The
-  GPU job is ready.
+- **H1b:** can an expression model predict the shared expert core from the score? R-07 says
+  fine-tuning does not help on real-piano recordings, and the H1b threshold must be recalibrated
+  (R-10).
 - **H6:** which flaws do listeners actually mind most? The study is built, with no listeners yet.
 - **H7:** what explains preference among good performances? This needs the pairwise listening study.
 - **H8:** do audio skill models cheat on recording quality? This is planned.
