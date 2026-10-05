@@ -69,6 +69,8 @@ Feature groups (``ScoreBasis.groups``; the names in parentheses are the columns)
   phrase starts, no better than a 4-bar grid at bar tolerance). ``BasisConfig(phrase_source=
   "cadence")`` takes phrases from the cadence detector instead (F-05c,
   :mod:`pianolens.features.cadence`); ``source`` is then ``cadence``.
+  ``BasisConfig(phrase_source="llm")`` takes them from the per-piece LLM phrase cache (DF-02,
+  :mod:`pianolens.features.phrases_llm`; ``source`` ``llm``), falling back to ``cadence``.
 * ``harmony`` (``tension_diameter``, ``tension_strain``, ``tension_momentum``,
   ``nondiatonic_frac``): tonal tension ribbons (Herremans and Chew 2016, spiral array) from
   partitura ``estimate_tonaltension`` over a ``tension_window_beats`` window at each onset:
@@ -197,7 +199,14 @@ class BasisConfig:
             the ends also feed ``phrase_detail`` unless ``phrase_ends_beats`` is given).
             F-05c (``docs/specs/phrase-coherence-validation.md``): its ends beat the proxy's
             (held-out Batik F1 0.46 vs 0.29 at +-1 beat) but tempo coherence with them is
-            lower than with the proxy, so keep ``proxy`` for coherence.
+            lower than with the proxy, so keep ``proxy`` for coherence. ``llm``: phrase
+            starts and ends from the per-piece LLM phrase cache
+            (:mod:`pianolens.features.phrases_llm`, protocol R-08, validated by F-05e), first
+            run; all runs are in ``meta["llm_phrases"]``. Without a usable cache it falls back
+            to ``cadence`` and records why in ``meta["phrase_source_fallback"]``.
+            ``meta["phrase_source"]`` is always the source actually used.
+        llm_cache_dir: folder of the LLM phrase cache (default
+            :func:`pianolens.features.phrases_llm.default_root`).
     """
 
     phrase_min_bars: float = 2.0
@@ -208,6 +217,7 @@ class BasisConfig:
     include_tension: bool = True
     phrase_detail: bool = False
     phrase_source: str = "proxy"
+    llm_cache_dir: str | None = None
 
 
 @dataclass
@@ -223,13 +233,16 @@ class ScoreBasis:
         onsets: one row per distinct onset (``beat``): ``n_notes``, measure fields, and the
             feature columns taken from the onset's top note (markings: max over the chord).
         phrases: ``start_beat``, ``end_beat``, ``source`` (``proxy`` / ``external`` /
-            ``split``), ``strength`` (proxy score at the start).
+            ``cadence`` / ``llm`` / ``split``), ``strength`` (proxy score at the start).
         dynamics: marking events: ``kind`` (``level`` / ``cresc`` / ``dim`` / ``impulsive``),
             ``text``, ``level`` (``DYNAMIC_LEVELS``), ``start_beat``, ``end_beat``
             (hairpins), ``has_end`` (the score gave an end).
         groups: ``FEATURE_GROUPS`` restricted to present columns.
         meta: ``has_part``, ``beats_per_bar``, ``n_grace_skipped``, ``tension`` (ok / off /
-            failed), ``key_fifths``, ``key_mode``.
+            failed), ``key_fifths``, ``key_mode``, ``phrase_source`` (used) and
+            ``phrase_source_requested``; ``phrase_source_fallback`` (why ``llm`` fell back),
+            ``llm_phrases`` (:class:`pianolens.features.phrases_llm.LLMPhraseSet`),
+            ``cadence_ends``.
     """
 
     notes: pd.DataFrame
@@ -824,7 +837,24 @@ def score_basis(
     # phrases
     cand = _proxy_boundaries(df, on, part, breaks, bpb, cfg)
     source = None
-    if phrase_boundaries_beats is None and cfg.phrase_source == "cadence":
+    if cfg.phrase_source not in ("proxy", "cadence", "llm"):
+        raise ValueError(f"unknown phrase_source {cfg.phrase_source!r}")
+    want = cfg.phrase_source if phrase_boundaries_beats is None else "external"
+    meta["phrase_source_requested"] = want
+    if want == "llm":
+        from pianolens.features.phrases_llm import resolve_llm_phrases
+
+        llm, why = resolve_llm_phrases(score, root=cfg.llm_cache_dir)
+        if llm is None:
+            meta["phrase_source_fallback"] = why
+            want = "cadence"
+        else:
+            phrase_boundaries_beats = llm.runs[0].starts
+            if phrase_ends_beats is None:
+                phrase_ends_beats = llm.runs[0].ends
+            source = "llm"
+            meta["llm_phrases"] = llm
+    if want == "cadence":
         from pianolens.features.cadence import cadence_phrase_ends
 
         cad = cadence_phrase_ends(score)
@@ -833,8 +863,7 @@ def score_basis(
             phrase_ends_beats = cad.end_beats
         source = "cadence"
         meta["cadence_ends"] = cad.end_beats
-    elif cfg.phrase_source not in ("proxy", "cadence"):
-        raise ValueError(f"unknown phrase_source {cfg.phrase_source!r}")
+    meta["phrase_source"] = source or want
     phrases = _phrases(on, cand, phrase_boundaries_beats, bpb, cfg)
     if source is not None:
         phrases.loc[phrases["source"] == "external", "source"] = source

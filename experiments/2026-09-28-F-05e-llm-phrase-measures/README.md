@@ -480,3 +480,11 @@ the post-run SD check are correct.
 - A third outcome (Δ ≥ −0.10 but the LLM not above the detector) had no pre-registered label. It
   was unreachable in practice.
 - Data correction: R2 has 18 full-score performances, not 20. The other 2 use the abridged score.
+
+## Doc correction (feature-engineer, 2026-09-29, DEFECTS DF-08)
+
+- The pre-registration (Boundary sources) gives the signature
+  `merge_short_phrases(starts, min_bars, beats_per_bar, lo, hi)`. The function as written and run
+  is `merge_short_phrases(starts_beats, min_bars, beats_per_bar, end_beat)`: there is no `lo`
+  argument, and `end_beat` (the last onset + 1 beat) ends the last phrase, as the prose already
+  says. The pre-registration text is left unedited so its recorded hash still verifies.

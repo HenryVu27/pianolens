@@ -6,6 +6,8 @@
 * :mod:`pianolens.study.psychometric`: psychometric and preference-cost fits with
   listener-clustered standard errors (S-03 analysis plan).
 * :mod:`pianolens.study.power`: simulation-based power analysis for the S-03 design.
+* :mod:`pianolens.study.power_s04`: simulation-based design check for the S-04 pairwise
+  preference study (H7; draft).
 """
 
 from pianolens.study.degrade import (

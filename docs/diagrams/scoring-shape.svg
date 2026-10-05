@@ -1,0 +1,47 @@
+<figure class="diagram"><svg viewBox="0 0 800 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The shape of the PianoLens scoring model" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+<style>
+.bx{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+.ac{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.t{fill:var(--fg);font-size:12px}
+.tb{fill:var(--fg);font-size:13.5px;font-weight:600}
+.ts{fill:var(--muted);font-size:11.5px}
+.ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+.lnd{stroke:var(--accent);stroke-width:1.5;fill:none;stroke-dasharray:4 3}
+</style>
+<text class="ts" x="20" y="22">1. INPUT</text>
+<text class="ts" x="200" y="22">2. MATCH</text>
+<text class="ts" x="370" y="22">3. MEASURE (four layers)</text>
+<text class="ts" x="605" y="22">4. JUDGE AND REPORT</text>
+<rect class="bx" x="20" y="40" width="150" height="62" rx="8"/>
+<text class="tb" x="32" y="64">MIDI</text><text class="ts" x="32" y="84">from a digital piano</text>
+<rect class="bx" x="20" y="120" width="150" height="80" rx="8"/>
+<text class="tb" x="32" y="144">Phone audio</text><text class="ts" x="32" y="164">turned into notes by</text><text class="ts" x="32" y="180">a transcription model</text>
+<path class="ln" d="M170 71 H185 V140 H198" marker-end="url(#ar)"/>
+<path class="ln" d="M170 160 H185 V140" />
+<rect class="ac" x="200" y="100" width="148" height="84" rx="8"/>
+<text class="tb" x="212" y="126">Match each note</text><text class="tb" x="212" y="144">to the score</text><text class="ts" x="212" y="166">hand, beat, harmony</text>
+<path class="ln" d="M348 142 H352" />
+<path class="ln" d="M352 70 V370" />
+<path class="ln" d="M352 70 H366" marker-end="url(#ar)"/><path class="ln" d="M352 170 H366" marker-end="url(#ar)"/><path class="ln" d="M352 270 H366" marker-end="url(#ar)"/><path class="ln" d="M352 370 H366" marker-end="url(#ar)"/>
+<rect class="bx" x="368" y="42" width="200" height="58" rx="8"/><text class="tb" x="380" y="66">Correctness</text><text class="ts" x="380" y="86">wrong, missed, extra notes</text>
+<rect class="bx" x="368" y="142" width="200" height="58" rx="8"/><text class="tb" x="380" y="166">Control</text><text class="ts" x="380" y="186">timing, evenness, hands, pedal</text>
+<rect class="bx" x="368" y="242" width="200" height="58" rx="8"/><text class="tb" x="380" y="266">Shaping</text><text class="ts" x="380" y="286">phrase arcs and structure</text>
+<rect class="bx" x="368" y="342" width="200" height="58" rx="8"/><text class="tb" x="380" y="366">Interpretation</text><text class="ts" x="380" y="386">tempo and loudness vs experts</text>
+<rect class="ac" x="200" y="250" width="148" height="62" rx="8"/><text class="tb" x="212" y="274">The score</text><text class="ts" x="212" y="294">what should be played</text>
+<rect class="ac" x="200" y="330" width="148" height="84" rx="8"/><text class="tb" x="210" y="354">Hundreds of</text><text class="tb" x="210" y="372">expert recordings</text><text class="ts" x="212" y="394">of the same piece</text>
+<path class="lnd" d="M270 250 V184"/>
+<path class="lnd" d="M348 408 H592 V200 H600" marker-end="url(#ar)"/>
+<path class="ln" d="M568 71 H585"/><path class="ln" d="M568 171 H585"/><path class="ln" d="M568 271 H585"/><path class="ln" d="M568 371 H585"/>
+<path class="ln" d="M585 71 V371"/><path class="ln" d="M585 150 H600" marker-end="url(#ar)"/>
+<rect class="ac" x="602" y="42" width="180" height="200" rx="8"/>
+<text class="tb" x="614" y="66">Where does each</text><text class="tb" x="614" y="84">measure fall among</text><text class="tb" x="614" y="102">the experts?</text>
+<rect x="614" y="120" width="12" height="12" rx="2" fill="var(--good)"/><text class="t" x="634" y="131">within experts: fine</text>
+<rect x="614" y="148" width="12" height="12" rx="2" fill="var(--warn)"/><text class="t" x="634" y="159">past most experts:</text><text class="ts" x="634" y="175">notable</text>
+<rect x="614" y="190" width="12" height="12" rx="2" fill="#c0392b"/><text class="t" x="634" y="201">past almost all:</text><text class="ts" x="634" y="217">strong</text>
+<path class="ln" d="M692 242 V268" marker-end="url(#ar)"/>
+<rect class="bx" x="602" y="270" width="180" height="130" rx="8"/>
+<text class="tb" x="614" y="294">Report</text>
+<text class="ts" x="614" y="316">findings per layer</text><text class="ts" x="614" y="334">bar-by-bar timeline</text><text class="ts" x="614" y="352">short practice list</text><text class="ts" x="614" y="370">you vs expert, audible</text><text class="ts" x="614" y="388">no single grade</text>
+<text class="ts" x="20" y="450">Dashed lines: references. Every judgement is a comparison, either with the score or with how experts play this exact piece.</text>
+</svg><figcaption>The shape of the model: measure, then compare with the score and with experts playing the same piece.</figcaption></figure>

@@ -32,6 +32,7 @@ structure. Details and caveats are in the plan, section 1.
 | Decisions and why | `DECISIONS.md` |
 | One-page summary of results and blockers | `STATUS.md` (the lead updates it) |
 | Plain-language research log (blog source) | `docs/RESEARCH_LOG.md` (source) and `docs/research-log.html` (readable page). The lead updates the log when an experiment is audited, then rebuilds the page with `uv run --with markdown python scripts/build_research_log.py`. |
+| How the scoring model works, as it stands (reader-facing) | `docs/SCORING_MODEL.md` and `docs/scoring-model.html`, a second tab built by the same script. Update it when the report logic or a metric changes. |
 | Deferred work / known bugs | `BACKLOG.md`, `DEFECTS.md` |
 | Path-scoped rules (load automatically) | `.claude/rules/*.md`: `data`, `features`, `experiments`, `audio`, `study` |
 | Procedures | `.claude/skills/`: `run-experiment`, `fetch-dataset`, `gpu-job` |

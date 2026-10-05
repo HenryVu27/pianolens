@@ -150,8 +150,8 @@ class DegradeResult:
             extras; alignment updated for wrong notes).
         dimension: one of ``DIMENSIONS``.
         level: the control parameter value.
-        level_name: its name (``sd_ms``, ``cv``, ``alpha``, ``k``, ``fraction``, ``factor``,
-            ``rate``).
+        level_name: its name (``sd_ms``, ``cv``, ``alpha``, ``k``, ``fraction`` or
+            ``hold_beats`` for pedal blur, ``factor``, ``rate``).
         physical: the achieved change, measured on the output, in physical units (keys end in
             the unit: ``_ms``, ``_midi``, ``_beats``, ``_per_s``...).
         reference: literature threshold(s) and the ratio of the change to them, or a note that
@@ -662,9 +662,14 @@ def pedal_blur(ap: AlignedPerformance, fraction: float, hold_beats: float | None
     }  # fmt: skip
     info = {"dimension": "pedal_blur", "fraction": fraction, "hold_beats": hold_beats,
             "relative_to": relative_to, "seed": seed}  # fmt: skip
-    out = _new_aligned(ap, _copy_notes(ap.performance), pedal,
-                       f"pedal-f{fraction:g}-s{seed}", info)  # fmt: skip
-    return DegradeResult(out, "pedal_blur", float(fraction), "fraction", phys,
+    # graded by lateness (hold_beats given): the control level is the hold, not the fraction
+    if hold_beats is not None:
+        tag, level, level_name = f"pedal-h{hold_beats:g}-f{fraction:g}-s{seed}", hold_beats, \
+            "hold_beats"
+    else:
+        tag, level, level_name = f"pedal-f{fraction:g}-s{seed}", fraction, "fraction"
+    out = _new_aligned(ap, _copy_notes(ap.performance), pedal, tag, info)
+    return DegradeResult(out, "pedal_blur", float(level), level_name, phys,
                          dict(_NO_REFERENCE), {"seed": seed, "chosen": chosen.tolist()})
 
 
@@ -774,8 +779,9 @@ def degrade(ap: AlignedPerformance, dimension: str, level: float, seed: int = 0,
             **options: Any) -> DegradeResult:
     """Apply one degradation by name. ``level`` is the dimension's control parameter:
     ``timing_jitter`` -> ``cv`` (pass ``unit="ms"`` for ``sd_ms``), ``tempo_flatten`` and
-    ``dynamics_flatten`` -> ``alpha``, ``voicing`` -> ``k``, ``pedal_blur`` -> ``fraction``,
-    ``articulation`` -> ``factor``, ``wrong_notes`` -> ``rate``."""
+    ``dynamics_flatten`` -> ``alpha``, ``voicing`` -> ``k``, ``pedal_blur`` -> ``fraction``
+    (with ``grade="hold"``: ``hold_beats``, every selected change blurred), ``articulation`` ->
+    ``factor``, ``wrong_notes`` -> ``rate``."""
     if dimension == "timing_jitter":
         unit = options.pop("unit", "cv")
         kw = {"sd_ms": level} if unit == "ms" else {"cv": level}

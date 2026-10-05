@@ -1,0 +1,24 @@
+{
+  "movement": "P12",
+  "recognised_piece": "Possibly Beethoven, Piano Sonata in G major Op. 79, i (Presto alla tedesca), end of development / recapitulation / coda (tentative)",
+  "notes": "Excerpt opens on an unaccompanied dominant-prolonging link (155-158) whose goal is the theme at 159; since bar 159 is copied to 175 (after a PAC), its end is placed on its last onset with no cadence. Main theme: 8-bar phrase ending on the dominant, answered by 8 bars ending with a PAC. Episode 191-198 goes through B minor to a PAC in D, then a chromatic link over V7 of G. Coda: codetta units over tonic/dominant, final link to G5.",
+  "events": [
+    {"bar": 155, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.9},
+    {"bar": 158, "beat": "3+1/2", "type": "phrase_end", "cadence": "none", "confidence": 0.25},
+    {"bar": 159, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.75},
+    {"bar": 165, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.45},
+    {"bar": 167, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.55},
+    {"bar": 174, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.65},
+    {"bar": 191, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.75},
+    {"bar": 196, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.5},
+    {"bar": 196, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 198, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.4},
+    {"bar": 214, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.7},
+    {"bar": 215, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 216, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.4},
+    {"bar": 217, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.45},
+    {"bar": 222, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.5},
+    {"bar": 222, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 227, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.55}
+  ]
+}

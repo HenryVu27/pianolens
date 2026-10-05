@@ -10,10 +10,11 @@ Layout of ``<app root>/jobs/<job id>/``::
     compare/       P-01 clips and manifest.json
     worker.log     the worker's stdout / stderr
 
-The job id is a hash of the uploaded bytes, the piece and the options, so the same upload with
-the same settings reuses the cached result. Jobs run in a separate process
-(``python -m pianolens.app.pipeline <job dir>``) in its own process group, so cancelling kills
-the transcriber and the renderer too. Nothing here makes network calls.
+The job id is a hash of the uploaded bytes, the piece, the options and the analysis code
+(:func:`code_version`), so the same upload with the same settings reuses the cached result
+until the code changes; after a code change the same upload runs again (DEFECTS DF-05). Jobs
+run in a separate process (``python -m pianolens.app.pipeline <job dir>``) in its own process
+group, so cancelling kills the transcriber and the renderer too. Nothing here makes network calls.
 """
 
 from __future__ import annotations
@@ -30,7 +31,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-__all__ = ["AUDIO_EXT", "MIDI_EXT", "SCORE_EXT", "STEPS", "JobStore", "Upload", "default_root"]
+__all__ = ["AUDIO_EXT", "MIDI_EXT", "SCORE_EXT", "STEPS", "JobStore", "Upload", "code_version",
+           "default_root"]
 
 AUDIO_EXT = (".wav", ".mp3", ".m4a", ".flac", ".aac", ".ogg")
 MIDI_EXT = (".mid", ".midi")
@@ -40,7 +42,28 @@ STEP_LABELS = {"transcribe": "Transcribe audio (Transkun)",
                "align": "Align to the score",
                "report": "Features, expert references and report",
                "clips": "Comparison clips"}  # fmt: skip
-TERMINAL = ("done", "failed", "cancelled", "interrupted")
+TERMINAL = ("done", "failed", "cancelled", "interrupted", "stopped")
+#: Bump for a change that alters results but not the Python source under ``src/pianolens``
+#: (e.g. a new calibration data file or transcriber). Source changes are picked up by the hash.
+PIPELINE_VERSION = 1
+#: Spec fields that do not change the analysis and so are not part of the job id.
+_NOT_HASHED = ("title", "composer", "ignore_wrong_piece")
+#: Modules that only serve pages; editing them does not make stored results stale.
+_UI_ONLY = ("app/server.py", "app/pages.py")
+
+
+def code_version() -> str:
+    """Hash of the analysis code: every ``.py`` file under ``src/pianolens`` (report, features,
+    alignment, compare, the app worker, ...) except the page-serving modules, plus
+    ``PIPELINE_VERSION``. About 80 small files, read on each new upload."""
+    src = Path(__file__).resolve().parents[1]
+    h = hashlib.sha256(f"pipeline:{PIPELINE_VERSION}".encode())
+    for f in sorted(src.rglob("*.py")):
+        rel = f.relative_to(src).as_posix()
+        if rel in _UI_ONLY:
+            continue
+        h.update(rel.encode() + b"\0" + f.read_bytes() + b"\0")
+    return h.hexdigest()[:12]
 
 
 def default_root() -> Path:
@@ -72,12 +95,19 @@ class JobSpec:
     title: str
     composer: str = ""
     input_kind: str = "midi"  # "audio" or "midi"
-    provenance: str = "unknown"  # of MIDI input; audio input is always "transcribed"
+    provenance: str = "unknown"  # audio input is always "transcribed"; MIDI can be marked so too
+    capture_model: str | None = None  # transcriber of transcribed input (PianoCoRe name), if known
     filter_extras: bool = False
     exclude_references: list[str] = field(default_factory=list)
     max_windows: int = 8
     clips: bool = True
     score_source: str = ""  # "catalog", "upload" or ""
+    code_version: str = ""  # code_version() at upload; filled in by JobStore.create
+    ignore_wrong_piece: bool = False  # run on even if the quick check says another piece
+
+    @property
+    def transcribed(self) -> bool:
+        return self.provenance == "transcribed"
 
 
 def _write_json(path: Path, data: Any) -> None:
@@ -120,7 +150,7 @@ class JobStore:
     @staticmethod
     def job_id(spec: JobSpec, takes: list[Upload], score: Upload | None) -> str:
         h = hashlib.sha256()
-        payload = {k: v for k, v in spec.__dict__.items() if k not in ("title", "composer")}
+        payload = {k: v for k, v in spec.__dict__.items() if k not in _NOT_HASHED}
         h.update(json.dumps(payload, sort_keys=True).encode())
         for u in takes:
             h.update(u.sha256.encode())
@@ -141,6 +171,8 @@ class JobStore:
         means a finished or running job with the same inputs already existed."""
         if not takes:
             raise ValueError("no performance uploaded")
+        if not spec.code_version:
+            spec.code_version = code_version()
         jid = self.job_id(spec, takes, score)
         d = self.path(jid)
         st = self.status(jid)

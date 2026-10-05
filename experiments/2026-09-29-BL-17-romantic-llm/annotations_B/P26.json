@@ -1,0 +1,19 @@
+{
+  "movement": "P26",
+  "recognised_piece": null,
+  "notes": "Eb major 16-bar periods over tonic pedal (179-194, 195-210, reprise 249-264) each closing with PAC; Eb minor middle section with two 7-bar phrases (Eb minor, then Gb minor) closing with root-position V7-i where the top voice lands on the fifth; long dominant-preparation passage 227-248 ending on Bb7 (HC) before the reprise.",
+  "events": [
+    {"bar": 179, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.95},
+    {"bar": 194, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8},
+    {"bar": 195, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 210, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8},
+    {"bar": 211, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 217, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 219, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.8},
+    {"bar": 225, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 227, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 248, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.55},
+    {"bar": 249, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 264, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8}
+  ]
+}

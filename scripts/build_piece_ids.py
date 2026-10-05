@@ -5,7 +5,8 @@ One row per (dataset, source_key): the dataset's own name for a piece and the Pi
 datasets; that is the point of the table. Sources: (n)ASAP (composer/title), PianoCoRe
 (``data/processed/pianocore_piece_map.csv`` + counts), PercePiano (work), MAJEPPA (score id),
 Vienna 4x22 (excerpt), Batik-plays-Mozart (movement), MazurkaBL (mazurka), DCML J. C. Bach
-sonatas and the five DCML Romantic corpora of D-13 (movement; score only). MAESTRO, PSyllabus,
+sonatas and the five DCML Romantic corpora of D-13 (movement; score only), and the tonebase
+annotated scores of D-14 (PDF path; no performances). MAESTRO, PSyllabus,
 Expert-Novice and NeuroPiano have free-text or local ids only and are not included.
 
 Columns: dataset, source_key, piece_id, canonical, composer, title, movement, n_performances.
@@ -29,6 +30,7 @@ from pianolens.data import (
     majeppa,
     mazurkabl,
     percepiano,
+    tonebase,
     vienna4x22,
 )
 from pianolens.data.piece_ids import PIECE_ID_COLUMNS, PIECE_ID_TABLE
@@ -128,12 +130,22 @@ def _dcml(corpus: str) -> pd.DataFrame:
     ])  # fmt: skip
 
 
+def _tonebase() -> pd.DataFrame:
+    """Teachers' annotated scores (D-14), no performances: ``n_performances`` is 0."""
+    return pd.DataFrame([
+        {"source_key": r.path, "piece_id": r.piece_id, "composer": r.title.split()[0],
+         "title": r.title, "movement": "", "n_performances": 0}
+        for r in tonebase.annotated_scores().itertuples()
+    ])  # fmt: skip
+
+
 def main() -> None:
     parts = {
         "asap": _asap, "pianocore": _pianocore, "percepiano": _percepiano,
         "majeppa": _majeppa, "vienna4x22": _vienna, "batik_mozart": _batik,
         "mazurkabl": _mazurkabl, "dcml_jc_bach": _jc_bach,
         **{f"dcml_{c}": (lambda c=c: _dcml(c)) for c in dcml.ROMANTIC},
+        "tonebase": _tonebase,
     }  # fmt: skip
     frames = []
     for name, fn in parts.items():

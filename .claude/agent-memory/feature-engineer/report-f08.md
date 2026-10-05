@@ -20,8 +20,11 @@ calibration = constants), CLI `scripts/pianolens_report.py`, samples + known-ans
   and refs match. Refs as targets (Op.10/3, 40 LOO): 6.7% notable+, 2.2% strong (nominal 5/1).
 - Low-confidence velocity issues and per-bar shape flags inside a too-flat window are listed but
   not practise-eligible (otherwise a deadpan's top items were "you move ahead 67%").
-- Too-flat magnitude = expert median SD / target SD. Practise rank = tier, then magnitude
-  (multiple of the notable limit) across categories: a 40 ms jitter bar outranks 3 wrong notes.
+- Too-flat magnitude = expert median SD / target SD. Practise rank (DECISIONS after F-08, item
+  3; `build._issues` docstring): tier; within a tier correctness first, then control (timing,
+  pedal, evenness), then shaping / interpretation; within a category recurring errors first,
+  then magnitude (multiple of the notable limit). (The first F-08 draft ranked by magnitude
+  across categories; superseded 2026-09-28.)
 - tempo_overall compares over the same mapped beats (Vienna excerpt vs whole-piece median was
   30 vs 42 bpm, misleading).
 - Vienna midi folder has `*_p23-average.mid`: glob `p[0-9][0-9]` only.
@@ -51,7 +54,9 @@ calibration = constants), CLI `scripts/pianolens_report.py`, samples + known-ans
   `recurring_signatures.pkl`). Cause: score/checker artefacts shared by all pianists (missed
   notes in chords/ornaments). Only wrong-pitch + expert filter (keys seen for other experts of
   the same score removed) is under 1%: 0.18% (2 takes) / 0.51% (3). Needs >= 2 experts;
-  report_from_files auto-loads up to 6 ASAP perfs when takes are given.
+  report_from_files auto-loads up to 6 ASAP perfs when takes are given. Recurring promotion is
+  wrong-pitch only + expert filter with >= 2 experts (DECISIONS after F-08b supersedes F-08
+  item 2's any-error rule).
 - Chopin Op.10/3 has ONE ASAP performance: sample (e) uses Op.10/4 (22 perfs).
 - The harness blocks Write of new .md files from subagents; the spec text went to the lead.
 

@@ -1,0 +1,287 @@
+{
+ "movement": "P11",
+ "recognised_piece": null,
+ "notes": "G major minuet-like movement, ternary form: theme (1-16) repeated after an E minor episode (17-24), then a C/G minor middle section (41-56) with dominant preparation, a reprise (57-72) and a long coda over G and D pedals (73-104). Early phrase ends in the theme (bars 3, 9) are uncertain; the theme opens on V7 and the tonic arrives almost immediately.",
+ "events": [
+  {
+   "bar": 1,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 3,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 5,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 9,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 9,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 16,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 17,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 20,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 21,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 25,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 25,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 27,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 29,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 33,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 33,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 40,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 41,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 48,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 49,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 55,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 57,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 59,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 61,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 65,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 65,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 72,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 73,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 78,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 79,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 80,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 81,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 89,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 89,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 93,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 93,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 97,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 97,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 101,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 101,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 104,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "none",
+   "confidence": 0.4
+  }
+ ]
+}

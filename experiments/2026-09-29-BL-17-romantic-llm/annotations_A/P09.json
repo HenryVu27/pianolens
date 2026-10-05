@@ -1,0 +1,175 @@
+{
+ "movement": "P09",
+ "recognised_piece": null,
+ "notes": "Bb major throughout over a tonic pedal in the 12/8 sections, so V7-I arrivals are judged IAC (dominant not in root position). 6/8 sections alternate F-chord bars with F7-Bb bars; phrase ends placed on the last Bb arrival of each 6-bar group. Bars 81-83 treated as a post-cadential tonic codetta with no further phrase.",
+ "events": [
+  {
+   "bar": 35,
+   "beat": 9,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.9
+  },
+  {
+   "bar": 38,
+   "beat": 10,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 39,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 40,
+   "beat": 10,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 41,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 43,
+   "beat": 10,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 44,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 45,
+   "beat": 10,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 46,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 51,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 52,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 57,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 58,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 61,
+   "beat": 10,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 62,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 63,
+   "beat": 10,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 64,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 66,
+   "beat": 10,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 67,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 68,
+   "beat": 10,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 69,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 74,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 75,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 80,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  }
+ ]
+}

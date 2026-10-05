@@ -107,6 +107,14 @@ def confidence_notes(rep: dict) -> list[str]:
         out.append("Extra notes are low confidence on transcribed input (A-01: phone recordings "
                    "produced many extra notes that were not played). They are shown in the "
                    "timeline but are not ranked and never become practise items.")
+    if cs.get("fast_repeat_low_confidence") and cs.get("n_missed_fast_repeat"):
+        ms = int(round(1000 * cs.get("fast_repeat_max_ioi_sec", cal.FAST_REPEAT_MAX_IOI_SEC)))
+        out.append(f"{_n(cs['n_missed_fast_repeat'], 'missed note')} fall on fast repeated notes "
+                   f"(the same key again within {ms} ms). Transcription often merges such "
+                   "repeats into one note (BL-21), so these are low confidence: shown in the "
+                   "timeline, not ranked.")
+    for nh in cs.get("not_heard") or []:
+        out.append(not_heard_text(nh))
     xc = cs.get("expert_check") or {}
     if xc:
         who = expert_words(xc.get("provenance"))
@@ -132,6 +140,17 @@ def confidence_notes(rep: dict) -> list[str]:
 # =========================================================================== issues
 
 
+def not_heard_text(nh: dict) -> str:
+    """The low-confidence item for a "passage not heard" run (BL-18 audit)."""
+    where = ("at the start of the recording" if nh.get("at_start") else
+             "at the end of the recording" if nh.get("at_end") else "")
+    where = f" ({where})" if where else ""
+    return (f"Passage not heard: {nh['bars_label']}{where}. About {_pct(nh['missed_share'])} of "
+            "the notes there were not found. This passage was not played, or it may be missing "
+            "from the recording (for example a recording that starts late or is cut). It is not "
+            "counted as mistakes; check the recording before practising it.")
+
+
 def expert_words(provenance: str | None) -> str:
     """How the per-bar expert check's references are named."""
     return ("expert transcriptions" if provenance == "transcribed"
@@ -153,13 +172,21 @@ def issue_text(item: dict, rep: dict) -> str:
     bars = rep["bars"]
     if cat == "correctness":
         w = sum(bars[i]["correctness"]["n_wrong_pitch"] for i in idx)
-        m = sum(bars[i]["correctness"]["n_missed"] for i in idx)
+        wf = sum(bars[i]["correctness"].get("n_wrong_fast_run", 0) for i in idx)
+        m = sum(bars[i]["correctness"]["n_missed"]
+                - bars[i]["correctness"].get("n_missed_low_confidence", 0) for i in idx)
         e = sum(bars[i]["correctness"]["n_extra"] for i in idx)
         if not rep["correctness"].get("extras_counted", True):
             e = 0  # low confidence (A-01): never part of a practise item
-        parts = [p for p in (_n(w, "wrong note") if w else "", _n(m, "missed note") if m else "",
-                             _n(e, "extra note") if e else "") if p]
         this = "this bar" if len(idx) == 1 else "these bars"
+        # BL-20 proposal 3: in a fast run, say the bar has wrong notes, not which ones
+        run = "this fast run" if len(idx) == 1 else "these fast runs"
+        wtxt = (f"{_n(w, 'wrong note')} in {run} (the checker is more reliable about "
+                "the bar than about which notes)" if w and wf == w else
+                f"{_n(w, 'wrong note')} ({wf} in a fast run)" if wf else
+                _n(w, "wrong note") if w else "")
+        parts = [p for p in (wtxt, _n(m, "missed note") if m else "",
+                             _n(e, "extra note") if e else "") if p]
         rec = [(bars[i]["label"], r) for i in idx for r in bars[i]["correctness"].get(
             "recurring", [])]
         if rec:
@@ -254,7 +281,8 @@ def _correctness_card(rep: dict) -> dict:
         if t != "none":
             s += f" Yours is higher than {TIER_PCT[t]} of expert performances."
         f.append(s)
-    worst = sorted(rep["bars"], key=lambda b: -b["correctness"]["n_errors"])[:3]
+    worst = sorted((b for b in rep["bars"] if not b["correctness"].get("not_heard")),
+                   key=lambda b: -b["correctness"]["n_errors"])[:3]
     worst = [b for b in worst if b["correctness"]["n_errors"] > 0]
     if worst:
         f.append("Most flagged notes: " + ", ".join(
@@ -262,6 +290,11 @@ def _correctness_card(rep: dict) -> dict:
     ns, nn = c.get("n_bars_strong", 0), c.get("n_bars_notable", 0)
     f.append(f"Bars beyond the expert range: {ns} strong, {nn} notable (missed notes are "
              "judged per bar, not per note).")
+    for nh in c.get("not_heard") or []:
+        f.append(not_heard_text(nh))
+    if c.get("fast_repeat_low_confidence") and c.get("n_missed_fast_repeat"):
+        f.append(f"Not ranked: {_n(c['n_missed_fast_repeat'], 'missed note')} on fast repeated "
+                 "notes (low confidence on transcribed input).")
     xc = c.get("expert_check") or {}
     sup = xc.get("bars_suppressed") or []
     if sup:
@@ -340,6 +373,79 @@ def _control_card(rep: dict) -> dict:
     return {"title": "Control", "findings": f}
 
 
+#: Disclosures for LLM phrase boundaries (DECISIONS 2026-09-28; F-05e; BL-17 and its audit).
+#: ``genre_untested`` is a template filled with the block's ``untested_genre``.
+PHRASE_CAVEATS = {
+    "romantic": ("Caution: on Romantic character pieces, this language model's blind readings "
+                 "matched expert (DCML) phrase ends at about 0.64 on average (plausible range "
+                 "0.55-0.72), below the project's 0.70 bar, and from 0.14 to 0.92 on single "
+                 "pieces (BL-17, 24 pieces); the cadence detector reached 0.31. The phrase-tempo "
+                 "measure itself also fell short of its expert-boundary level on Romantic pieces "
+                 "(F-05e, 3 pieces)."),
+    "style_unvalidated": ("Caution: these boundaries were validated only on Classical sonatas "
+                          "and Romantic character pieces (R-08, F-05e, BL-17)."),
+    "compound_meter": ("Caution: this piece is in a compound meter (e.g. 6/8 or 6/4), where the "
+                       "language-model boundaries are not validated: BL-17 had only 6 such "
+                       "pieces (6/8 and 12/8, none by Chopin, none in 6/4), a descriptive "
+                       "result (mean 0.65, range 0.46-0.85)."),
+    "genre_untested": ("Caution: this piece is a {genre}; no {genre} was among the pieces the "
+                       "boundaries were tested on (nocturnes and waltzes never were; BL-17 used "
+                       "Chopin mazurkas, Grieg Lyric Pieces and a few Schumann, Tchaikovsky and "
+                       "Liszt pieces)."),
+}
+
+#: Always added to the phrase-tempo finding (DF-02 / BL-17 audit).
+PHRASE_DESCRIPTIVE = "No practice item depends on this measure."
+
+
+def _phrase_tempo_text(p: dict) -> str:
+    """The "Phrases in time" finding: the measure, where its boundaries come from, and (for LLM
+    boundaries) the per-reading values, the cadence-detector value, the phrase-count ratio,
+    whether the annotator recognised the piece, and the caveats. When the LLM and detector
+    values differ in sign the item is labelled undetermined (BL-17 audit)."""
+    llm = p.get("boundaries") == "llm"
+    und = llm and bool(p.get("undetermined"))
+    src = ("boundaries marked by a language model reading the score" if llm
+           else "boundaries found from cadences")
+    n = float(p.get("n_phrases") or 0)
+    n_txt = f"{n:.0f}" if n == round(n) else f"{n:.1f} (mean over readings)"
+    t = (f"Phrases in time{' (undetermined)' if und else ''}: {_pct(p['concave_share'])} of "
+         f"{n_txt} phrases ({src}) slow at both ends; with the boundaries shifted by 2 bars the "
+         f"share is {_pct(p['null_concave_share'])}, so the excess is "
+         f"{100 * p['concave_excess']:+.0f} points.")
+    if not llm:
+        why = p.get("llm_fallback_reason")
+        if why:
+            t += f" No language-model phrase boundaries were used: {why}."
+        return t + " " + PHRASE_DESCRIPTIVE
+    runs = p.get("llm_runs") or []
+    prov = p.get("llm_provenance") or {}
+    if runs:
+        t += (f" Boundaries: {prov.get('model') or 'LLM'}, mean of {len(runs)} independent "
+              "blind readings (excess per reading " + ", ".join(
+                  f"{100 * r['concave_excess']:+.0f}" for r in runs
+                  if _ok(r.get("concave_excess"))) + " points).")
+    if _ok(p.get("concave_excess_cadence")):
+        t += (f" With cadence-detector boundaries the excess is "
+              f"{100 * p['concave_excess_cadence']:+.0f} points.")
+    if und:
+        t += (" The two boundary sources disagree in direction, so whether the phrases slow at "
+              "both ends more than chance is undetermined for this performance.")
+    if _ok(p.get("phrase_count_ratio")):
+        t += (f" Phrase count: {p['n_phrases']:.1f} phrases against "
+              f"{p.get('n_phrases_cadence', 0):.0f} from the {p.get('phrase_count_reference')} "
+              f"(ratio {p['phrase_count_ratio']:.2f}); the excess penalises correct but finer "
+              "phrasing, so read it at this phrase level.")
+    k, nr = prov.get("recognised_runs"), prov.get("n_runs")
+    if k:
+        t += (f" The annotator named the piece in {k} of {nr} readings, so remembered analyses "
+              "may have shaped these boundaries.")
+    for c in p.get("caveats") or ():
+        if c in PHRASE_CAVEATS:
+            t += " " + PHRASE_CAVEATS[c].format(genre=p.get("untested_genre") or "piece type")
+    return t + " " + PHRASE_DESCRIPTIVE
+
+
 def _shaping_card(rep: dict) -> dict:
     s = rep.get("shaping") or {}
     f = []
@@ -354,11 +460,7 @@ def _shaping_card(rep: dict) -> dict:
             f.append(f"Structure in {what}: not reported (too few bars for the check).")
     p = s.get("phrase_tempo")
     if p and _ok(p.get("concave_share")):
-        f.append(f"Phrases in time: {_pct(p['concave_share'])} of "
-                 f"{int(p.get('n_phrases', 0))} phrases (boundaries found from cadences) slow "
-                 f"at both ends; with the boundaries shifted by 2 bars the share is "
-                 f"{_pct(p['null_concave_share'])}, so the excess is "
-                 f"{100 * p['concave_excess']:+.0f} points.")
+        f.append(_phrase_tempo_text(p))
     v = s.get("voicing")
     if v and _ok(v.get("vel_diff_mean_midi")):
         lead = v.get("lead_mean_ms")

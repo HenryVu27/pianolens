@@ -1,0 +1,119 @@
+{
+ "movement": "P24",
+ "recognised_piece": null,
+ "notes": "Eb major passage in 2-bar units: V7-I-viio7/V-V (HC) x2, tonic-pedal prolongation x2 (no real cadence), modulating units closing on Bb (PAC in V) x2, return of opening HC units; bar 237 holds V7 (Ab5 over Bb2), treated as extension of the last HC.",
+ "events": [
+  {
+   "bar": 221,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.95
+  },
+  {
+   "bar": 222,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 223,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.65
+  },
+  {
+   "bar": 224,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 225,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 226,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 227,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 228,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 229,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 230,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 231,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.65
+  },
+  {
+   "bar": 232,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 233,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 234,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 235,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 236,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.6
+  }
+ ]
+}

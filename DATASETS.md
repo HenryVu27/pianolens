@@ -28,6 +28,7 @@ The manifest of every dataset on disk. The `data-engineer` agent owns it. Data l
 | MAJEPPA | `data/raw/majeppa` | https://huggingface.co/datasets/kkwsts/MAJEPPA-Dataset (paper arXiv 2608.11026, code github kkwsts/majeppa) | HF commit 7a462f4, 2026-09-27 | unclear: HF `license: other`, "mixed-see-description", no terms stated | 148 MB | `pianolens.data.majeppa` (`iter_aligned`, `load_dtw_path`) | 4,449 transcribed performance MIDI, 886 score MIDI, expertise level (6) x recording type (7), DTW time alignment (not note-level), YouTube links | loaded: 4,449 performances (card: 4,449; paper abstract: 3,979); 4,207 with a score id, 4,199 of them with a parsed score; 8 point at score MIDI partitura cannot read (yielded with score=None) |
 | PianoVAM (D-10) | `data/raw/pianovam` | https://huggingface.co/datasets/PianoVAM/PianoVAM_v1 (ISMIR 2025, arXiv 2509.08800; project page https://yonghyunk1m.github.io/PianoVAM) | v1.2, HF commit 1f039ab9, fetched 2026-09-27 (`MIDI/*`, `metadata.json`, `README.md` only) | CC BY-NC-SA 4.0 (dataset card; the ticket said CC BY-NC) | 6.2 MB MIDI + **4.4 GB audio subset** (A-01b, 2026-09-28: 84 of 107 `Audio/*.wav`, mono 44.1 kHz, list in `Audio_SUBSET.txt`, sha256 per file in `Audio_SHA256SUMS.txt`; all except the 4-hands take and the 22 largest of Yonghyun's 34 train takes). Full audio 6.7 GB; video and hand skeletons (about 38 GB) not downloaded | `pianolens.data.pianovam` (`iter_performances`, `pianovam_index`) | 107 Disklavier practice recordings, 10 amateur pianists (none music majors), self-reported skill (Advanced 70 recordings / 3 pianists, Intermediate 27 / 4, Beginner 10 / 3), 70 free-text pieces; **no scores** | loaded: 107/107, 0 failures, 527,302 notes, 96 with pedal events |
 | Rach3, Hanon subset (D-10) | `data/raw/rach3` | https://github.com/Rach3Project/rach3_midi_dataset (ISMIR 2025) | commit a9519492 (`data/raw/rach3/COMMIT`), fetched 2026-09-27: `rehearsals/p{1,2,3}/*hanoncexercs*.mid`, `scores/hanoncexercs.musicxml`, README, LICENSE, piece list | CC BY-NC-SA 4.0 (repo LICENSE) | 21 MB (full repo about 350 MB, 3,160 MIDI, 136 MusicXML: not downloaded) | `pianolens.data.rach3` (`iter_performances`, `rach3_index`) | Hanon practice sessions: p1 124 files, p2 36 (advanced), p3 87 (beginner); p4 (advanced) has no Hanon. One file = one piece in one session, often 7 to 30 min with repeats and stops. The Hanon score is the whole book (22,071 notes, 1,433 bars) | loaded: 247/247, 0 failures, 1,396,336 notes, 18 files with pedal. Provenance tagged `sensor`: keyboard MIDI, instrument not stated in README. **BL-16 takes** (derived, `data/interim/rach3_hanon_takes/`, `scripts/build_rach3_hanon_takes.py`, loader `pianolens.data.rach3_takes.HanonTakes`): complete passes of Hanon Part I Nos. 1-20 against generated one-pass exercise scores; 2,038 takes, 1,149 pass QC (p1 372, p2 191, p3 586); Part II not split. p3 almost never repeats an exercise within a day |
+| tonebase lessons (D-14) | `data/raw/tonebase` (PDFs, manifest); derived audio in `data/interim/tonebase_audio` | Henry's tonebase subscription, exported from Google Drive on 2026-10-01 as 28 zips `Tonebase-20261001T163037Z-1-001..028.zip` (kept outside the repo, in `~/Downloads`) | export 2026-10-01T16:30:37Z; sha256 per zip in `data/raw/tonebase/SHA256SUMS.txt`; extracted 2026-10-01 by `scripts/extract_tonebase.py` | **unclear**: subscription content, rights with tonebase and the artists; terms of use not checked (BL-29). Personal research use only; never commit or redistribute anything from it, including transcripts and encoded annotations | 57.4 GB zips (outside the repo); 0.84 GB PDFs; 4.8 GB AAC audio (interim) | `pianolens.data.tonebase` (`load_manifest`, `annotated_scores`, `ANNOTATED_SCORES`) | 733 files: 567 MP4 (497 unique, 51.9 GB; 640x360, 48 kHz stereo AAC), 166 PDFs (155 unique: workbooks, engraved editions, **21 teachers' annotated scores**). Audio extracted for the 190 unique piece-lesson videos (67.8 h, median 19.3 min); videos and technique courses stay in the zips | extracted: 166/166 PDFs, 190/190 audio, 0 errors; 21/21 annotated scores resolve to one PDF each; 18 map to PianoCoRe piece ids (17 with tier A performances), 3 keep `tonebase:` ids |
 | CIPI | (not downloaded) | https://zenodo.org/records/8037327 | v0.1 | n/a | 0 | none | scores + Henle difficulty labels | **gated**: Zenodo access restricted (request needed). Labels available via PianoJudges `index.json`; PSyllabus used as open substitute |
 | MAESTRO-E | (not downloaded) | https://github.com/ben2002chou/Polytune (Globus endpoint) | n/a | unclear (repo: NOASSERTION) | 0 | none | synthetic mistakes injected into MAESTRO (Polytune, AAAI 2025) | **gated**: Globus login required. Can be regenerated from MAESTRO MIDI with github ben2002chou/CocoChorales-E_MAESTRO-E |
 | SKY-Piano | (not downloaded) | https://joonhyungbae.github.io/skypiano/ (paper arXiv 2607.27296, ISMIR 2026) | checked 2026-09-27: no dataset download link; github joonhyungbae/skypiano returns 404; no HF or Zenodo record | **unclear**: paper text CC BY 4.0; dataset "per-modality license terms" (page and paper, section 9), terms not published | 0 | none | 7 professional + 12 amateur pianists, Disklavier DC7X MIDI, MusicXML, audio, video, mocap; slow C-major scale played by all 19 | **not available** (D-09 stopped). Explorer hosts 5 professional sample trials (graded pieces, no scales, no amateurs), under the same unstated terms; not downloaded |
@@ -166,6 +167,10 @@ Record quirks here: missing files, id mismatches, alignment problems.
   `match`).
 - **Scores** are the refined single-track score MIDI (what the alignment refers to), so measure
   maps come from MIDI time signatures. MusicXML is in raw-midi.zip (`score_xml_path`) if needed.
+  Found in R-11 (2026-10-05) on three Chopin pieces: every note is on staff 0 (hands must come
+  from the MusicXML), an upbeat is padded to a full measure (PianoCoRe measure = edition bar + 1),
+  and repeats are unfolded (both endings appear; later bars shift by the repeat length). Map an
+  edition's bar numbers by pitch content, not by number.
 - **Piece ids:** 1,167 of 1,591 A pieces (3,986 of 5,625 C pieces) get canonical ids; the rest
   keep `pianocore:<composer>/<composition>/<movement>`. Only catalogue numbers in the composition
   and a bare leading "N." or "No.N" in the movement are trusted. "Nocturne No.8" under
@@ -281,6 +286,9 @@ values among the A rows.
   `schubert_d783_no15`), Batik 33/36 (not K.533), MazurkaBL 38/46 (PianoCoRe lists some mazurka
   sets as a whole opus).
 - MAESTRO, PSyllabus, Expert-Novice and NeuroPiano are not in the table (free-text or local ids).
+- tonebase (D-14, 2026-10-01): 21 annotated scores keyed by PDF path; 18 share an id with
+  PianoCoRe (7 canonical; PianoCoRe gives the other 11 `pianocore:`-prefixed ids, and the join
+  uses the exact id), 3 keep `tonebase:` ids. The rebuild left the other 7,018 rows identical.
 - `make_piece_id` folds accents with NFKD (D-07). Recomputing every id for ASAP, PianoCoRe
   (5,625 keys), MazurkaBL, Batik, Vienna and PercePiano before and after the change: 0 ids changed.
 - **MAJEPPA ids changed (D-07):** they were all `majeppa:<score_id>`; now a score whose title has
@@ -504,6 +512,57 @@ values among the A rows.
   mazurkas share an id with DCML (45 labelled; op. 30/1 has no labels). PianoCoRe tier A ids:
   Chopin 33, Grieg 12, Tchaikovsky 10, Schumann 4, Liszt 2; ASAP: Gondoliera; MAJEPPA: 12
   Kinderszenen pieces.
+
+### tonebase lessons (D-14, lead, 2026-10-01; `scripts/extract_tonebase.py`)
+
+- **What it is.** Concert pianists' video lessons on specific pieces and on technique, plus PDFs.
+  Unique videos by top folder: Romantic 175, Foundations 97, Targeted Skills 62, Analysis 51,
+  Drills 48, Technical Approaches 36, Fundamentals 28. Use is personal and research only, with an
+  unclear license (BL-29). Experiment READMEs may report counts and statistics but no annotation
+  or transcript text.
+- **Duplicates.** The export repeats lessons across course folders (for example the Chopin
+  Mazurka Op. 63 No. 2 lesson is also `Chopin Mazurkas/Video - 08`). `dup_of` in the manifest
+  names the first byte-identical copy (CRC32 and size); only that copy is extracted.
+- **What is extracted.** Every PDF, verbatim (one export name is truncated to `.pd`; it is a
+  PDF). The AAC audio stream, without re-encoding, of each unique video under `Romantic/` plus
+  five piece courses (Bach "Reverse Engineering Bach", Mozart "Windows on a Mozart Sonata",
+  Franck Prelude, Chorale and Fugue, Ravel "Style and Character", Bernstein's Moonlight Sonata):
+  190 files (Romantic 175, Analysis 13, Technical Approaches 2). The 4.8 GB of audio is an
+  exception to "audio corpora do not come here", like the PianoVAM subset (DECISIONS
+  2026-10-01). It is derived, so `rm -r data/interim/tonebase_audio` is safe while the zips exist.
+- **One lesson inspected** (Jarred Dunn, Chopin Mazurka Op. 63 No. 2, 19.4 min): concert grand in
+  a hall, overhead keyboard and side cameras; at 640x360 fingers cannot be read. Whisper
+  `small.en` transcribed a 5-minute excerpt cleanly. Speech refers to "here" and "the second
+  theme", not bar numbers; the playing comes in fragments between speech. The advice mixes
+  fingering and hand redistribution (not visible in MIDI), metric accent patterns (measurable)
+  and permission to break wide chords. Workbooks are mostly biography and background; "Edition"
+  PDFs are engraved scores with standard markings only.
+- **Annotated scores.** Teacher notes are placed on bars, with noted pitches highlighted. Page 1
+  of Claire Huangci's Op. 9 No. 2 has, for example, a boxed left-hand bass line (voicing),
+  evenness, time at large stretches, more intensity when the theme repeats and a middle-voice
+  swell, next to fingerings and hand-position notes that MIDI cannot see. Bar numbers follow
+  the edition (in Op. 9 No. 2, bar 1 is the first full bar after the pickup; other editions not
+  checked); map them to the PianoCoRe score's measures before use.
+
+| Piece | Teacher | `piece_id` | PianoCoRe tier A |
+|---|---|---|---|
+| Chopin Nocturne Op. 9 No. 2 | Claire Huangci | `pianocore:...Nocturnes,_Op.9/Nocturne_No.2...` | 2,011 |
+| Chopin Ballade No. 4 | Asiya Korepanova | `chopin_op52` | 957 |
+| Chopin Etude Op. 10 No. 4 | Marina Lomazov | `chopin_op10_no4` | 846 |
+| Chopin Waltz Op. 64 No. 1 | Benjamin Laude | `pianocore:...Waltzes,_Op.64/Waltz_No.6...` | 832 |
+| Chopin Etude Op. 10 No. 5 | Marina Lomazov | `chopin_op10_no5` | 736 |
+| Chopin Etude Op. 10 No. 8 | Marina Lomazov | `chopin_op10_no8` | 480 |
+| Chopin Etude Op. 25 No. 2 | Marina Lomazov | `chopin_op25_no2` | 447 |
+| Debussy Children's Corner I-VI | Claire Huangci | `pianocore:Debussy,_Claude/Children's_Corner/<n>...` | 381, 100, 124, 0, 168, 281 |
+| Ravel Ondine | Noam Sivan | `pianocore:...Gaspard_de_la_nuit,_M.55/Ondine` | 358 |
+| Chopin Etude Op. 10 No. 10 | Frederic Chiu | `chopin_op10_no10` | 251 |
+| Scriabin Etude Op. 42 No. 5 | Nicolas Namoradze | `scriabin_op42_no5` | 169 |
+| Ravel Sonatine (several movements) | Gwendolyn Mok | `pianocore:Ravel,_Maurice/Sonatine,_M.40` | 87 whole-work rows; movements 187 / 174 / 164 |
+| Bach Musette in D, BWV Anh. 126 | Daniela Bracchi | `pianocore:...22._Musette_in_D_major,_BWV_Anh.126` | 79 |
+| Tchaikovsky Mazurka Op. 39 No. 11; Beethoven Ecossaise in G; Mozart Minuet K. 6 | Daniela Bracchi | `tonebase:` ids | none (WoO 23 "for military band" has 9; same arrangement not verified) |
+
+- Mapping checks: each piece was matched from the PDF's title page, not the file name. The
+  Scriabin file name says Op. 42 No. 4; the score is No. 5 in C-sharp minor.
 
 ### mistakes_v1 (D-08, feature-engineer, 2026-09-27)
 

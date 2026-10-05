@@ -1,0 +1,182 @@
+{
+ "movement": "P22",
+ "recognised_piece": "Chopin, Mazurka in A minor, Op. 68 No. 2",
+ "notes": "A section (A minor, first phrase closes in E minor), middle section sequence (bars 35-43) returning to the theme, A major trio with F-sharp minor episode, da capo. Middle-section boundaries are uncertain.",
+ "events": [
+  {
+   "bar": 1,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.95
+  },
+  {
+   "bar": 9,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 9,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.75
+  },
+  {
+   "bar": 17,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.85
+  },
+  {
+   "bar": 35,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 37,
+   "beat": 3,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 38,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.35
+  },
+  {
+   "bar": 43,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 43,
+   "beat": "3+1/2",
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 51,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.8
+  },
+  {
+   "bar": 68,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.6
+  },
+  {
+   "bar": 69,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 72,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 73,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 76,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.7
+  },
+  {
+   "bar": 77,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.75
+  },
+  {
+   "bar": 80,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 81,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 83,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 85,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 88,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.55
+  },
+  {
+   "bar": 89,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 92,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.65
+  },
+  {
+   "bar": 108,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 109,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  }
+ ]
+}

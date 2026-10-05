@@ -176,3 +176,129 @@ def test_smoke_upload_midi_poll_results(tmp_path):
     finally:
         srv.shutdown()
         srv.server_close()
+
+
+# --------------------------------------------------------------------------- DF-05
+
+
+def test_job_id_includes_code_version_not_override():
+    from pianolens.app.jobs import code_version
+
+    ups = [Upload("x.mid", b"abc")]
+    v = code_version()
+    assert len(v) == 12 and v == code_version()
+    a = JobStore.job_id(JobSpec(piece_id="p", title="A", code_version=v), ups, None)
+    assert a != JobStore.job_id(JobSpec(piece_id="p", title="A", code_version="old"), ups, None)
+    assert a == JobStore.job_id(JobSpec(piece_id="p", title="A", code_version=v,
+                                        ignore_wrong_piece=True), ups, None)
+
+
+def test_create_fills_code_version(tmp_path):
+    from pianolens.app.jobs import code_version
+
+    store = JobStore(tmp_path)
+    jid, reused = store.create(JobSpec(piece_id="p", title="A"), [Upload("x.mid", b"abc")],
+                               start=False)
+    assert not reused
+    assert store.job(jid)["spec"]["code_version"] == code_version()
+
+
+def _app_no_worker(tmp_path):
+    from pianolens.app.server import App
+
+    app = App(tmp_path, [Piece("toy_piece", "Nobody", "Toy", MIN_REFERENCES, 0, "asap", "x")])
+    app.store.start = lambda jid: None  # no worker process
+    return app
+
+
+def test_midi_can_be_marked_transcribed(tmp_path):
+    app = _app_no_worker(tmp_path)
+    jid, _ = app.create_job({"piece_id": "toy_piece", "provenance": "transcribed:transkun",
+                             "filter_extras": "on"}, {"performance": [Upload("a.mid", b"1")]})
+    spec = app.store.job(jid)["spec"]
+    assert spec["provenance"] == "transcribed" and spec["capture_model"] == "Transkun V2"
+    assert spec["filter_extras"] and spec["input_kind"] == "midi"
+    jid, _ = app.create_job({"piece_id": "toy_piece", "provenance": "transcribed"},
+                            {"performance": [Upload("a.mid", b"2")]})
+    spec = app.store.job(jid)["spec"]
+    assert spec["provenance"] == "transcribed" and spec["capture_model"] is None
+    # key-captured MIDI: the extras filter does not apply
+    jid, _ = app.create_job({"piece_id": "toy_piece", "provenance": "disklavier",
+                             "filter_extras": "on"}, {"performance": [Upload("a.mid", b"3")]})
+    spec = app.store.job(jid)["spec"]
+    assert spec["provenance"] == "disklavier" and not spec["filter_extras"]
+    jid, _ = app.create_job({"piece_id": "toy_piece"},
+                            {"performance": [Upload("a.ogg", b"4"), Upload("b.aac", b"5")]})
+    spec = app.store.job(jid)["spec"]
+    assert spec["input_kind"] == "audio" and spec["capture_model"] == "Transkun V2"
+
+
+def test_trust_notes_follow_transcription_not_file_type():
+    from pianolens.app.results import trust_notes
+
+    rep = {"confidence": {"velocity": "high"}}
+    audio_like = trust_notes(rep, "audio")
+    assert trust_notes(rep, "midi", transcribed=True) == audio_like
+    assert trust_notes(rep, "midi") != audio_like
+
+
+def test_same_score_references_gating():
+    from pianolens.app.pipeline import same_score_references
+
+    assert same_score_references("x", 5, "disklavier", [], []) == []  # PianoCoRe refs: no
+    assert same_score_references("x", 0, "transcribed", [], []) == []  # transcribed: no
+    assert same_score_references(None, 0, "disklavier", [], []) == []
+
+
+def _asap_piece_perfs(piece_id: str) -> list[Path]:
+    from pianolens.report.io import _asap_performances
+
+    return _asap_performances(piece_id, [], 10_000)
+
+
+@pytest.mark.skipif(not (REPO / "data" / "raw" / "asap").is_dir(),
+                    reason="needs ASAP")
+def test_same_score_references_from_asap():
+    from pianolens.app.pipeline import same_score_references
+
+    perfs = _asap_piece_perfs("chopin_op10_no12")
+    if len(perfs) < 3:
+        pytest.skip("ASAP index unavailable")
+    got = same_score_references("chopin_op10_no12", 0, "disklavier", [], [], min_refs=1)
+    assert got == perfs
+    # the upload's own file (identical bytes) and excluded ids are left out
+    got = same_score_references("chopin_op10_no12", 0, "unknown", [f"ASAP_{perfs[0].stem}"],
+                                [perfs[1].read_bytes()], min_refs=1)
+    assert perfs[0] not in got and perfs[1] not in got and len(got) == len(perfs) - 2
+    assert same_score_references("chopin_op10_no12", 0, "disklavier", [], [],
+                                 min_refs=len(perfs) + 1) == []
+
+
+@pytest.mark.skipif(not (ASAP_OP10_3 / "SunMeiting08.mid").is_file(), reason="needs ASAP")
+def test_wrong_piece_stops_run_and_override_is_recorded(tmp_path):
+    """Op. 10/3 uploaded as Op. 10/4: the quick check stops the run before the report."""
+    from pianolens.app import pipeline
+    from pianolens.app.catalog import load_catalog
+    from pianolens.app.server import _retry
+
+    cat = [p for p in load_catalog(REPO / "data" / "interim" / "app")
+           if p.piece_id == "chopin_op10_no4"]
+    if not cat:
+        pytest.skip("catalogue has no chopin_op10_no4")
+    (tmp_path / "catalog.json").write_text(
+        (REPO / "data" / "interim" / "app" / "catalog.json").read_text())
+    store = JobStore(tmp_path)
+    data = (ASAP_OP10_3 / "SunMeiting08.mid").read_bytes()
+    spec = JobSpec(piece_id="chopin_op10_no4", title="t", provenance="disklavier",
+                   clips=False, score_source="catalog")
+    jid, _ = store.create(spec, [Upload("SunMeiting08.mid", data)], start=False)
+    pipeline.run(store.path(jid))
+    st = json.loads((store.path(jid) / "status.json").read_text())
+    assert st["state"] == "stopped" and st["wrong_piece"]
+    assert st["summary"]["align"]["match_ratio"] < pipeline.WRONG_PIECE_MATCH
+    assert "probably another piece" in st["message"]
+    assert [s["state"] for s in st["steps"]] == ["failed", "pending"]
+    assert not (store.path(jid) / "report.json").exists()
+    store.start = lambda j: None
+    assert _retry(store, jid, ignore_wrong_piece=True)
+    assert store.job(jid)["spec"]["ignore_wrong_piece"] is True

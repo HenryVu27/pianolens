@@ -1,0 +1,105 @@
+{
+ "movement": "P06",
+ "recognised_piece": null,
+ "notes": "Gb major, 3/4. 16-bar theme (8+8, IAC then PAC) played twice, an 8-bar middle section over an Ab pedal ending on V7 of Gb, then the 16-bar theme returns. The first-phrase ending (bars 144-145) could also be read as ending on V earlier; I chose the V4/2 to I arrival at bar 145 beat 1. The piece sounds like a Chopin waltz but I did not identify it with confidence.",
+ "events": [
+  {
+   "bar": 137,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.95
+  },
+  {
+   "bar": 145,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 145,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 153,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 153,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.8
+  },
+  {
+   "bar": 161,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 161,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 169,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  },
+  {
+   "bar": 170,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.85
+  },
+  {
+   "bar": 177,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 177,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 185,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 185,
+   "beat": 3,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.7
+  },
+  {
+   "bar": 193,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.75
+  }
+ ]
+}

@@ -98,6 +98,7 @@ Means over the 3 pieces, with the range in brackets.
   note just played. Possible causes are sound in the room, or overtones of an acoustic grand that
   a far-field phone picks up. Listening would tell them apart; the
   audio was not listened to.
+  - *Superseded:* (BL-22 audit, 2026-09-29: the high extras are a recurring C-major melody at G6-G7, a second sound source in the recording, not a phone-chain or room artefact; source undetermined. See `experiments/2026-09-29-BL-22-phantom-extras/`.)
 - **The remaining extras are in the middle register** and not explained. In one piece, one of 15
   expert transcriptions shows the same count in the same bars, which points to an edition or
   repeat variant rather than playing.
@@ -134,6 +135,9 @@ Means over the 3 pieces, with the range in brackets.
 - **Correctness: only relative to the per-piece floor, and only for wrong and missed notes.**
   - Extra-note flags on phone input are unreliable: they can be several times the floor for
     reasons the controlled check does not reproduce.
+    - *Superseded as an explanation:* on these takes the reason is most likely a second sound
+      source in the recording, not the phone itself (BL-22 audit, 2026-09-29).
+      Extras stay low confidence on transcribed input.
   - The reports now carry a note when extras at G6 or above exceed 2% of score notes. It names the
     affected bars and practise items.
   - A single take cannot separate these artefacts from real errors. Repeated takes (F-07 /
@@ -147,6 +151,9 @@ Means over the 3 pieces, with the range in brackets.
 - **Calibrate the phone simulation against a real phone and room**, for example a Disklavier or
   PianoVAM recording captured by a phone (BL-13). It currently reproduces neither the level nor
   the kind of the takes' extras.
+  - *Superseded in part:* the takes' extras are most likely a second sound source (BL-22 audit),
+    which no phone simulation should reproduce. The calibration is still useful for bandwidth:
+    the takes are 6-13 dB darker at 3-6 kHz than PianoVAM (BL-22 post hoc).
 - ~~Consider an extra-note filter for phone input~~: done as A-01b (below). It is safe but
   removes only part of the artefacts.
 - **The A-02 fine-tune target** should include far-field grand audio, not only MAESTRO-like
@@ -192,6 +199,7 @@ audio with ground truth first, then applied to the 5 takes.
   Neither did the simulated phone (A-01). What remains is the phone itself (far-field, automatic
   gain, codec), the YouTube re-encode, or something sounding in Henry's room. Nobody has listened
   to the audio yet.
+  - *Superseded:* (BL-22 audit, 2026-09-29: the high extras are a recurring C-major melody at G6-G7, a second sound source in the recording, not a phone-chain or room artefact; source undetermined. See `experiments/2026-09-29-BL-22-phantom-extras/`.)
 - **The takes' high extras have a clear signature.** They sit on G6, C7, D7 and E7 (MIDI 91, 96,
   98, 100) in all takes. They are short (median 67 ms), no quieter than their context, and 83% have
   no harmonic source.
@@ -272,5 +280,101 @@ Takes re-aligned to the score after filtering (same code as A-01). Transkun:
   missed notes are unaffected by the filter (the missed rate changed by at most 0.2 points).
 - **Next:**
   - Listen to the high extras in Op. posth. to tell a room sound from the phone chain.
+    *Superseded:* the BL-22 audit gives a listening list (is there a separate high melody, what
+    it sounds like, is it in the original phone files).
   - Record one phone take next to a MIDI capture (O-01) to get phone ground truth.
   - A phone-and-room augmentation for the A-02 fine-tune.
+
+## BL-21 pre-registration: fast repeated notes (2026-09-29)
+
+Written before any repeat-recall number was computed. Experiment folder:
+`experiments/2026-09-29-BL-21-repeated-notes/`.
+
+- **Question.** When a key is struck again while its string still sounds, does the transcriber
+  merge the two strikes, and at what inter-onset interval (IOI) does that start to cost recall?
+  A merged repeat leaves one score note unmatched, which the report would call a missed note.
+- **Data.** (1) Primary: PianoVAM microphone audio, the 84 recordings Transkun already
+  transcribed in A-01b (`data/interim/pianovam_a01b/transkun/`), Disklavier MIDI as truth.
+  (2) Rendered path: the A-01 controlled check (3 MAESTRO Disklavier performances, S-02 render,
+  `clean` and `phone`), Transkun and Aria-AMT outputs already on disk. (3) Aria-AMT on PianoVAM:
+  no outputs exist; the model is installed, so it is run on a subset fixed here: per pianist, the
+  one recording with the most true same-pitch repeats at IOI < 200 ms (chosen from the truth
+  MIDI only), capped at about 2 h of audio in total (drop the longest if over).
+- **Unit.** A *repeat* is a true note whose previous true note of the same pitch started less
+  than 500 ms earlier; its IOI is the gap between the two onsets. *Reference notes* are true
+  notes with no same-pitch onset in the previous 500 ms. Bins: < 80, 80-120, 120-200, 200-500 ms
+  (the < 50 ms tail is also reported inside < 80).
+- **Measure.** Recall = share of notes matched by a transcribed note of the same pitch within
+  50 ms after removing the per-file clock offset (`pianolens.audio.transcription.note_f1` /
+  `match_notes`, as A-01b). Per bin and for the reference. 95% CIs by bootstrap over recordings
+  (2,000 resamples, seed 0). Failure type for a missed repeat: *merged* (the previous same-pitch
+  note was matched and no transcribed note of that pitch starts within 50 ms of the repeat) vs
+  other. Descriptive splits: true sustain pedal down or up at the repeat, and velocity below or
+  above the recording's median.
+- **Decision rule.** A bin *matters* if reference recall minus bin recall is at least 2.0
+  percentage points (about half the professional floor's missed rate, 3.8%) and the
+  recording-bootstrap CI of that difference excludes 0. "Too few" if a bin has fewer than 30
+  repeats. The answer to "at what tempo" is the slowest bin that matters, converted to the
+  tempo at which sixteenth-note repeats have that IOI (bpm = 15,000 / IOI in ms). If no bin
+  matters, merged repeats are not a measurable source of missed notes on this audio.
+- **Reachability.** With hundreds of thousands of notes, a 2-point drop is detectable in any bin
+  holding a few hundred repeats; bins with only tens of repeats can only come out "too few" or
+  with a wide CI, which is reported as such.
+- **Not answered here.** Real phone audio of repeats (no phone ground truth exists).
+
+## BL-22 pre-registration: source of the high fixed-pitch extras (2026-09-29)
+
+Written before any of the measures below were computed on the takes. Nobody has listened to the
+audio; this is a data analysis only and cannot settle the cause. Experiment folder:
+`experiments/2026-09-29-BL-22-phantom-extras/`. Outputs that touch the takes stay under
+`data/interim/henry_takes/bl22/`.
+
+- **Data.** The A-01 Transkun (primary) and Aria-AMT (secondary) transcriptions of the 5 takes,
+  labelled against the score with the A-01 code (`align_performance` + `correctness`). A *high
+  extra* is a note labelled `extra` at G6 (MIDI 91) or above. The three affected takes (Op. 9
+  No. 3, Op. posth., Op. 9 No. 1) are primary; all 5 are reported. Pedal = the transcriber's own
+  sustain track (CC64, down at value >= 64), which is under-read and not validated.
+- **(a) Pedal.** Per take: high extras per minute with pedal down vs up (rate ratio RR_time), and
+  high extras per correctly played note with pedal down vs up (RR_density, normalises for how
+  much is played). Null: circular shift of the pedal track against the notes by a random offset
+  of at least 10 s, 1,000 shifts, seed 0; p = share of shifts with RR_density at least the
+  observed. Pooled over the affected takes by summing counts. Controls: the same numbers for
+  middle-register extras (below G6) and for correct notes at G6 or above. A take with pedal up
+  under 10% of its span is reported but not used for the verdict.
+  *Rule:* pedal-linked if pooled RR_density >= 1.5 and pooled circular-shift p < 0.05;
+  not pedal-linked if RR_density < 1.2 or p >= 0.05; otherwise inconclusive.
+  Caveat fixed in advance: if the transcriber infers pedal from the same resonance, (a) is
+  partly circular.
+- **(b) Harmonic relation.** For each high extra, sources are the other transcribed notes below
+  G6 or labelled correct/wrong, with onset in [t - 2 s, t + 50 ms] ("recently sounded", primary)
+  or within 50 ms ("concurrent", secondary). A hit: the extra's pitch lies in
+  [p_s + 12 log2 k - 0.5, p_s + 12 log2 k + 0.5 + d_k] for some partial k in 2..6, where
+  d_k = 6 log2((1 + B k^2) / (1 + B)) with B = 0.001, a generous inharmonicity allowance (an
+  assumption, not a measured value for this piano). Nulls, 1,000 draws each, seed 0: (1) permute
+  pitches among the take's high extras (keeps the pitch set, breaks the timing link); (2) uniform
+  pitch in 91-108. *Rule:* harmonic if the pooled hit rate is >= 1.5 times the null mean and
+  above the null's 95th percentile for both nulls; not harmonic if below 1.2 times either null
+  mean; otherwise inconclusive. Positive control: the same test on PianoVAM false extras
+  (Transkun) and on the controlled-check extras, where overtone extras are known to occur.
+- **(c) Fixed pitch and silence.** Per take: share of high extras on the take's 4 most common
+  extra pitches; how many affected takes share each of those pitches; share of high extras at
+  pitches never played correctly in that take. *Rule:* fixed-pitch if in every affected take the
+  top 4 pitches hold >= 50% of high extras and at least 3 pitches are in the top 4 of all three
+  affected takes. Silence: share of high extras with no other note (excluding high extras) starting in
+  [t - 0.5 s, t + 0.1 s], and audio level (RMS, dB relative to the take median) over 100 ms from
+  onset, against 1,000 uniformly random times in the take span (seed 0); also counts before the
+  first and after the last played note. *Rule:* "in silence" if the isolated share is >= 1.5
+  times the random-time share.
+- **(d) Spectrogram, numbers only.** The densest 10 s window of high extras in each affected
+  take. For each high extra and, as reference, each correct note at G6 or above in the same
+  take: (i) prominence at the fundamental (dB, +-50 cent band vs bands 1 and 2 semitones away,
+  0-100 ms after onset); (ii) onset rise in that band (dB, 0-50 ms after vs 100-50 ms before);
+  (iii) presence before onset (band level 300-100 ms before vs the take's band median);
+  (iv) prominence at the 2nd partial; (v) broadband flux at onset (4-10 kHz). Descriptive only.
+  Images, if any, go to `data/interim/henry_takes/bl22/`.
+- **Mapping to hypotheses, fixed now.** Sympathetic resonance is favoured if (a) pedal-linked
+  and (b) harmonic. A transcription artefact (a partial read as a note) is favoured if (b)
+  harmonic, (a) not pedal-linked and (c) not fixed-pitch. A room or phone artefact is favoured if
+  (b) not harmonic and (c) fixed-pitch; "in silence" strengthens it. Any other combination is
+  inconclusive. Whatever the result, only a listening check or a second recording chain settles
+  the cause.

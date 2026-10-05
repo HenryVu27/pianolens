@@ -1,0 +1,31 @@
+{
+  "movement": "P23",
+  "recognised_piece": null,
+  "notes": "E major, 2/2, over constant broken-chord LH (fifth-first figuration, so tonic arrivals often have the chord fifth as the first bass note; judged as root position). Middle section B/F# major then B minor sequence (A, G), retransition on V of E (bars 87-97), recap from bar 98 with two evaded cadences (rests where tonic due) before PAC at 119, then coda on tonic pedal.",
+  "events": [
+    {"bar": 64, "beat": "1+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 70, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.65},
+    {"bar": 71, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.65},
+    {"bar": 74, "beat": 2, "type": "phrase_end", "cadence": "PAC", "confidence": 0.6},
+    {"bar": 75, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 78, "beat": 2, "type": "phrase_end", "cadence": "PAC", "confidence": 0.4},
+    {"bar": 79, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 82, "beat": 2, "type": "phrase_end", "cadence": "PAC", "confidence": 0.45},
+    {"bar": 83, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.45},
+    {"bar": 86, "beat": 2, "type": "phrase_end", "cadence": "PAC", "confidence": 0.45},
+    {"bar": 87, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 90, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.4},
+    {"bar": 98, "beat": "1+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.65},
+    {"bar": 104, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.65},
+    {"bar": 105, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.65},
+    {"bar": 108, "beat": 2, "type": "cadence", "cadence": "EC", "confidence": 0.55},
+    {"bar": 113, "beat": 2, "type": "cadence", "cadence": "EC", "confidence": 0.5},
+    {"bar": 119, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.7},
+    {"bar": 120, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.55},
+    {"bar": 124, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.4},
+    {"bar": 125, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 128, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.35},
+    {"bar": 129, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 136, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.3}
+  ]
+}

@@ -1,0 +1,32 @@
+{
+ "seed": 20261005,
+ "min_perfs": 20,
+ "min_oracle": 36,
+ "r07_split_sha256": "3341bfa58ff2d8bb89ca7d72468dc5077ea12fdc0e0e598338a5b4d322296b86",
+ "steps": {
+  "1_tierA_majority_ge_min": 1023,
+  "2_unpaired_no_possible_alias": 158,
+  "3_dropped_paired_workmate": 16,
+  "3_after_workmate_rule": 142,
+  "4_dropped_alias": 15,
+  "4_after_alias_rule": 127,
+  "5_dropped_eval_quarantine_r02": 62,
+  "5_final": 65
+ },
+ "pieces": 65,
+ "works": 63,
+ "composers": 28,
+ "oracle_eligible_by_metadata": 16,
+ "r07_role": {
+  "train": 62,
+  "val": 3
+ },
+ "perfs_majority_total": 1975,
+ "perfs_by_capture_model": {
+  "n_ATEPP": 53,
+  "n_Aria_AMT": 1817,
+  "n_ByteDance": 16,
+  "n_Transkun_V2": 89
+ },
+ "sha256_fresh_pieces_csv": "8303382ced314dfaab857826a8c19c336209584db5e07bb048a68d054cb137ca"
+}

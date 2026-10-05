@@ -96,8 +96,14 @@ def _notes_tip(b: dict, rep: dict) -> str:
     low = not rep["correctness"].get("extras_counted", True)
     tip = (f"{c['n_wrong_pitch']} wrong, {c['n_missed']} missed, {c['n_extra']} extra"
            + (" (extra notes: low confidence)" if low and c["n_extra"] else ""))
+    if c.get("n_missed_low_confidence"):
+        tip += f" ({c['n_missed_low_confidence']} missed on fast repeats: low confidence)"
+    if c.get("n_wrong_fast_run"):
+        tip += f"; {c['n_wrong_fast_run']} wrong in a fast run (bar-level only)"
     st = c.get("expert_check")
-    if st == "suppressed":
+    if c.get("not_heard"):
+        tip += "; passage not heard (not played, or not in the recording): not ranked"
+    elif st == "suppressed":
         tip += f"; {text.artefact_text(rep)}"
     elif st == "down_tiered":
         tip += f"; experts also show errors here (was {c.get('tier_global')})"
@@ -379,6 +385,37 @@ def _links(out_dir: Path | None) -> str:
     return "<ul>" + "".join(items) + "</ul>"
 
 
+def _phrase_method(rep: dict) -> str:
+    """Methods line on where the phrase boundaries of the per-phrase tempo measure come from."""
+    p = (rep.get("shaping") or {}).get("phrase_tempo") or {}
+    cad = "phrase ends found from cadences, held-out F1 0.46 against expert annotations"
+    if p.get("boundaries") != "llm":
+        why = p.get("llm_fallback_reason")
+        return (f"Phrase boundaries: {cad}" + (f"; no language-model boundaries: {_e(why)}"
+                                               if why else "") + ".")
+    prov = p.get("llm_provenance") or {}
+    k, nr = prov.get("recognised_runs"), prov.get("n_runs")
+    rec = (f" The annotator named the piece in {k} of {nr} readings, so remembered analyses may "
+           "have shaped the boundaries." if k else "")
+    return ("Phrase boundaries: marked by a language model "
+            f"({_e(prov.get('model') or '')}, {_e(prov.get('date') or '')}) reading a label-free "
+            "text rendering of the score with no title, in independent blind readings "
+            f"(protocol R-08) whose results are averaged.{rec} Against expert (DCML) phrase "
+            "annotations of Romantic character pieces, blind readings by this method matched "
+            "phrase ends at about 0.64 on average (plausible range 0.55-0.72), below the "
+            "project's 0.70 bar, and from 0.14 to 0.92 on single pieces; the cadence detector "
+            "reached 0.31 (BL-17: Chopin mazurkas, Grieg Lyric Pieces and a few Schumann, "
+            "Tchaikovsky and Liszt pieces). Nocturnes and waltzes were never tested, and compound "
+            "meters (6/8, 6/4) are not validated (6 pieces, descriptive). In validation (F-05e) "
+            "these boundaries gave about the same per-phrase tempo result as expert annotations "
+            "on Classical sonatas, but the measure fell short of its expert-boundary level on "
+            "Romantic pieces. The report therefore shows the cadence-detector value and each "
+            "reading's value next to the language-model value, labels the item undetermined when "
+            "the language-model and detector values differ in sign, and no practice item depends "
+            "on it. The phrase count is shown against the cadence detector's "
+            f"({cad}), because the measure penalises correct but finer phrasing.")
+
+
 def render_html(rep: dict, out_dir: Path | str | None = None) -> str:
     """The report page. ``out_dir``: where it will be saved (for relative links to the specs)."""
     od = Path(out_dir).resolve() if out_dir is not None else None
@@ -433,7 +470,13 @@ the 99th percentile gives "strong". Per-bar expert check (F-08c): with at least
 experts for transcribed input), a bar must also exceed their {int(100 * cal.EXPERT_CHECK_Q[0])}th /
 {int(100 * cal.EXPERT_CHECK_Q[1])}th percentile at that bar;
 bars within it are marked as likely score or edition artefacts. On transcribed input extra notes
-are low confidence and not ranked (A-01).</li>
+are low confidence and not ranked (A-01); strong needs more errors than every expert
+transcription at that bar (BL-18, interim); missed notes on same-key repeats due within
+{int(round(1000 * cal.FAST_REPEAT_MAX_IOI_SEC))} ms are low confidence (BL-25); and a run of at
+least {cal.NOT_HEARD_MIN_BARS} bars with {int(100 * cal.NOT_HEARD_MISSED_SHARE)}% or more of the
+notes missed is reported once as "passage not heard", not as mistakes. In fast runs (notes under
+{int(round(1000 * cal.FAST_RUN_MAX_IOI_SEC))} ms apart) wrong notes are named per bar only
+(BL-20).</li>
 <li>Tempo and loudness (F-03, F-06): 1.5-bar smooth curves. The level is removed before
 comparing shapes, so the charts show your shape on the expert level
 ({_fmt(tl, 0)} beats per minute, {_fmt(vl, 0)} velocity). A bar is notable when its deviation
@@ -447,7 +490,7 @@ detected harmony change (F-04b). Evenness: strict runs (scales, arpeggios, repea
 compared with experts only on the same score, and with published values only at a similar note
 rate (within {int(100 * cal.SIMILAR_RATE_REL)}%).</li>
 <li>Shaping (F-05): structural coherence is cross-validated by blocks of bars; per-phrase tempo
-uses phrase ends found from cadences (held-out F1 0.46), compared with shifted boundaries.</li>
+is compared with the same boundaries shifted by 2 bars. {_phrase_method(rep)}</li>
 <li>No overall grade: how these measures combine into quality is an open research question
 (R-04, Phase 3). "What to practise" is ranked by tier; within a tier, wrong or
 missed notes come first, then control, then shaping; then by how far past the notable limit

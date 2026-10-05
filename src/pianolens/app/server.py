@@ -15,7 +15,8 @@ Routes::
     GET  /api/pieces                 the catalogue (JSON)
     GET  /api/jobs/<id>              status + results data (JSON)
     POST /api/jobs                   multipart upload -> {"id": ...}
-    POST /api/jobs/<id>/cancel | /delete | /retry
+    POST /api/jobs/<id>/cancel | /delete | /retry | /override
+                                     (override = run a job the wrong-piece check stopped)
     GET  /static/<file>              app.css, app.js
 """
 
@@ -33,7 +34,15 @@ from urllib.parse import urlparse
 
 from pianolens.app import pages
 from pianolens.app.catalog import Piece, load_catalog
-from pianolens.app.jobs import AUDIO_EXT, MIDI_EXT, SCORE_EXT, JobSpec, JobStore, Upload
+from pianolens.app.jobs import (
+    AUDIO_EXT,
+    MIDI_EXT,
+    SCORE_EXT,
+    JobSpec,
+    JobStore,
+    Upload,
+    _write_json,
+)
 from pianolens.app.results import results_data
 
 __all__ = ["App", "make_server", "parse_multipart", "serve"]
@@ -46,7 +55,13 @@ CSP_APP = ("default-src 'self'; img-src 'self' data:; media-src 'self' blob:; "
            "form-action 'self'; base-uri 'none'; frame-ancestors 'self'")  # fmt: skip
 CSP_REPORT = ("default-src 'none'; style-src 'unsafe-inline'; img-src data:; "
               "frame-ancestors 'self'")  # fmt: skip
-PROVENANCES = ("disklavier", "sensor", "unknown", "synthetic")
+PROVENANCES = ("disklavier", "sensor", "unknown", "synthetic", "transcribed")
+#: Upload-form value -> (provenance, transcriber as PianoCoRe names it). Transcribed MIDI is
+#: handled like audio input after its transcription step (extras low confidence, expert check
+#: against transcriptions); with a known transcriber the check uses that transcriber only.
+TRANSCRIBED_CHOICES = {"transcribed:transkun": ("transcribed", "Transkun V2"),
+                       "transcribed": ("transcribed", None)}  # fmt: skip
+AUDIO_CAPTURE_MODEL = "Transkun V2"  # the app's own transcriber (pipeline.TRANSKUN_CAPTURE_MODEL)
 
 
 Fields = dict[str, str]
@@ -106,7 +121,8 @@ class App:
         elif exts <= set(MIDI_EXT):
             kind = "midi"
         else:
-            raise ValueError("All takes must be audio (wav, mp3, m4a) or all MIDI (mid).")
+            raise ValueError("All takes must be audio (wav, mp3, m4a, flac, aac, ogg) or all "
+                             "MIDI (mid, midi).")
         score = (files.get("score") or [None])[0]
         if score is not None and score.ext not in SCORE_EXT:
             raise ValueError("The score must be MusicXML (.musicxml, .xml, .mxl) or MEI.")
@@ -117,15 +133,21 @@ class App:
         if piece is None and score is None:
             raise ValueError("Choose a supported piece or upload a MusicXML score.")
         prov = fields.get("provenance", "unknown")
-        if prov not in PROVENANCES:
+        capture = None
+        if kind == "audio":
+            prov, capture = "transcribed", AUDIO_CAPTURE_MODEL
+        elif prov in TRANSCRIBED_CHOICES:
+            prov, capture = TRANSCRIBED_CHOICES[prov]
+        elif prov not in PROVENANCES:
             prov = "unknown"
         title = fields.get("title", "").strip() or (
             f"{piece.composer}, {piece.title}" if piece else Path(score.filename).stem)
         excl = [s for s in re.split(r"[\s,]+", fields.get("exclude_references", "")) if s]
         spec = JobSpec(piece_id=piece.piece_id if piece else None, title=title[:200],
                        composer=piece.composer if piece else "", input_kind=kind,
-                       provenance="transcribed" if kind == "audio" else prov,
-                       filter_extras=kind == "audio" and fields.get("filter_extras") == "on",
+                       provenance=prov, capture_model=capture,
+                       filter_extras=prov == "transcribed" and fields.get("filter_extras") == "on",
+                       ignore_wrong_piece=fields.get("ignore_wrong_piece") == "on",
                        exclude_references=excl,
                        max_windows=max(1, min(12, int(fields.get("max_windows") or 8))),
                        clips=fields.get("no_clips") != "on",
@@ -261,14 +283,16 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
                     fields, files = parse_multipart(self.headers.get("Content-Type", ""), body)
                     jid, reused = app.create_job(fields, files)
                     return self._json({"id": jid, "reused": reused, "url": f"/jobs/{jid}"})
-                m = re.fullmatch(rf"/api/jobs/{_JOB}/(?P<act>cancel|delete|retry)", path)
+                m = re.fullmatch(rf"/api/jobs/{_JOB}/(?P<act>cancel|delete|retry|override)",
+                                 path)
                 if m:
                     jid = m["id"]
                     if m["act"] == "cancel":
                         return self._json({"ok": app.store.cancel(jid)})
                     if m["act"] == "delete":
                         return self._json({"ok": app.store.delete(jid)})
-                    return self._json({"ok": _retry(app.store, jid)})
+                    return self._json({"ok": _retry(app.store, jid,
+                                                    ignore_wrong_piece=m["act"] == "override")})
                 raise KeyError(path)
             except KeyError:
                 self._error(404, "Not found.")
@@ -280,17 +304,21 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
     return Handler
 
 
-def _retry(store: JobStore, jid: str) -> bool:
-    """Run a failed, cancelled or interrupted job again with the same stored inputs."""
+def _retry(store: JobStore, jid: str, ignore_wrong_piece: bool = False) -> bool:
+    """Run a failed, cancelled, interrupted or stopped job again with the same stored inputs.
+    ``ignore_wrong_piece``: the user confirmed the piece after the wrong-piece check stopped the
+    run; it is recorded in ``job.json`` (it does not change the job id)."""
     st = store.status(jid)
     if st is None or st["state"] in ("running", "queued", "done"):
         return False
     d = store.path(jid)
+    if ignore_wrong_piece:
+        job = store.job(jid) or {}
+        job.setdefault("spec", {})["ignore_wrong_piece"] = True
+        _write_json(d / "job.json", job)
     for f in ("report.html", "report.json"):
         (d / f).unlink(missing_ok=True)
     fresh = [{"name": s["name"], "label": s["label"], "state": "pending"} for s in st["steps"]]
-    from pianolens.app.jobs import _write_json
-
     _write_json(d / "status.json", {"state": "queued", "steps": fresh, "message": ""})
     store.start(jid)
     return True

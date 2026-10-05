@@ -478,3 +478,102 @@ Append only. Each entry records the date, the decision, the reason, and who deci
     fixed-pitch extras. The artefact is specific to his recording chain (phone, YouTube encoding)
     or his room.
   - Next: Henry's listening check. A phone-plus-MIDI simultaneous take would give ground truth.
+- **2026-09-29, feature-engineer (DEFECTS DF-08): correction to the 2026-09-27 "Mistake set"
+  entry.** That entry says the synthetic mistakes are regenerated from MAESTRO MIDI. The set
+  that was built and used (D-08, `data/processed/mistakes_v1`, `src/pianolens/data/perturb.py`)
+  injects MAESTRO-E-style mistakes into 100 (n)ASAP Disklavier performances with robust
+  ground-truth score alignment, so every injected mistake has exact per-note ground truth
+  (`docs/specs/correctness-validation.md`, `DATASETS.md`). The decision itself (our own
+  generator, real human mistakes still needed) is unchanged; the earlier entry is left as written.
+- **2026-09-29, lead: BL-18 after audit.**
+  - The pre-registered selection R1(2)+R2s is **returned**: it passes its one-sided criteria but cuts strong detection of injected mistakes to 0.16 of R0's (held-out strong 0.17/0.19%).
+  - **Interim default: R1(0) without R2s** (margin 0, `transcribed_strong_limits=False`) for transcribed input. Key-sensor input unchanged.
+  - Runs of fully missed bars (Aria-AMT corpus truncation, not transcriber failure) get a separate "passage not heard" rule instead of raising limits.
+  - **BL-18b** confirmation run as specified in the audit (docs/specs/report-validation.md "BL-18 audit"): two-sided C1 0.30-1.25% per family, detection floor 0.75 of R0, 3-wrong-note bars at least 95% strong. Scheduled after DF-10/BL-23, because label changes may move calibration.
+- **2026-09-29, lead: BL-18b after audit. Deviation from a pre-registered action, disclosed.**
+  - BL-18b verdict stays **FAIL by the pre-registered rule** (C4: 71.5% / 68.4% of targeted 3-wrong-note bars strong, floor 95%).
+  - **The pre-registered consequence "revert to R0" is not applied.** Reasons: (a) C4 is fixed by construction for both R0 and R1(0) (targeted bars have every expert at most 1 wrong note and the strong limit is 2, so a bar where the checker counts 3 is strong under both; P and R0 differ on 1 of 1,130 and 3 of 1,125 bars); C4 measured the note checker (DF-12: 16-19% of injected wrong notes lost on transcribed input), not the tier rule. (b) R0 fails C1 on Aria-AMT (2.09%, bootstrap [1.08, 2.74]) and ties on C4. The C4 design error was shared by the BL-18 audit that specified it.
+  - **R1(0) + "passage not heard" stays the interim default, Provisional.** Describe it as "meets C1-C3 on one new sample of 12 pieces", not confirmed; Transkun V2 C1 passes on the point estimate only (t [0.09, 0.59]%); C3 Transkun bootstrap touches the floor.
+  - Docs must state that on transcribed input about 7 in 10 bars with 3 wrong notes become strong, because of the checker (DF-12), not the tier rule.
+  - A future confirmation runs after a DF-12 fix on new pieces with a rule-relative criterion (strong share on targeted bars at least 0.95 of R0's) and tracks the end-to-end targeted share as a DF-12 measurement. C4' (all 3 counted) is a unit test, not a criterion.
+- **2026-10-01, lead: tonebase lessons registered (D-14).**
+  - Henry supplied a tonebase export (28 zips, 57.4 GB, kept in `~/Downloads`). Registered as a
+    dataset for **internal validation only**: license unclear (BL-29), nothing from it is
+    committed or redistributed, and experiment READMEs carry counts and statistics only.
+  - **The asset is the 21 teachers' annotated scores**, not the playing: lesson notes placed on
+    bars and notes, for pieces with up to 2,011 PianoCoRe tier A performances. The demonstrations
+    are studio-quality but fragmentary and overlap speech; PianoCoRe already supplies full expert
+    performances of the same pieces.
+  - **Keep 4.8 GB of lesson audio on the Mac** (190 unique piece-lesson videos, AAC stream copy,
+    `data/interim/tonebase_audio`). A documented exception to "audio corpora on the GPU box", like
+    the PianoVAM subset: raw data is 16 GB of 60 and the zips may be deleted. Videos (640x360,
+    too small for fingers) and technique courses stay in the zips (BL-30).
+  - Next: R-11 pilot (teacher annotations as ground truth for what the expert band and the report
+    should notice), pre-registered under the `run-experiment` skill.
+- **2026-10-05, lead: R-07 after audit (eval-auditor, Confirmed with caveats, scoped).** Audit text
+  in `experiments/2026-09-28-R-07-symupe-finetune/AUDIT.md` until the origin/main merge, then the
+  README `## Audit` section.
+  - **R-10 uses frozen SyMuPe EncDec-base**, per the pre-registered rule ((a) on P harms, -0.051
+    [-0.072, -0.029]). Pianist Transformer (pt_frozen, pt_E) may appear in R-10 only as a
+    secondary arm with no deciding role; giving it one needs a new pre-registered rule.
+  - **H1b operationalisation (fixed before R-10 is pre-registered).** The R-07 preview statistic
+    (captured share of the shared subspace by the model's samples) measures sample diversity, and
+    16 held-out real experts reach only about 0.25 on it, so its 0.50 bar was unreachable. The
+    R-07 preview is read as **uninformative for H1b**, not "at the falsification level".
+    - **Primary (H1b-consensus):** mean-curve R²c with the R-06 formula (both curves centered),
+      per target (velocity, log IOI), on pieces unseen by the model. The plan's thresholds apply
+      to R²c as written (at least 0.50 consistent, 0.20 or less falsified). The K-matched expert
+      oracle (mean of K held-out experts against the rest; about 0.84-0.89 in the R-07 audit) and
+      the ratio R²c / oracle are always reported next to it.
+    - **Secondary (H1b-axes):** captured share as a ratio to the held-out expert oracle in the
+      same reduced subspace, samples at top-p 1.0, K at least 16. Thresholds on the ratio are set
+      in the R-10 pre-registration, after a reachability check (rules/experiments.md, R-09).
+    - **Exploratory:** conditional prediction of a performer's component scores from part of the
+      performance, against a performer-mean baseline.
+    - **Fresh pieces.** R-07 already showed these statistics on R10u. Frozen SyMuPe never saw
+      PianoCoRe pieces outside its pretraining set, so R-10 confirms on a fresh draw of such pieces
+      not evaluated in R-07; R10u serves as disclosed development data.
+  - **S-LR is not used anywhere** until box check B1 and a pre-registered non-flat battery
+    (phase-randomised, transplanted, time-reversed or phrase-shuffled deviations; halved
+    expression) are run. Stricter than the 2026-09-28 entry ("a score that passes may be used"):
+    S-LR's R1 pass is matched by the model-free amount baseline and it is at chance against halved
+    expression (P 0.491).
+  - **The report's "too flat" check stays model-free** (magnitude against the references,
+    `features/interpretation.py`), which is what the B-amount baseline does. No model score feeds it.
+  - **Box checks B1-B4** (AUDIT section 10) are OWNER work on the RTX 5080 box; B2 also fixes the
+    log IOI R²c centering bug. R-07 author fixes (AUDIT section 9) wait for the merge.
+  - The plan's H1b row gets a pointer to this entry; its wording is unchanged.
+- **2026-10-05, lead: R-11 encoding categories.** The protocol's two added categories, `practice`
+  and `analysis` (56 of encoder A's 154 rows), are accepted. They hold advice that no performance
+  can show (practice routines, harmonic and formal labels), are MIDI-observable "no" by
+  definition, and the protocol states how they fold back into the ticket's eight. Question (a)
+  uses only the frozen primary rows. The blind second encoding is of the nocturne, done from a
+  copied packet outside the repo (R-08a rule).
+- **2026-10-05, lead: R-10 pre-registered; SyMuPe sampling trap.**
+  - SyMuPe EncDec-base ignores `perform_score(lm_top_p=...)` and samples at its default top-p
+    0.95 (found in the R-10 dry run). Every R-06 and R-07 SyMuPe sample was therefore drawn at
+    0.95, including R-07's S-TYP reference samples, registered as 1.0. S-TYP failed anyway, so its
+    reading stands; R-07's README run record and the audit get a correction note after the
+    merge. R-10's generator passes `top_p` explicitly and refuses to start otherwise.
+  - **R-10 primary (H1b-consensus) stays on top-p 0.95 samples, as registered.** It matches the
+    R-06 / R-07 development numbers, and a mean curve is a mode-seeking quantity; top-p 1.0 is
+    used for H1b-axes, as fixed earlier today. Both sample sets are generated, so 1.0 for the
+    primary is reported as a sensitivity, not a reading.
+  - Accepted limits: 59 primary pieces (57 works), 12 for H1b-axes, less-played repertoire, 92%
+    Aria-AMT. The claim is scoped to that.
+  - eval-auditor reviews the pre-registration before the box run (`PRERUN_REVIEW.md`); any change
+    is a disclosed pre-run amendment.
+- **2026-10-05, lead: R-10 pre-run review (eval-auditor, `PRERUN_REVIEW.md`).** Ready after
+  amendments. Accepted: A1 (exclude three "fresh" whole-set pieces that contain held-out or
+  PERiScoPe-paired movements: Debussy 2 Arabesques, Ravel Tombeau suite, Bartok Sz.56/3), A2 (drop
+  the later copy of near-duplicate renditions, deviation r > 0.9), A3 (record correction on the
+  top-p switch; the 0.95 reading decides, and the headline also states the 1.0 reading when it
+  differs), A4 (scope: the model is conditioned on the panel's median tempo and loudness; sibling
+  pieces flagged). Adopted R1-R5 (r² and amplitude ratio next to R²c, composer-cluster CI as
+  secondary, dev medians with and without 5 R10u pieces with paired content, box dev checks,
+  docstring). Primary set after A1-A2: 56 pieces in 54 works. Exclusions are summariser flags;
+  an unexcluded summary is kept as `results/fresh_as_registered`. All appended as a disclosed
+  pre-run amendment with its own hash; the registered header and thresholds are unchanged.
+  - R-07 correction (after the merge): 5 of R-07's 74 "unseen" R10u pieces contain paired
+    content; dev medians without them are 0.330 / 0.142 (velocity / log IOI) instead of 0.328 /
+    0.127. Noted in the R-07 AUDIT lead addendum.

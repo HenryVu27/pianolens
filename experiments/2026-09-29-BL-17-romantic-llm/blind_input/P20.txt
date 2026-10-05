@@ -1,0 +1,935 @@
+SCORE RENDERING P20 (piano, two staves; one movement)
+
+How to read this file
+- Bars are numbered consecutively in the order they are played, starting from an arbitrary
+  number (the first bar is not bar 1). Repeats are written out, so a repeated section appears
+  twice. "(score N)" is the score's own number for that bar, which differs from the running
+  number when a section is repeated; "X1", "X2", ... are score bars without a number (e.g.
+  alternative endings).
+- The anacrusis (upbeat) bar at the start is shorter; its beats are counted from the end of
+  the bar, as in the score.
+- Beat unit = the lower number of the time signature (3/4: quarter-note beats 1-3; 2/2:
+  half-note beats 1-2; 2/4: quarter-note beats 1-2; 4/4: quarter-note beats 1-4).
+- Each line is one onset time in the bar: its beat position (e.g. 2, 2+1/2, 1+1/3), then the
+  notes that START there in each staff: RH = upper staff, LH = lower staff.
+- Notes are written as pitch name + octave (C4 = middle C; # sharp, b flat, e.g. Bb3, F#5).
+  The number after a group of notes is their written duration in beats (tied notes are
+  merged). Notes already sounding from earlier onsets are not repeated.
+- "grace(X Y)" = grace notes before the main note(s) at that beat.
+- "rest d" = a rest of d beats in that staff.
+- "bass X" = the lowest pitch sounding at that moment (including held notes).
+- "FERMATA" = a fermata at that onset.
+- "same notes as bars a-b" = those bars are an exact repeat of earlier bars and are not
+  printed again.
+- "double barline" = a double or final barline at the end of the bar.
+
+MOVEMENT P20: time 3/4, key signature 3 sharps, 202 bars as performed (repeats written out).
+
+BAR 461 (score 461)
+        1  RH rest 1 | LH rest 1 | bass -
+        2  RH C#5 1/2 | LH C#4 1/2 | bass C#4
+    2+1/2  RH D5 1/2 | LH D4 1/2 | bass D4
+        3  RH C#5 1/2 | LH C#4 1/2 | bass C#4
+    3+1/2  RH B4 1/2 | LH B3 1/2 | bass B3
+BAR 462 (score 462)
+        1  RH D5 2 | LH D4 2 | bass D4
+        3  RH D5 1 | LH D4 1 | bass D4
+BAR 463 (score 463)
+        1  RH D5 2 | LH D4 2 | bass D4
+        3  RH D5 1 | LH D4 1 | bass D4
+BAR 464 (score 464)
+        1  RH D5 6 | LH D4 6 | bass D4
+BAR 465 (score 465)
+  (empty)
+BAR 466 (score 466)
+        1  RH C#4 E#4 C#5 4; A4 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH G#4 2 | LH C#3 B3 1 | bass C#3
+BAR 467 (score 467)
+        1  LH C#2 1 | bass C#2
+        2  RH A4 1/2 | LH G#2 E#3 1 | bass G#2
+    2+1/2  RH B4 1/2 | bass G#2
+        3  RH A4 1/2 | LH C#3 B3 1 | bass C#3
+    3+1/2  RH G#4 1/2 | bass C#3
+BAR 468 (score 468)
+        1  RH C#4 E#4 C#5 4; A4 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH G#4 2 | LH C#3 B3 1 | bass C#3
+BAR 469 (score 469)
+        1  LH C#2 1 | bass C#2
+        2  RH A4 1/2 | LH G#2 E#3 1 | bass G#2
+    2+1/2  RH B4 1/2 | bass G#2
+        3  RH A4 1/2 | LH C#3 B3 1 | bass C#3
+    3+1/2  RH G#4 1/2 | bass C#3
+BAR 470 (score 470)
+        1  RH C#4 E#4 A4 C#5 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH C#4 E#4 A4 C#5 2 | LH C#3 B3 1 | bass C#3
+BAR 471 (score 471)
+        1  LH C#2 1 | bass C#2
+        2  RH C#4 E#4 A4 C#5 3/2 | LH G#2 E#3 1 | bass G#2
+        3  LH C#3 B3 1 | bass C#3
+    3+1/2  RH C#4 E#4 A4 C#5 1/2 | bass C#3
+BAR 472 (score 472)
+        1  RH C#4 E4 C#5 4; G#4 2 | LH F#2 1 | bass F#2
+        2  LH C#3 E3 1 | bass C#3
+        3  RH F#4 2 | LH E3 A#3 1 | bass E3
+BAR 473 (score 473)
+        1  LH F#2 1 | bass F#2
+        2  RH rest 2 | LH C#3 E3 1 | bass C#3
+        3  LH E3 A#3 1 | bass E3
+BAR 474 (score 474)
+        1  RH D#4 D#5 4; B4 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH A4 C#5 1 | LH B2 A3 1 | bass B2
+BAR 475 (score 475)
+        1  RH A4 C#5 1 | LH B1 B2 1 | bass B1
+        2  RH G#4 B4 1/2 | LH F#2 D#3 1 | bass F#2
+    2+1/2  RH A4 C#5 1/2 | bass F#2
+        3  RH G#4 B4 1/2 | LH B2 A3 1 | bass B2
+    3+1/2  RH F#4 A4 1/2 | bass B2
+BAR 476 (score 476)
+        1  RH D#4 D#5 4; B4 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH A4 C#5 2 | LH B2 A3 1 | bass B2
+BAR 477 (score 477)
+        1  LH B1 B2 1 | bass B1
+        2  RH G#4 B4 1/2 | LH F#2 D#3 1 | bass F#2
+    2+1/2  RH A4 C#5 1/2 | bass F#2
+        3  RH G#4 B4 1/2 | LH B2 A3 1 | bass B2
+    3+1/2  RH F#4 A4 1/2 | bass B2
+BAR 478 (score 478)
+        1  RH D#4 B4 D#5 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH D#4 A4 C#5 D#5 2 | LH B2 A3 1 | bass B2
+BAR 479 (score 479)
+        1  LH B1 B2 1 | bass B1
+        2  RH D#4 G#4 B4 D#5 3/2 | LH F#2 D#3 1 | bass F#2
+        3  LH B2 A3 1 | bass B2
+    3+1/2  RH D#4 F#4 A4 D#5 1/2 | bass B2
+BAR 480 (score 480)
+        1  RH E4 A4 C#5 E5 2 | LH E2 E3 1 | bass E2
+        2  LH B2 G#3 1 | bass B2
+        3  RH E4 G#4 B4 E5 1 | LH E3 B3 1 | bass E3
+BAR 481 (score 481)
+        1  RH G4 B4 D5 G5 3/2 | LH B1 B2 1 | bass B1
+        2  LH D3 G3 B3 D4 1/2 | bass D3
+    2+1/2  RH F#4 F#5 1/2 | LH rest 3/2 | bass F#4
+        3  RH E4 E5 1/2 | bass E4
+    3+1/2  RH D4 D5 1/2 | bass D4
+BAR 482 (score 482)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 G#5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 483 (score 483)
+        1  LH C#3 1 | bass C#3
+        2  RH A5 1/2 | LH G#3 E#4 1 | bass G#3
+    2+1/2  RH B5 1/2 | bass G#3
+        3  RH A5 1/2 | LH C#4 B4 1 | bass C#4
+    3+1/2  RH G#5 1/2 | bass C#4
+BAR 484 (score 484)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 G#5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 485 (score 485)
+        1  LH C#3 1 | bass C#3
+        2  RH A5 1/2 | LH G#3 E#4 1 | bass G#3
+    2+1/2  RH B5 1/2 | bass G#3
+        3  RH A5 1/2 | LH C#4 B4 1 | bass C#4
+    3+1/2  RH G#5 1/2 | bass C#4
+BAR 486 (score 486)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 A5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 487 (score 487)
+        1  LH C#3 1 | bass C#3
+        2  RH C#5 E#5 A5 C#6 3/2 | LH G#3 E#4 1 | bass G#3
+        3  LH C#4 B4 1 | bass C#4
+    3+1/2  RH C#5 E#5 A5 C#6 1/2 | bass C#4
+BAR 488 (score 488)
+        1  RH C#5 D##5 G#5 C#6 2 | LH B#2 1 | bass B#2
+        2  LH A#3 F##4 1 | bass A#3
+        3  RH C#5 D##5 F##5 C#6 2 | LH D##4 A#4 1 | bass D##4
+BAR 489 (score 489)
+        1  LH B#2 1 | bass B#2
+        2  RH rest 2 | LH A#3 F##4 1 | bass A#3
+        3  LH D##4 A#4 1 | bass D##4
+BAR 490 (score 490)
+        1  RH D#5 G##5 C#6 D#6 2 | LH E#3 1 | bass E#3
+        2  LH B#3 G##4 1 | bass B#3
+        3  RH D#5 G##5 B#5 D#6 2 | LH D#4 B#4 1 | bass D#4
+BAR 491 (score 491)
+        1  LH E#3 1 | bass E#3
+        2  RH A#5 C#6 1/2 | LH B#3 G##4 1 | bass B#3
+    2+1/2  RH B#5 D#6 1/2 | bass B#3
+        3  RH A#5 C#6 1/2 | LH D#4 B#4 1 | bass D#4
+    3+1/2  RH G##5 B#5 1/2 | bass D#4
+BAR 492 (score 492)
+        1  RH E5 A5 D6 E6 2 | LH E3 1 | bass E3
+        2  LH C#4 A4 1 | bass C#4
+        3  RH E5 A5 C#6 E6 2 | LH E4 C#5 1 | bass E4
+BAR 493 (score 493)
+        1  LH E3 1 | bass E3
+        2  RH B5 D6 1/2 | LH C#4 A4 1 | bass C#4
+    2+1/2  RH C#6 E6 1/2 | bass C#4
+        3  RH B5 D6 1/2 | LH E4 C#5 1 | bass E4
+    3+1/2  RH A5 C#6 1/2 | bass E4
+BAR 494 (score 494)
+        1  RH E#5 B5 D6 E#6 2 | LH C#3 C#4 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH E#5 B5 D6 E#6 2 | LH C#4 B4 1 | bass C#4
+BAR 495 (score 495)
+        1  LH C#3 C#4 1 | bass C#3
+        2  RH E#5 A5 C#6 E#6 3/2 | LH G#3 E#4 1 | bass G#3
+        3  LH C#4 B4 1 | bass C#4
+    3+1/2  RH E#5 G#5 B5 E#6 1/2 | bass C#4
+BAR 496 (score 496)
+        1  RH F#5 B5 D6 F#6 2 | LH F#3 F#4 1 | bass F#3
+        2  LH C#4 A4 1 | bass C#4
+        3  RH F#5 A5 C#6 F#6 2 | LH F#4 C#5 1 | bass F#4
+BAR 497 (score 497)
+        1  LH A4 F#5 1 | bass A4
+        2  RH rest 2 | LH rest 2 | bass -
+  (double barline at end of bar)
+BAR 498 (score 498)
+        1  RH rest 1 | LH D2 6; B2 2 | bass D2
+        2  RH F#3 D4 1 | bass D2
+        3  RH A3 F#4 1 | LH A2 2 | bass D2
+BAR 499 (score 499)
+        1  RH rest 3 | bass D2
+        2  LH B2 1/2 | bass D2
+    2+1/2  LH C#3 1/2 | bass D2
+        3  LH B2 1/2 | bass D2
+    3+1/2  LH A2 1/2 | bass D2
+BAR 500 (score 500)
+        1  RH rest 1 | LH D2 6; B2 2 | bass D2
+        2  RH F#3 D4 1 | bass D2
+        3  RH A3 F#4 1 | LH A2 2 | bass D2
+BAR 501 (score 501)
+        1  RH rest 3 | bass D2
+        2  LH B2 1/2 | bass D2
+    2+1/2  LH C#3 1/2 | bass D2
+        3  LH B2 1/2 | bass D2
+    3+1/2  LH A2 1/2 | bass D2
+BAR 502 (score 502)
+        1  RH rest 1 | LH D2 6; B2 2 | bass D2
+        2  RH F#3 D4 1 | bass D2
+        3  RH A3 F#4 1 | LH A2 1 | bass D2
+BAR 503 (score 503)
+        1  RH rest 1 | LH E3 2 | bass D2
+        2  RH F#3 D4 1 | bass D2
+        3  RH A3 F#4 1 | LH D3 1 | bass D2
+BAR 504 (score 504)
+        1  RH rest 1 | LH E2 4; D3 2 | bass E2
+        2  RH G3 C#4 1 | bass E2
+        3  RH B3 G4 1 | LH C#3 2 | bass E2
+BAR 505 (score 505)
+        1  RH C#4 B4 1 | bass E2
+        2  RH G4 C#5 1 | LH rest 2 | bass G4
+        3  RH B4 G5 1 | bass B4
+BAR 506 (score 506)
+        1  RH rest 1 | LH E2 6; C#3 2 | bass E2
+        2  RH G3 E4 1 | bass E2
+        3  RH B3 G4 1 | LH B2 2 | bass E2
+BAR 507 (score 507)
+        1  RH rest 3 | bass E2
+        2  LH C#3 1/2 | bass E2
+    2+1/2  LH D3 1/2 | bass E2
+        3  LH C#3 1/2 | bass E2
+    3+1/2  LH B2 1/2 | bass E2
+BAR 508 (score 508)
+        1  RH rest 1 | LH E2 6; C#3 2 | bass E2
+        2  RH G3 E4 1 | bass E2
+        3  RH B3 G4 1 | LH B2 2 | bass E2
+BAR 509 (score 509)
+        1  RH rest 3 | bass E2
+        2  LH C#3 1/2 | bass E2
+    2+1/2  LH D3 1/2 | bass E2
+        3  LH C#3 1/2 | bass E2
+    3+1/2  LH B2 1/2 | bass E2
+BAR 510 (score 510)
+        1  RH rest 1 | LH E2 6; C#3 2 | bass E2
+        2  RH G3 E4 1 | bass E2
+        3  RH B3 G4 1 | LH B2 1 | bass E2
+BAR 511 (score 511)
+        1  RH rest 1 | LH F#3 2 | bass E2
+        2  RH G3 E4 1 | bass E2
+        3  RH B3 G4 1 | LH E3 1 | bass E2
+BAR 512 (score 512)
+        1  RH rest 1 | LH F#2 4; E3 2 | bass F#2
+        2  RH A3 D#4 1 | bass F#2
+        3  RH C4 A4 1 | LH D#3 2 | bass F#2
+BAR 513 (score 513)
+        1  RH D#4 C5 1 | bass F#2
+        2  RH A4 D#5 1 | LH rest 2 | bass A4
+        3  RH C5 A5 1 | bass C5
+BAR 514 (score 514)
+        1  RH grace(A#3 D#4); A#4 4 | LH rest 1 | bass A#4
+        2  LH F##2 D#3 1 | bass F##2
+        3  LH D#3 A#3 1 | bass D#3
+BAR 515 (score 515)
+        1  LH rest 1 | bass A#4
+        2  RH B#4 1/2 | LH F##2 D#3 1 | bass F##2
+    2+1/2  RH C##5 1/2 | bass F##2
+        3  RH B#4 1/2 | LH D#3 A#3 1 | bass D#3
+    3+1/2  RH A#4 1/2 | bass D#3
+BAR 516 (score 516)
+        1  RH C##4 E#4 B#4 2 | LH rest 1 | bass C##4
+        2  LH G#2 C##3 E#3 1 | bass G#2
+        3  RH C##4 E#4 B#4 1 | LH C##3 E#3 B#3 1 | bass C##3
+BAR 517 (score 517)
+        1  RH C##4 E#4 B#4 2 | LH rest 1 | bass C##4
+        2  LH G#2 C##3 E#3 1 | bass G#2
+        3  RH C##4 E#4 B#4 1 | LH C##3 E#3 B#3 1 | bass C##3
+BAR 518 (score 518)
+        1  RH D#4 F##4 3; B#4 2 | LH rest 1 | bass D#4
+        2  LH F##2 D#3 1 | bass F##2
+        3  RH A#4 1 | LH D#3 A#3 1 | bass D#3
+BAR 519 (score 519)
+        1  RH rest 1 | LH rest 1 | bass -
+        2  RH G##4 1/2 | LH F##2 D#3 1 | bass F##2
+    2+1/2  RH A#4 1/2 | bass F##2
+        3  RH B4 1/2 | LH D#3 A#3 1 | bass D#3
+    3+1/2  RH B#4 1/2 | bass D#3
+BAR 520 (score 520)
+        1  RH D##4 F##4 C#5 2 | LH rest 1 | bass D##4
+        2  LH A#2 D##3 F##3 1 | bass A#2
+        3  RH D##4 F##4 C#5 1 | LH D##3 F##3 C#4 1 | bass D##3
+BAR 521 (score 521)
+        1  RH D##4 F##4 C#5 2 | LH rest 1 | bass D##4
+        2  LH A#2 D##3 F##3 1 | bass A#2
+        3  RH D##4 F##4 C#5 1 | LH D##3 F##3 C#4 1 | bass D##3
+BAR 522 (score 522)
+        1  RH E#4 G##4 3; C#5 2 | LH rest 1 | bass E#4
+        2  LH G##2 E#3 1 | bass G##2
+        3  RH B#4 1 | LH E#3 B#3 1 | bass E#3
+BAR 523 (score 523)
+        1  RH rest 1 | LH rest 1 | bass -
+        2  RH C##5 1/2 | LH G##2 E#3 1 | bass G##2
+    2+1/2  RH D##5 1/2 | bass G##2
+        3  RH C##5 1/2 | LH E#3 B#3 1 | bass E#3
+    3+1/2  RH B#4 1/2 | bass E#3
+BAR 524 (score 524)
+        1  RH D##4 F##4 C##5 2 | LH rest 1 | bass D##4
+        2  LH A#2 D##3 F##3 1 | bass A#2
+        3  RH D##4 F##4 C##5 1 | LH D##3 F##3 C##4 1 | bass D##3
+BAR 525 (score 525)
+        1  RH D##4 F##4 C##5 2 | LH rest 1 | bass D##4
+        2  LH A#2 D##3 F##3 1 | bass A#2
+        3  RH D##4 F##4 C##5 1 | LH D##3 F##3 C##4 1 | bass D##3
+BAR 526 (score 526)
+        1  RH E#4 G##4 3; C##5 2 | LH rest 1 | bass E#4
+        2  LH G##2 E#3 1 | bass G##2
+        3  RH B#4 1 | LH E#3 B#3 1 | bass E#3
+BAR 527 (score 527)
+        1  RH rest 1 | LH rest 1 | bass -
+        2  RH B4 1/2 | LH G##2 E#3 1 | bass G##2
+    2+1/2  RH C5 1/2 | bass G##2
+        3  RH C#5 1/2 | LH E#3 B#3 1 | bass E#3
+    3+1/2  RH D5 1/2 | bass E#3
+BAR 528 (score 528)
+        1  RH F#4 A4 Eb5 2 | LH rest 1 | bass F#4
+        2  LH C3 F#3 A3 1 | bass C3
+        3  RH F#4 A4 Eb5 1 | LH F#3 A3 Eb4 1 | bass F#3
+BAR 529 (score 529)
+        1  RH F#4 A4 Eb5 2 | LH rest 1 | bass F#4
+        2  LH C3 F#3 A3 1 | bass C3
+        3  RH F#4 A4 Eb5 1 | LH F#3 A3 Eb4 1 | bass F#3
+BAR 530 (score 530)
+        1  RH G4 B4 3; Eb5 2 | LH rest 1 | bass G4
+        2  LH B2 G3 1 | bass B2
+        3  RH D5 1 | LH G3 D4 1 | bass G3
+BAR 531 (score 531)
+        1  RH rest 1 | LH rest 3 | bass -
+        2  RH E5 1/2 | bass E5
+    2+1/2  RH F#5 1/2 | bass F#5
+        3  RH E5 1/2 | bass E5
+    3+1/2  RH D5 1/2 | bass D5
+BAR 532 (score 532)
+        1  RH G4 B4 3; E5 2 | LH rest 1 | bass G4
+        2  LH B2 G3 1 | bass B2
+        3  RH D5 1 | LH G3 D4 1 | bass G3
+BAR 533 (score 533)
+        1  RH rest 1 | LH rest 3 | bass -
+        2  RH E5 1/2 | bass E5
+    2+1/2  RH F#5 1/2 | bass F#5
+        3  RH E5 1/2 | bass E5
+    3+1/2  RH D5 1/2 | bass D5
+BAR 534 (score 534)
+        1  RH G4 B4 3; E5 2 | LH rest 1 | bass G4
+        2  LH B2 G3 1 | bass B2
+        3  RH D5 1 | LH G3 D4 1 | bass G3
+BAR 535 (score 535)
+        1  RH G5 4 | LH rest 3 | bass G5
+BAR 536 (score 536)
+        1  LH rest 3 | bass G5
+        2  RH F#5 1 | bass F#5
+        3  RH F5 1 | bass F5
+BAR 537 (score 537)
+        1  RH E5 1 | LH rest 3 | bass E5
+        2  RH D#5 1 | bass D#5
+        3  RH D5 1 | bass D5
+BAR 538 (score 538)
+        1  RH C#4 E#4 C#5 4; A4 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH G#4 2 | LH C#3 B3 1 | bass C#3
+BAR 539 (score 539)
+        1  LH C#2 1 | bass C#2
+        2  RH A4 1/2 | LH G#2 E#3 1 | bass G#2
+    2+1/2  RH B4 1/2 | bass G#2
+        3  RH A4 1/2 | LH C#3 B3 1 | bass C#3
+    3+1/2  RH G#4 1/2 | bass C#3
+BAR 540 (score 540)
+        1  RH C#4 E#4 C#5 4; A4 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH G#4 2 | LH C#3 B3 1 | bass C#3
+BAR 541 (score 541)
+        1  LH C#2 1 | bass C#2
+        2  RH A4 1/2 | LH G#2 E#3 1 | bass G#2
+    2+1/2  RH B4 1/2 | bass G#2
+        3  RH A4 1/2 | LH C#3 B3 1 | bass C#3
+    3+1/2  RH G#4 1/2 | bass C#3
+BAR 542 (score 542)
+        1  RH C#4 E#4 A4 C#5 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH C#4 E#4 A4 C#5 2 | LH C#3 B3 1 | bass C#3
+BAR 543 (score 543)
+        1  LH C#2 1 | bass C#2
+        2  RH C#4 E#4 A4 C#5 3/2 | LH G#2 E#3 1 | bass G#2
+        3  LH C#3 B3 1 | bass C#3
+    3+1/2  RH C#4 E#4 A4 C#5 1/2 | bass C#3
+BAR 544 (score 544)
+        1  RH C#4 E4 C#5 4; G#4 2 | LH F#2 1 | bass F#2
+        2  LH C#3 E3 1 | bass C#3
+        3  RH F#4 2 | LH E3 A#3 1 | bass E3
+BAR 545 (score 545)
+        1  LH F#2 1 | bass F#2
+        2  RH rest 2 | LH C#3 E3 1 | bass C#3
+        3  LH E3 A#3 1 | bass E3
+BAR 546 (score 546)
+        1  RH D#4 D#5 4; B4 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH A4 C#5 2 | LH B2 A3 1 | bass B2
+BAR 547 (score 547)
+        1  LH B1 B2 1 | bass B1
+        2  RH G#4 B4 1/2 | LH F#2 D#3 1 | bass F#2
+    2+1/2  RH A4 C#5 1/2 | bass F#2
+        3  RH G#4 B4 1/2 | LH B2 A3 1 | bass B2
+    3+1/2  RH F#4 A4 1/2 | bass B2
+BAR 548 (score 548)
+        1  RH D#4 D#5 4; B4 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH A4 C#5 2 | LH B2 A3 1 | bass B2
+BAR 549 (score 549)
+        1  LH B1 B2 1 | bass B1
+        2  RH G#4 B4 1/2 | LH F#2 D#3 1 | bass F#2
+    2+1/2  RH A4 C#5 1/2 | bass F#2
+        3  RH G#4 B4 1/2 | LH B2 A3 1 | bass B2
+    3+1/2  RH F#4 A4 1/2 | bass B2
+BAR 550 (score 550)
+        1  RH D#4 B4 D#5 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH D#4 A4 C#5 D#5 2 | LH B2 A3 1 | bass B2
+BAR 551 (score 551)
+        1  LH B1 B2 1 | bass B1
+        2  RH D#4 G#4 B4 D#5 3/2 | LH F#2 D#3 1 | bass F#2
+        3  LH B2 A3 1 | bass B2
+    3+1/2  RH D#4 F#4 A4 D#5 1/2 | bass B2
+BAR 552 (score 552)
+        1  RH E4 A4 C#5 E5 2 | LH E2 E3 1 | bass E2
+        2  LH B2 G#3 1 | bass B2
+        3  RH E4 G#4 B4 E5 1 | LH E3 B3 1 | bass E3
+BAR 553 (score 553)
+        1  RH G4 B4 D5 G5 3/2 | LH B1 B2 1 | bass B1
+        2  LH D3 G3 B3 D4 1/2 | bass D3
+    2+1/2  RH F#4 F#5 1/2 | LH rest 3/2 | bass F#4
+        3  RH E4 E5 1/2 | bass E4
+    3+1/2  RH D4 D5 1/2 | bass D4
+BAR 554 (score 554)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 G#5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 555 (score 555)
+        1  LH C#3 1 | bass C#3
+        2  RH A5 1/2 | LH G#3 E#4 1 | bass G#3
+    2+1/2  RH B5 1/2 | bass G#3
+        3  RH A5 1/2 | LH C#4 B4 1 | bass C#4
+    3+1/2  RH G#5 1/2 | bass C#4
+BAR 556 (score 556)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 G#5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 557 (score 557)
+        1  LH C#3 1 | bass C#3
+        2  RH A5 1/2 | LH G#3 E#4 1 | bass G#3
+    2+1/2  RH B5 1/2 | bass G#3
+        3  RH A5 1/2 | LH C#4 B4 1 | bass C#4
+    3+1/2  RH G#5 1/2 | bass C#4
+BAR 558 (score 558)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 A5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 559 (score 559)
+        1  LH C#3 1 | bass C#3
+        2  RH C#5 E#5 A5 C#6 3/2 | LH G#3 E#4 1 | bass G#3
+        3  LH C#4 B4 1 | bass C#4
+    3+1/2  RH C#5 E#5 A5 C#6 1/2 | bass C#4
+BAR 560 (score 560)
+        1  RH C#5 D##5 G#5 C#6 2 | LH B#2 1 | bass B#2
+        2  LH A#3 F##4 1 | bass A#3
+        3  RH C#5 D##5 F##5 C#6 2 | LH D##4 A#4 1 | bass D##4
+BAR 561 (score 561)
+        1  LH B#2 1 | bass B#2
+        2  RH rest 2 | LH A#3 F##4 1 | bass A#3
+        3  LH D##4 A#4 1 | bass D##4
+BAR 562 (score 562)
+        1  RH D#5 G##5 C#6 D#6 2 | LH E#3 1 | bass E#3
+        2  LH B#3 G##4 1 | bass B#3
+        3  RH D#5 G##5 B#5 D#6 2 | LH D#4 B#4 1 | bass D#4
+BAR 563 (score 563)
+        1  LH E#3 1 | bass E#3
+        2  RH A#5 C#6 1/2 | LH B#3 G##4 1 | bass B#3
+    2+1/2  RH B#5 D#6 1/2 | bass B#3
+        3  RH A#5 C#6 1/2 | LH D#4 B#4 1 | bass D#4
+    3+1/2  RH G##5 B#5 1/2 | bass D#4
+BAR 564 (score 564)
+        1  RH E5 A5 D6 E6 2 | LH E3 1 | bass E3
+        2  LH C#4 A4 1 | bass C#4
+        3  RH E5 A5 C#6 E6 2 | LH E4 C#5 1 | bass E4
+BAR 565 (score 565)
+        1  LH E3 1 | bass E3
+        2  RH B5 D6 1/2 | LH C#4 A4 1 | bass C#4
+    2+1/2  RH C#6 E6 1/2 | bass C#4
+        3  RH B5 D6 1/2 | LH E4 C#5 1 | bass E4
+    3+1/2  RH A5 C#6 1/2 | bass E4
+BAR 566 (score 566)
+        1  RH E#5 B5 D6 E#6 2 | LH C#3 C#4 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH E#5 B5 D6 E#6 2 | LH C#4 B4 1 | bass C#4
+BAR 567 (score 567)
+        1  LH C#3 C#4 1 | bass C#3
+        2  RH E#5 A5 C#6 E#6 3/2 | LH G#3 E#4 1 | bass G#3
+        3  LH C#4 B4 1 | bass C#4
+    3+1/2  RH E#5 G#5 B5 E#6 1/2 | bass C#4
+BAR 568 (score 568)
+        1  RH F#5 B5 D6 F#6 2 | LH F#3 F#4 1 | bass F#3
+        2  LH C#4 A4 1 | bass C#4
+        3  RH F#5 A5 C#6 F#6 2 | LH F#4 C#5 1 | bass F#4
+BAR 569 (score 569)
+        1  LH A4 F#5 1 | bass A4
+        2  RH rest 2 | LH rest 2 | bass -
+  (double barline at end of bar)
+BAR 570 (score 570)
+        1  RH rest 1 | LH D2 6; B2 2 | bass D2
+        2  RH F#3 D4 1 | bass D2
+        3  RH A3 F#4 1 | LH A2 2 | bass D2
+BAR 571 (score 571)
+        1  RH rest 3 | bass D2
+        2  LH B2 1/2 | bass D2
+    2+1/2  LH C#3 1/2 | bass D2
+        3  LH B2 1/2 | bass D2
+    3+1/2  LH A2 1/2 | bass D2
+BAR 572 (score 572)
+        1  RH rest 1 | LH D2 6; B2 2 | bass D2
+        2  RH F#3 D4 1 | bass D2
+        3  RH A3 F#4 1 | LH A2 2 | bass D2
+BAR 573 (score 573)
+        1  RH rest 3 | bass D2
+        2  LH B2 1/2 | bass D2
+    2+1/2  LH C#3 1/2 | bass D2
+        3  LH B2 1/2 | bass D2
+    3+1/2  LH A2 1/2 | bass D2
+BAR 574 (score 574)
+        1  RH rest 1 | LH D2 6; B2 2 | bass D2
+        2  RH F#3 D4 1 | bass D2
+        3  RH A3 F#4 1 | LH A2 1 | bass D2
+BAR 575 (score 575)
+        1  RH rest 1 | LH E3 2 | bass D2
+        2  RH F#3 D4 1 | bass D2
+        3  RH A3 F#4 1 | LH D3 1 | bass D2
+BAR 576 (score 576)
+        1  RH rest 1 | LH E2 4; D3 2 | bass E2
+        2  RH G3 C#4 1 | bass E2
+        3  RH B3 G4 1 | LH C#3 2 | bass E2
+BAR 577 (score 577)
+        1  RH C#4 B4 1 | bass E2
+        2  RH G4 C#5 1 | LH rest 2 | bass G4
+        3  RH B4 G5 1 | bass B4
+BAR 578 (score 578)
+        1  RH rest 1 | LH E2 6; C#3 2 | bass E2
+        2  RH G3 E4 1 | bass E2
+        3  RH B3 G4 1 | LH B2 2 | bass E2
+BAR 579 (score 579)
+        1  RH rest 3 | bass E2
+        2  LH C#3 1/2 | bass E2
+    2+1/2  LH D3 1/2 | bass E2
+        3  LH C#3 1/2 | bass E2
+    3+1/2  LH B2 1/2 | bass E2
+BAR 580 (score 580)
+        1  RH rest 1 | LH E2 6; C#3 2 | bass E2
+        2  RH G3 E4 1 | bass E2
+        3  RH B3 G4 1 | LH B2 2 | bass E2
+BAR 581 (score 581)
+        1  RH rest 3 | bass E2
+        2  LH C#3 1/2 | bass E2
+    2+1/2  LH D3 1/2 | bass E2
+        3  LH C#3 1/2 | bass E2
+    3+1/2  LH B2 1/2 | bass E2
+BAR 582 (score 582)
+        1  RH rest 1 | LH E2 6; C#3 2 | bass E2
+        2  RH G3 E4 1 | bass E2
+        3  RH B3 G4 1 | LH B2 1 | bass E2
+BAR 583 (score 583)
+        1  RH rest 1 | LH F#3 2 | bass E2
+        2  RH G3 E4 1 | bass E2
+        3  RH B3 G4 1 | LH E3 1 | bass E2
+BAR 584 (score 584)
+        1  RH rest 1 | LH F#2 4; E3 2 | bass F#2
+        2  RH A3 D#4 1 | bass F#2
+        3  RH C4 A4 1 | LH D#3 2 | bass F#2
+BAR 585 (score 585)
+        1  RH D#4 C5 1 | bass F#2
+        2  RH A4 D#5 1 | LH rest 2 | bass A4
+        3  RH C5 A5 1 | bass C5
+BAR 586 (score 586)
+        1  RH grace(A#3 D#4); A#4 4 | LH rest 1 | bass A#4
+        2  LH F##2 D#3 1 | bass F##2
+        3  LH D#3 A#3 1 | bass D#3
+BAR 587 (score 587)
+        1  LH rest 1 | bass A#4
+        2  RH B#4 1/2 | LH F##2 D#3 1 | bass F##2
+    2+1/2  RH C##5 1/2 | bass F##2
+        3  RH B#4 1/2 | LH D#3 A#3 1 | bass D#3
+    3+1/2  RH A#4 1/2 | bass D#3
+BAR 588 (score 588)
+        1  RH C##4 E#4 B#4 2 | LH rest 1 | bass C##4
+        2  LH G#2 C##3 E#3 1 | bass G#2
+        3  RH C##4 E#4 B#4 1 | LH C##3 E#3 B#3 1 | bass C##3
+BAR 589 (score 589)
+        1  RH C##4 E#4 B#4 2 | LH rest 1 | bass C##4
+        2  LH G#2 C##3 E#3 1 | bass G#2
+        3  RH C##4 E#4 B#4 1 | LH C##3 E#3 B#3 1 | bass C##3
+BAR 590 (score 590)
+        1  RH D#4 F##4 3; B#4 2 | LH rest 1 | bass D#4
+        2  LH F##2 D#3 1 | bass F##2
+        3  RH A#4 1 | LH D#3 A#3 1 | bass D#3
+BAR 591 (score 591)
+        1  RH rest 1 | LH rest 1 | bass -
+        2  RH G##4 1/2 | LH F##2 D#3 1 | bass F##2
+    2+1/2  RH A#4 1/2 | bass F##2
+        3  RH B4 1/2 | LH D#3 A#3 1 | bass D#3
+    3+1/2  RH B#4 1/2 | bass D#3
+BAR 592 (score 592)
+        1  RH D##4 F##4 C#5 2 | LH rest 1 | bass D##4
+        2  LH A#2 D##3 F##3 1 | bass A#2
+        3  RH D##4 F##4 C#5 1 | LH D##3 F##3 C#4 1 | bass D##3
+BAR 593 (score 593)
+        1  RH D##4 F##4 C#5 2 | LH rest 1 | bass D##4
+        2  LH A#2 D##3 F##3 1 | bass A#2
+        3  RH D##4 F##4 C#5 1 | LH D##3 F##3 C#4 1 | bass D##3
+BAR 594 (score 594)
+        1  RH E#4 G##4 3; C#5 2 | LH rest 1 | bass E#4
+        2  LH G##2 E#3 1 | bass G##2
+        3  RH B#4 1 | LH E#3 B#3 1 | bass E#3
+BAR 595 (score 595)
+        1  RH rest 1 | LH rest 1 | bass -
+        2  RH C##5 1/2 | LH G##2 E#3 1 | bass G##2
+    2+1/2  RH D##5 1/2 | bass G##2
+        3  RH C##5 1/2 | LH E#3 B#3 1 | bass E#3
+    3+1/2  RH B#4 1/2 | bass E#3
+BAR 596 (score 596)
+        1  RH D##4 F##4 C##5 2 | LH rest 1 | bass D##4
+        2  LH A#2 D##3 F##3 1 | bass A#2
+        3  RH D##4 F##4 C##5 1 | LH D##3 F##3 C##4 1 | bass D##3
+BAR 597 (score 597)
+        1  RH D##4 F##4 C##5 2 | LH rest 1 | bass D##4
+        2  LH A#2 D##3 F##3 1 | bass A#2
+        3  RH D##4 F##4 C##5 1 | LH D##3 F##3 C##4 1 | bass D##3
+BAR 598 (score 598)
+        1  RH E#4 G##4 3; C##5 2 | LH rest 1 | bass E#4
+        2  LH G##2 E#3 1 | bass G##2
+        3  RH B#4 1 | LH E#3 B#3 1 | bass E#3
+BAR 599 (score 599)
+        1  RH rest 1 | LH rest 1 | bass -
+        2  RH B4 1/2 | LH G##2 E#3 1 | bass G##2
+    2+1/2  RH C5 1/2 | bass G##2
+        3  RH C#5 1/2 | LH E#3 B#3 1 | bass E#3
+    3+1/2  RH D5 1/2 | bass E#3
+BAR 600 (score 600)
+        1  RH F#4 A4 Eb5 2 | LH rest 1 | bass F#4
+        2  LH C3 F#3 A3 1 | bass C3
+        3  RH F#4 A4 Eb5 1 | LH F#3 A3 Eb4 1 | bass F#3
+BAR 601 (score 601)
+        1  RH F#4 A4 Eb5 2 | LH rest 1 | bass F#4
+        2  LH C3 F#3 A3 1 | bass C3
+        3  RH F#4 A4 Eb5 1 | LH F#3 A3 Eb4 1 | bass F#3
+BAR 602 (score 602)
+        1  RH G4 B4 3; Eb5 2 | LH rest 1 | bass G4
+        2  LH B2 G3 1 | bass B2
+        3  RH D5 1 | LH G3 D4 1 | bass G3
+BAR 603 (score 603)
+        1  RH rest 1 | LH rest 3 | bass -
+        2  RH E5 1/2 | bass E5
+    2+1/2  RH F#5 1/2 | bass F#5
+        3  RH E5 1/2 | bass E5
+    3+1/2  RH D5 1/2 | bass D5
+BAR 604 (score 604)
+        1  RH G4 B4 3; E5 2 | LH rest 1 | bass G4
+        2  LH B2 G3 1 | bass B2
+        3  RH D5 1 | LH G3 D4 1 | bass G3
+BAR 605 (score 605)
+        1  RH rest 1 | LH rest 3 | bass -
+        2  RH E5 1/2 | bass E5
+    2+1/2  RH F#5 1/2 | bass F#5
+        3  RH E5 1/2 | bass E5
+    3+1/2  RH D5 1/2 | bass D5
+BAR 606 (score 606)
+        1  RH G4 B4 3; E5 2 | LH rest 1 | bass G4
+        2  LH B2 G3 1 | bass B2
+        3  RH D5 1 | LH G3 D4 1 | bass G3
+BAR 607 (score 607)
+        1  RH G5 4 | LH rest 3 | bass G5
+BAR 608 (score 608)
+        1  LH rest 3 | bass G5
+        2  RH F#5 1 | bass F#5
+        3  RH F5 1 | bass F5
+BAR 609 (score 609)
+        1  RH E5 1 | LH rest 3 | bass E5
+        2  RH D#5 1 | bass D#5
+        3  RH D5 1 | bass D5
+BAR 610 (score 610)
+        1  RH C#4 E#4 C#5 4; A4 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH G#4 2 | LH C#3 B3 1 | bass C#3
+BAR 611 (score 611)
+        1  LH C#2 1 | bass C#2
+        2  RH A4 1/2 | LH G#2 E#3 1 | bass G#2
+    2+1/2  RH B4 1/2 | bass G#2
+        3  RH A4 1/2 | LH C#3 B3 1 | bass C#3
+    3+1/2  RH G#4 1/2 | bass C#3
+BAR 612 (score 612)
+        1  RH C#4 E#4 C#5 4; A4 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH G#4 2 | LH C#3 B3 1 | bass C#3
+BAR 613 (score 613)
+        1  LH C#2 1 | bass C#2
+        2  RH A4 1/2 | LH G#2 E#3 1 | bass G#2
+    2+1/2  RH B4 1/2 | bass G#2
+        3  RH A4 1/2 | LH C#3 B3 1 | bass C#3
+    3+1/2  RH G#4 1/2 | bass C#3
+BAR 614 (score 614)
+        1  RH C#4 E#4 A4 C#5 2 | LH C#2 1 | bass C#2
+        2  LH G#2 E#3 1 | bass G#2
+        3  RH C#4 E#4 A4 C#5 2 | LH C#3 B3 1 | bass C#3
+BAR 615 (score 615)
+        1  LH C#2 1 | bass C#2
+        2  RH C#4 E#4 A4 C#5 3/2 | LH G#2 E#3 1 | bass G#2
+        3  LH C#3 B3 1 | bass C#3
+    3+1/2  RH C#4 E#4 A4 C#5 1/2 | bass C#3
+BAR 616 (score 616)
+        1  RH C#4 E4 C#5 4; G#4 2 | LH F#2 1 | bass F#2
+        2  LH C#3 E3 1 | bass C#3
+        3  RH F#4 2 | LH E3 A#3 1 | bass E3
+BAR 617 (score 617)
+        1  LH F#2 1 | bass F#2
+        2  RH rest 2 | LH C#3 E3 1 | bass C#3
+        3  LH E3 A#3 1 | bass E3
+BAR 618 (score 618)
+        1  RH D#4 D#5 4; B4 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH A4 C#5 2 | LH B2 A3 1 | bass B2
+BAR 619 (score 619)
+        1  LH B1 B2 1 | bass B1
+        2  RH G#4 B4 1/2 | LH F#2 D#3 1 | bass F#2
+    2+1/2  RH A4 C#5 1/2 | bass F#2
+        3  RH G#4 B4 1/2 | LH B2 A3 1 | bass B2
+    3+1/2  RH F#4 A4 1/2 | bass B2
+BAR 620 (score 620)
+        1  RH D#4 D#5 4; B4 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH A4 C#5 2 | LH B2 A3 1 | bass B2
+BAR 621 (score 621)
+        1  LH B1 B2 1 | bass B1
+        2  RH G#4 B4 1/2 | LH F#2 D#3 1 | bass F#2
+    2+1/2  RH A4 C#5 1/2 | bass F#2
+        3  RH G#4 B4 1/2 | LH B2 A3 1 | bass B2
+    3+1/2  RH F#4 A4 1/2 | bass B2
+BAR 622 (score 622)
+        1  RH D#4 B4 D#5 2 | LH B1 B2 1 | bass B1
+        2  LH F#2 D#3 1 | bass F#2
+        3  RH D#4 A4 C#5 D#5 2 | LH B2 A3 1 | bass B2
+BAR 623 (score 623)
+        1  LH B1 B2 1 | bass B1
+        2  RH D#4 G#4 B4 D#5 3/2 | LH F#2 D#3 1 | bass F#2
+        3  LH B2 A3 1 | bass B2
+    3+1/2  RH D#4 F#4 A4 D#5 1/2 | bass B2
+BAR 624 (score 624)
+        1  RH E4 A4 C#5 E5 2 | LH E2 E3 1 | bass E2
+        2  LH B2 G#3 1 | bass B2
+        3  RH E4 G#4 B4 E5 1 | LH E3 B3 1 | bass E3
+BAR 625 (score 625)
+        1  RH G4 B4 D5 G5 3/2 | LH B1 B2 1 | bass B1
+        2  LH D3 G3 B3 D4 1/2 | bass D3
+    2+1/2  RH F#4 F#5 1/2 | LH rest 3/2 | bass F#4
+        3  RH E4 E5 1/2 | bass E4
+    3+1/2  RH D4 D5 1/2 | bass D4
+BAR 626 (score 626)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 G#5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 627 (score 627)
+        1  LH C#3 1 | bass C#3
+        2  RH A5 1/2 | LH G#3 E#4 1 | bass G#3
+    2+1/2  RH B5 1/2 | bass G#3
+        3  RH A5 1/2 | LH C#4 B4 1 | bass C#4
+    3+1/2  RH G#5 1/2 | bass C#4
+BAR 628 (score 628)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 G#5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 629 (score 629)
+        1  LH C#3 1 | bass C#3
+        2  RH A5 1/2 | LH G#3 E#4 1 | bass G#3
+    2+1/2  RH B5 1/2 | bass G#3
+        3  RH A5 1/2 | LH C#4 B4 1 | bass C#4
+    3+1/2  RH G#5 1/2 | bass C#4
+BAR 630 (score 630)
+        1  RH C#5 E#5 A5 C#6 2 | LH C#3 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH C#5 E#5 A5 C#6 2 | LH C#4 B4 1 | bass C#4
+BAR 631 (score 631)
+        1  LH C#3 1 | bass C#3
+        2  RH C#5 E#5 A5 C#6 3/2 | LH G#3 E#4 1 | bass G#3
+        3  LH C#4 B4 1 | bass C#4
+    3+1/2  RH C#5 E#5 A5 C#6 1/2 | bass C#4
+BAR 632 (score 632)
+        1  RH C#5 D##5 G#5 C#6 2 | LH B#2 1 | bass B#2
+        2  LH A#3 F##4 1 | bass A#3
+        3  RH C#5 D##5 F##5 C#6 2 | LH D##4 A#4 1 | bass D##4
+BAR 633 (score 633)
+        1  LH B#2 1 | bass B#2
+        2  RH rest 2 | LH A#3 F##4 1 | bass A#3
+        3  LH D##4 A#4 1 | bass D##4
+BAR 634 (score 634)
+        1  RH D#5 G##5 C#6 D#6 2 | LH E#3 1 | bass E#3
+        2  LH B#3 G##4 1 | bass B#3
+        3  RH D#5 G##5 B#5 D#6 2 | LH D#4 B#4 1 | bass D#4
+BAR 635 (score 635)
+        1  LH E#3 1 | bass E#3
+        2  RH A#5 C#6 1/2 | LH B#3 G##4 1 | bass B#3
+    2+1/2  RH B#5 D#6 1/2 | bass B#3
+        3  RH A#5 D#6 1/2 | LH D#4 B#4 1 | bass D#4
+    3+1/2  RH G##5 B#5 1/2 | bass D#4
+BAR 636 (score 636)
+        1  RH E5 A5 D6 E6 2 | LH E3 1 | bass E3
+        2  LH C#4 A4 1 | bass C#4
+        3  RH E5 A5 C#6 E6 2 | LH E4 C#5 1 | bass E4
+BAR 637 (score 637)
+        1  LH E3 1 | bass E3
+        2  RH B5 D6 1/2 | LH C#4 A4 1 | bass C#4
+    2+1/2  RH C#6 E6 1/2 | bass C#4
+        3  RH B5 D6 1/2 | LH E4 C#5 1 | bass E4
+    3+1/2  RH A5 C#6 1/2 | bass E4
+BAR 638 (score 638)
+        1  RH E#5 B5 D#6 E#6 2 | LH C#3 C#4 1 | bass C#3
+        2  LH G#3 E#4 1 | bass G#3
+        3  RH E#5 B5 D#6 E#6 2 | LH C#4 B4 1 | bass C#4
+BAR 639 (score 639)
+        1  LH C#3 C#4 1 | bass C#3
+        2  RH E#5 A#5 C#6 E#6 3/2 | LH G#3 E#4 1 | bass G#3
+        3  LH C#4 B4 1 | bass C#4
+    3+1/2  RH E#5 G#5 B5 E#6 1/2 | bass C#4
+BAR 640 (score 640)
+        1  RH F#5 B5 D6 F#6 2 | LH F#3 F#4 1 | bass F#3
+        2  LH C#4 A4 1 | bass C#4
+        3  RH F#5 A5 C#6 F#6 2 | LH F#4 C#5 1 | bass F#4
+BAR 641 (score 641)
+        1  LH A4 F#5 1 | bass A4
+        2  RH rest 2 | LH rest 2 | bass -
+BAR 642 (score 642)
+        1  RH rest 1 | LH F#2 10; D3 2 | bass F#2
+        2  RH G3 E#4 1 | bass F#2
+        3  RH B3 G4 1 | LH D3 1 | bass F#2
+BAR 643 (score 643)
+        1  RH rest 1 | LH D3 2 | bass F#2
+        2  RH G3 E#4 1 | bass F#2
+        3  RH B3 G4 1 | LH D3 1 | bass F#2
+BAR 644 (score 644)
+        1  RH rest 1 | LH D3 2 | bass F#2
+        2  RH A3 F#4 1 | bass F#2
+        3  RH C#4 A4 1 | LH C#3 2 | bass F#2
+BAR 645 (score 645)
+        1  RH rest 3 | bass F#2
+        2  LH B2 1/2 | bass B2
+    2+1/2  LH C#3 1/2 | bass C#3
+        3  LH B2 1/2 | bass B2
+    3+1/2  LH A2 1/2 | bass A2
+BAR 646 (score 646)
+        1  RH rest 1 | LH F#2 10; B2 2 | bass F#2
+        2  RH E#3 D4 1 | bass F#2
+        3  RH G3 E#4 1 | LH B2 1 | bass F#2
+BAR 647 (score 647)
+        1  RH rest 1 | LH B2 2 | bass F#2
+        2  RH E#3 D4 1 | bass F#2
+        3  RH G3 E#4 1 | LH B2 1 | bass F#2
+BAR 648 (score 648)
+        1  RH rest 1 | LH B2 2 | bass F#2
+        2  RH F#3 C#4 1 | bass F#2
+        3  RH A3 F#4 1 | LH A2 2 | bass F#2
+BAR 649 (score 649)
+        1  RH rest 3 | bass F#2
+        2  LH G#2 1/2 | bass G#2
+    2+1/2  LH A2 1/2 | bass A2
+        3  LH G#2 1/2 | bass G#2
+    3+1/2  LH F#2 1/2 | bass F#2
+BAR 650 (score 650)
+        1  RH rest 1 | LH G#2 2 | bass G#2
+        2  RH C#3 A3 1 | bass G#2
+        3  RH F#3 C#4 1 | LH F#2 2 | bass F#2
+BAR 651 (score 651)
+        1  RH rest 3 | bass F#2
+        2  LH D2 1/2 | bass D2
+    2+1/2  LH E2 1/2 | bass E2
+        3  LH D2 1/2 | bass D2
+    3+1/2  LH C#2 1/2 | bass C#2
+BAR 652 (score 652)
+        1  RH rest 1 | LH D2 2 | bass D2
+        2  RH A2 F#3 1 | bass D2
+        3  RH C#3 A3 1 | LH F#1 C#2 2 | bass F#1
+BAR 653 (score 653)
+        1  RH F#3 C#4 1 | bass F#1
+        2  RH A3 F#4 1 | LH rest 2 | bass A3
+        3  RH C#4 A4 1 | bass C#4
+BAR 654 (score 654)
+        1  RH F#4 C#5 1 | LH rest 1 | bass F#4
+        2  RH A4 F#5 1 | LH C#4 1 | bass C#4
+        3  RH C#5 A5 1 | LH F#4 1 | bass F#4
+BAR 655 (score 655)
+        1  RH F#5 C#6 1 | LH A4 1 | bass A4
+        2  RH A4 F#5 1 | LH C#5 1 | bass A4
+        3  RH C#5 A5 1 | LH F#5 1 | bass C#5
+BAR 656 (score 656)
+        1  RH F#5 C#6 1 | LH A5 1 | bass F#5
+        2  RH rest 2 | LH rest 2 | bass -
+BAR 657 (score 657)
+        1  RH D4 E#4 A4 D5 1 | LH C#3 B3 1 | bass C#3
+        2  RH rest 2 | LH rest 2 | bass -
+BAR 658 (score 658)
+        1  RH rest 3 | LH rest 3 | bass -
+BAR 659 (score 659)
+        1  RH rest 1 | LH rest 1 | bass -
+        2  RH D3 1/2 | LH D2 1/2 | bass D2
+    2+1/2  RH E3 1/2 | LH E2 1/2 | bass E2
+        3  RH D3 1/2 | LH D2 1/2 | bass D2
+    3+1/2  RH C#3 1/2 | LH C#2 1/2 | bass C#2
+BAR 660 (score 660)
+        1  RH F#2 1 | LH F#1 1 | bass F#1
+        2  RH rest 2 | LH rest 2 | bass -
+BAR 661 (score 661)
+        1  RH A3 F#4 1 | LH F#2 C#3 1 | bass F#2
+        2  RH rest 2 | LH rest 2 | bass -
+BAR 662 (score 662)
+        1  RH A4 F#5 1 | LH F#3 C#4 1 | bass F#3
+        2  RH rest 2 | LH rest 2 | bass -
+  (double barline at end of bar)
+END

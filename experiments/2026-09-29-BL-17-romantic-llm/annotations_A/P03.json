@@ -1,0 +1,32 @@
+{
+  "movement": "P03",
+  "recognised_piece": null,
+  "notes": "Waltz in Ab major with a Db major trio and a written-out da capo. Bars 489-492 read as V7/V to V in Ab (HC), though a PAC in Eb is possible. The arrival at 497 is weakened by the added Gb (Ab7), so it is treated as an elided IAC. The trio is read as an 8+8 period (HC, then PAC).",
+  "events": [
+    {"bar": 480, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.9},
+    {"bar": 484, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 485, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 488, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 489, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 492, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.45},
+    {"bar": 493, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 497, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.4},
+    {"bar": 497, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 500, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 501, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 504, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.5},
+    {"bar": 505, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.8},
+    {"bar": 508, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.45},
+    {"bar": 509, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 513, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.4},
+    {"bar": 513, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 516, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 517, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 520, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.5},
+    {"bar": 521, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 531, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.35},
+    {"bar": 533, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.65},
+    {"bar": 540, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.7},
+    {"bar": 541, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.85}
+  ]
+}

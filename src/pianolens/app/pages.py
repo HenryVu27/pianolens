@@ -60,8 +60,9 @@ performances bar by bar.</p>
 </section>
 <section class="card">
   <h2><span class="num">2</span> Performance</h2>
-  <label class="field" for="perf">Recording (wav, mp3, m4a) or MIDI (.mid). Several files =
-    several takes of the same piece; the first is the one analysed in detail.</label>
+  <label class="field" for="perf">Recording (wav, mp3, m4a, flac, aac, ogg) or MIDI (.mid,
+    .midi). Several files = several takes of the same piece; the first is the one analysed in
+    detail.</label>
   <input id="perf" name="performance" type="file" multiple required
     accept=".wav,.mp3,.m4a,.flac,.aac,.ogg,.mid,.midi">
   <div id="kind-audio" class="note" hidden>
@@ -79,7 +80,14 @@ performances bar by bar.</p>
       <option value="disklavier">Disklavier or other acoustic piano with MIDI out</option>
       <option value="sensor">Digital piano or key sensors</option>
       <option value="synthetic">Written or edited by hand</option>
+      <option value="transcribed:transkun">Transcribed from audio by Transkun</option>
+      <option value="transcribed">Transcribed from audio by another transcriber</option>
     </select>
+    <p class="muted small">Transcribed MIDI is read like an audio upload: extra notes, dynamics
+    and pedal are low confidence, and wrong notes are checked against expert
+    transcriptions.</p>
+    <label class="check"><input type="checkbox" name="filter_extras"> If transcribed: remove
+    likely transcription extras first (A-01b rule filter, validated on Transkun)</label>
   </div>
 </section>
 <details class="card more"><summary>Advanced</summary>
@@ -89,6 +97,8 @@ performances bar by bar.</p>
   <label class="field" for="mw">Comparison passages (1-12)</label>
   <input id="mw" name="max_windows" type="number" min="1" max="12" value="8">
   <label class="check"><input type="checkbox" name="no_clips"> Report only, no audio clips</label>
+  <label class="check"><input type="checkbox" name="ignore_wrong_piece"> Analyse even if the
+    quick check says the recording is another piece (for a short excerpt)</label>
 </details>
 <div class="actions"><button type="submit" class="primary" id="go">Analyse</button>
 <span id="form-msg" class="muted" role="status"></span></div>
@@ -122,9 +132,10 @@ def history_page(jobs: list[dict[str, Any]]) -> str:
             s = j.get("summary") or {}
             rep = s.get("report") or {}
             facts = []
-            if spec.get("input_kind") == "audio" and rep.get("wrong_missed_rate") is not None:
+            transcribed = spec.get("provenance") == "transcribed"
+            if transcribed and rep.get("wrong_missed_rate") is not None:
                 facts.append(f"{100 * rep['wrong_missed_rate']:.1f}% wrong or missed notes")
-            elif spec.get("input_kind") != "audio" and rep.get("error_rate") is not None:
+            elif not transcribed and rep.get("error_rate") is not None:
                 facts.append(f"{100 * rep['error_rate']:.1f}% note errors")
             if rep.get("n_practise") is not None:
                 facts.append(f"{rep['n_practise']} practise items")

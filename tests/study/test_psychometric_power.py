@@ -64,3 +64,23 @@ def test_session_minutes_and_simulation_run():
     r = simulate_once(a, 12, np.random.default_rng(0))
     assert r["verdict"] in ("supported", "falsified", "inconclusive")
     assert r["det_ci_halfwidth_log2_mean"] > 0
+
+
+def test_h6_margin_default_is_preregistered_and_defaults_are_design_a2():
+    """DF-03: h6_verdict and Assumptions default to the pre-registered margin 2 and design A2."""
+    import inspect
+
+    from pianolens.study.power import H6_MARGIN
+
+    assert H6_MARGIN == 2.0
+    assert inspect.signature(h6_verdict).parameters["margin"].default == H6_MARGIN
+    a = Assumptions()
+    assert a.margin == H6_MARGIN
+    assert a.det_levels_rel == (0.5, 1.0, 2.0, 4.0) and a.det_reps == 3
+    assert a.pref_levels_rel == (2.0, 4.0, 8.0) and a.pref_reps == 2 and a.pref_identical == 7
+    m = session_minutes(a)
+    assert m["n_det_trials"] == 84 and m["n_pref_trials"] == 49
+    # ratio 1.8 is inside margin 2 but outside margin 1.5: the default must read it as within
+    beta, cov = np.array([1.8, 1.0, 1.0]), np.eye(3) * 1e-6
+    assert h6_verdict(beta, cov)["verdict"] == "falsified"
+    assert h6_verdict(beta, cov, margin=1.5)["verdict"] == "supported"

@@ -1,0 +1,252 @@
+{
+ "movement": "P27",
+ "recognised_piece": null,
+ "notes": "ABA' form: D major/F# minor opening, F# minor middle section (bars 495-528) with retransition on V7 of D, return at 529 and coda. Tonic arrivals often have a late bass (LH rest on downbeat), so some arrival positions are uncertain.",
+ "events": [
+  {
+   "bar": 470,
+   "beat": 6,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.95
+  },
+  {
+   "bar": 478,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 478,
+   "beat": 6,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 486,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "DC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 486,
+   "beat": 6,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 494,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 495,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.6
+  },
+  {
+   "bar": 498,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 499,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 502,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 503,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 506,
+   "beat": 5,
+   "type": "cadence",
+   "cadence": "DC",
+   "confidence": 0.25
+  },
+  {
+   "bar": 510,
+   "beat": 6,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.35
+  },
+  {
+   "bar": 511,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 514,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 515,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 518,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.45
+  },
+  {
+   "bar": 519,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 522,
+   "beat": 5,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 523,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 524,
+   "beat": 5,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 525,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.3
+  },
+  {
+   "bar": 528,
+   "beat": 5,
+   "type": "phrase_end",
+   "cadence": "HC",
+   "confidence": 0.3
+  },
+  {
+   "bar": 528,
+   "beat": 6,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 536,
+   "beat": 1,
+   "type": "phrase_end",
+   "cadence": "IAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 536,
+   "beat": 6,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.45
+  },
+  {
+   "bar": 544,
+   "beat": 2,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.4
+  },
+  {
+   "bar": 545,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.55
+  },
+  {
+   "bar": 548,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 549,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.5
+  },
+  {
+   "bar": 552,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.5
+  },
+  {
+   "bar": 553,
+   "beat": 1,
+   "type": "phrase_start",
+   "cadence": "none",
+   "confidence": 0.4
+  },
+  {
+   "bar": 553,
+   "beat": 4,
+   "type": "cadence",
+   "cadence": "PAC",
+   "confidence": 0.25
+  },
+  {
+   "bar": 554,
+   "beat": 4,
+   "type": "cadence",
+   "cadence": "PAC",
+   "confidence": 0.25
+  },
+  {
+   "bar": 556,
+   "beat": 4,
+   "type": "phrase_end",
+   "cadence": "PAC",
+   "confidence": 0.6
+  }
+ ]
+}

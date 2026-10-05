@@ -414,3 +414,14 @@ def test_pedal_blur_hold_is_a_late_pedal_change(hold):
     assert s["pedal_blur_fraction"] == 1.0
     assert s["pedal_blur_beats"] == pytest.approx(hold, abs=0.02)
     assert r.physical["added_hold_mean_beats"] == pytest.approx(hold, abs=0.02)
+
+
+def test_pedal_blur_graded_by_hold_is_labelled_by_hold():
+    """DF-04: a hold-graded stimulus must carry the hold in beats as its level, not the fraction."""
+    ap = build(harmony_texture(), lambda b: 0.5 * b, pedal=clean_pedal(128))
+    r = degrade(ap, "pedal_blur", 1.25, grade="hold", relative_to="clean")
+    assert r.level == 1.25 and r.level_name == "hold_beats"
+    assert r.summary()["level"] == 1.25 and r.summary()["level_name"] == "hold_beats"
+    assert "pedal-h1.25-" in r.performance.performance_id
+    f = degrade(ap, "pedal_blur", 0.5, relative_to="clean", seed=1)
+    assert f.level == 0.5 and f.level_name == "fraction"

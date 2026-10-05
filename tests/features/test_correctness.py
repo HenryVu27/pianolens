@@ -208,3 +208,158 @@ def test_helpers():
     q, t = expected_onsets(np.array([0, 0, 1, 2]), np.array([0.0, 0.02, 0.5, 0.45]))
     np.testing.assert_allclose(q, [0, 1, 2])
     np.testing.assert_allclose(t, [0.01, 0.5, 0.5])  # median, then non-decreasing
+
+
+# --------------------------------------------------------------------------- DF-10
+
+
+def different_pitch_match(delta: int, ornamented: tuple[str, ...] = (), orn: str = "trill-mark"):
+    """s12 matched to p12, but p12 was played ``delta`` semitones off (an aligner match of a
+    different pitch, as parangonar's ornament step produces)."""
+    sn, pn, pairs, _ = build()
+    pn["pitch"][12] += delta
+    part = SimpleNamespace(notes_tied=[SimpleNamespace(id=i, ornaments=[orn])
+                                       for i in ornamented])  # fmt: skip
+    return sn, pn, pairs, part
+
+
+@pytest.mark.parametrize("rule", ["legacy", "tight"])
+def test_different_pitch_match_is_wrong_pitch(rule):
+    """DF-10: a match of another pitch on a plain note is a wrong pitch, never correct."""
+    res = correctness(aligned(*different_pitch_match(1)), ornament_rule=rule)
+    row = res.notes.set_index("performance_id").loc["p12"]
+    assert row["label"] == "wrong_pitch" and row["score_id"] == "s12"
+    assert res.score_notes.set_index("score_id").loc["s12", "label"] == "wrong_pitch"
+    assert res.summary["n_pitch_dissolved"] == 1 and res.summary["n_correct"] == 31
+
+
+def test_different_pitch_match_forced_pair_outside_window():
+    """A dissolved match stays a wrong pitch even when its onset is outside the pairing window."""
+    sn, pn, pairs, part = different_pitch_match(2)
+    pn["onset_sec"][12] += 0.15
+    res = correctness(aligned(sn, pn, pairs, part))
+    assert res.notes.set_index("performance_id").loc["p12", "label"] == "wrong_pitch"
+    assert res.summary["n_extra"] == 0 and res.summary["n_missed"] == 0
+
+
+@pytest.mark.parametrize(("orn", "delta", "rule", "correct"), [
+    ("trill-mark", 2, "legacy", True),         # trill started on the upper auxiliary
+    ("trill-mark", 2, "tight", True),
+    ("trill-mark", -1, "tight", True),         # closing turn uses the lower auxiliary
+    ("inverted-mordent", 1, "tight", True),
+    ("inverted-mordent", -1, "tight", False),  # wrong side for this ornament
+    ("inverted-mordent", -1, "legacy", True),
+    ("mordent", -2, "tight", True),
+    ("mordent", 2, "tight", False),
+    ("tremolo", 1, "tight", False),            # a tremolo re-strikes its own pitch
+])  # fmt: skip
+def test_ornament_rule_on_matches(orn, delta, rule, correct):
+    res = correctness(aligned(*different_pitch_match(delta, ("s12",), orn)), ornament_rule=rule)
+    lab = res.notes.set_index("performance_id").loc["p12", "label"]
+    assert (lab == "correct") is correct
+    assert res.summary["n_ornament_matches"] == int(correct)
+    if not correct:
+        assert lab == "wrong_pitch"
+
+
+def test_ornaments_off_requires_same_pitch():
+    res = correctness(aligned(*different_pitch_match(2, ("s12",))), ornaments=False)
+    assert res.notes.set_index("performance_id").loc["p12", "label"] == "wrong_pitch"
+
+
+def test_unknown_ornament_rule_rejected():
+    with pytest.raises(ValueError):
+        correctness(aligned(*build()[:3]), ornament_rule="loose")
+
+
+# --------------------------------------------------------------------------- BL-23 tight rule
+
+
+def test_tight_rule_pairs_wrong_note_next_to_trill():
+    """A wrong key next to a trill: legacy tolerates it as an ornament note; tight pairs it with
+    the note it replaced (BL-20: the whitelist ran before wrong-pitch pairing)."""
+    sn, pn, pairs, part = build(ornamented=("s12",))  # s12: quarter 6, 3.0 s, pitch 61
+    # s14 (quarter 7, pitch 62, 3.5 s) played as 63 = trill principal + 2, 20 ms early
+    i = 14
+    pn["pitch"][i] = int(sn["pitch"][12]) + 2
+    pn["onset_sec"][i] -= 0.02
+    pairs[i] = ("deletion", f"s{i}", "")
+    pairs.append(("insertion", "", f"p{i}"))
+    # the trill's other notes: upper auxiliary and principal
+    p12 = int(sn["pitch"][12])
+    extras = np.array([(3.1, 0.05, p12 + 2, 40, "t0"), (3.2, 0.05, p12, 40, "t1")],
+                      dtype=P_DTYPE)  # fmt: skip
+    pn = np.concatenate([pn, extras])
+    pairs += [("insertion", "", "t0"), ("insertion", "", "t1")]
+    # the trill lasts to its expected offset (3.5 s), so p14 (3.48 s) is inside its window
+    legacy = correctness(aligned(sn, pn, pairs, part), ornament_rule="legacy")
+    tight = correctness(aligned(sn, pn, pairs, part), ornament_rule="tight")
+    assert legacy.notes.set_index("performance_id").loc["p14", "label"] == "ornament"
+    assert legacy.score_notes.set_index("score_id").loc["s14", "label"] == "missed"
+    t = tight.notes.set_index("performance_id")
+    assert t.loc["p14", "label"] == "wrong_pitch" and t.loc["p14", "score_id"] == "s14"
+    assert t.loc["t0", "label"] == t.loc["t1", "label"] == "ornament"  # genuine trill notes
+
+
+def test_tight_rule_grace_notes():
+    """Played grace: only re-strikes of its pitch are tolerated. Unplayed grace: ±2 (the grace
+    played at a neighbouring pitch)."""
+    sn, pn, pairs, part = build(grace_at=4)  # g0: pitch 72 before quarter 4 (2.0 s)
+    pn = np.concatenate([pn, np.array([(1.96, 0.03, 72, 40, "gp"), (1.97, 0.03, 72, 40, "gr"),
+                                       (1.98, 0.03, 70, 40, "gx")], dtype=P_DTYPE)])
+    played = pairs + [("match", "g0", "gp"), ("insertion", "", "gr"), ("insertion", "", "gx")]
+    lab = correctness(aligned(sn, pn, played, part),
+                      ornament_rule="tight").notes.set_index("performance_id")["label"]
+    assert lab["gp"] == "correct" and lab["gr"] == "ornament" and lab["gx"] == "extra"
+    unplayed = pairs + [("deletion", "g0", "")] + [("insertion", "", k) for k in
+                                                   ("gp", "gr", "gx")]  # fmt: skip
+    res = correctness(aligned(sn, pn, unplayed, part), ornament_rule="tight")
+    lab = res.notes.set_index("performance_id")["label"]
+    assert lab["gx"] == "ornament" and lab["gp"] == "ornament"
+    assert res.score_notes.set_index("score_id").loc["g0", "label"] == "ornament_skipped"
+
+
+# --------------------------------------------------------------------------- BL-23 reassign
+
+
+def absorbed_case():
+    """s10 (pitch 60 at 2.5 s) played as 61, the pitch written for s12 at 3.0 s. The aligner
+    matched s12 to that early wrong key and left the real s12 note unmatched (BL-20 absorption)."""
+    sn, pn, pairs, _ = build()
+    y = int(sn["pitch"][12])
+    pn["pitch"][10] = y  # wrong key at 2.5 s equal to the pitch written at 3.0 s
+    pairs[10] = ("deletion", "s10", "")
+    pairs[12] = ("match", "s12", "p10")  # absorbed: s12 matched to the wrong key
+    pairs.append(("insertion", "", "p12"))  # the note that really played s12
+    return sn, pn, pairs
+
+
+def test_reassign_moves_absorbed_match():
+    sn, pn, pairs = absorbed_case()
+    base = correctness(aligned(sn, pn, pairs), reassign=False)
+    b = base.notes.set_index("performance_id")
+    assert b.loc["p10", "label"] == "correct" and b.loc["p10", "score_id"] == "s12"
+    res = correctness(aligned(sn, pn, pairs))  # BL-23 default: reassign=True
+    assert res.params["reassign"] and res.params["ornament_rule"] == "legacy"
+    r = res.notes.set_index("performance_id")
+    assert r.loc["p12", "label"] == "correct" and r.loc["p12", "score_id"] == "s12"
+    assert r.loc["p10", "label"] == "wrong_pitch" and r.loc["p10", "score_id"] == "s10"
+    assert res.summary["n_reassigned"] == 1
+    assert res.summary["n_missed"] == 0 and res.summary["n_extra"] == 0
+
+
+def test_reassign_keeps_good_matches():
+    """A clean performance with an extra repeated note far from its written time: no swap."""
+    sn, pn, pairs, _ = build()
+    y = int(sn["pitch"][12])
+    pn = np.concatenate([pn, np.array([(3.2, 0.05, y, 30, "x0")], dtype=P_DTYPE)])
+    pairs.append(("insertion", "", "x0"))
+    res = correctness(aligned(sn, pn, pairs), reassign=True)
+    assert res.summary["n_reassigned"] == 0
+    assert res.notes.set_index("performance_id").loc["x0", "label"] == "extra"
+    # an extra only 20 ms closer than the match (inside the 30 ms margin) does not move it
+    pn2 = pn.copy()
+    pn2["onset_sec"][12] += 0.04
+    pn2["onset_sec"][-1] = 3.02
+    res2 = correctness(aligned(sn, pn2, pairs), reassign=True)
+    assert res2.summary["n_reassigned"] == 0

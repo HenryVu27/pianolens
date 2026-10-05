@@ -1,0 +1,19 @@
+{
+  "movement": "P26",
+  "recognised_piece": null,
+  "notes": "Eb major 16-bar theme (tonic pedal, V7 over pedal, cadential close) stated twice, Eb minor / Gb major middle section in two 8-bar units, then a dominant-prolonging passage with a chromatic descending bass (Ab-G-Gb-F) into the elided return of the theme. The 227-249 span is the least certain; the arrival could alternatively be read as a HC at bar 248.",
+  "events": [
+    {"bar": 179, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.95},
+    {"bar": 194, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8},
+    {"bar": 195, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.8},
+    {"bar": 210, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8},
+    {"bar": 211, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 217, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 219, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.8},
+    {"bar": 225, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 227, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 249, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.4},
+    {"bar": 249, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 264, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8}
+  ]
+}

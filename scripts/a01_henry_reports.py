@@ -37,6 +37,7 @@ HIGH_PITCH = 91  # G6
 HIGH_NOTE_MIN_RATE = 0.02  # add the note when high extras exceed 2% of score notes
 FLOOR_TABLES = ROOT / "data" / "interim" / "reports" / "calibration" / "f08c_floor_tables.pkl"
 TR_NAME = {"transkun": "Transkun 2.0.1", "aria_amt": "Aria-AMT piano-medium-double-1.0"}
+TR_FAMILY = {"transkun": "Transkun V2", "aria_amt": "Aria-AMT"}  # PianoCoRe capture_model (BL-18)
 
 
 def floor_note(summ: dict, k: str, t: str) -> str:
@@ -111,6 +112,11 @@ def tiered(rep: dict) -> set[tuple]:
 
 
 def main() -> None:
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("--out", type=Path, default=OUT, help="output folder (personal data)")
+    out = p.parse_args().out
     warnings.filterwarnings("ignore")
     logging.basicConfig(level=logging.ERROR)
     import pickle
@@ -120,7 +126,7 @@ def main() -> None:
     summ = json.loads((BASE / "a01" / "summary.json").read_text())
     floor = pickle.loads(FLOOR_TABLES.read_bytes())
     meta = json.loads((BASE / "scores" / "scores.json").read_text())
-    OUT.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     stab = {}
     reps = {}
     for k, (slug, title) in TITLES.items():
@@ -128,14 +134,14 @@ def main() -> None:
             rep = report_from_files(
                 BASE / "transcribed" / t / f"{k}.mid", score=BASE / "scores" / f"{k}_score.mxl",
                 piece_id=meta[k]["piece_id"], provenance="transcribed", title=title,
-                notes=[floor_note(summ, k, t)],
+                notes=[floor_note(summ, k, t)], expert_capture_model=TR_FAMILY[t],
                 expert_tables=[r["table"] for r in floor if r["take"] == k
                                and r["transcriber"] == t and not r["suspect"]])  # fmt: skip
             extra_note = high_note(high_extras(k, t, meta), rep)
             if extra_note:  # the header renders confidence notes; input notes keep provenance
                 rep["confidence"]["notes"].append(extra_note)
                 rep["input"]["notes"].append(extra_note)
-            write_report(rep, OUT / f"{k}_{slug}{suffix}.html")
+            write_report(rep, out / f"{k}_{slug}{suffix}.html")
             reps[(k, t)] = rep
             print(k, t, "done", [d["text"][:90] for d in rep["practise"]])
         a, b = tiered(reps[(k, "transkun")]), tiered(reps[(k, "aria_amt")])
@@ -150,7 +156,7 @@ def main() -> None:
                 for d in reps[(k, "transkun")]["practise"]]  # fmt: skip
         prac_in_aria = [any((c, ch, bb) in b for bb in bars) for c, ch, bars in prac]
         stab[k] = {"by_channel": by, "practise_top_in_aria_report": prac_in_aria}
-    (OUT / "stability.json").write_text(json.dumps(stab, indent=1))
+    (out / "stability.json").write_text(json.dumps(stab, indent=1))
     print(json.dumps(stab, indent=1))
 
 

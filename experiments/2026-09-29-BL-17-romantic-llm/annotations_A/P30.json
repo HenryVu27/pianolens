@@ -1,0 +1,25 @@
+{
+  "movement": "P30",
+  "recognised_piece": null,
+  "notes": "ABA' form in C major. The LH figure places the real bass on the last eighth, so the outer sections sit over dominant pedals. A: the section runs from the C/G pedal to a HC in A minor (131) and then cadences in G (141); the codetta ends at 147. B: over an Eb pedal, a circle of fifths leads to Eb (169), then a Ger6-like Eb pedal resolves to G/D (173). C (Cb major) stays over a Gb pedal and ends on a prolonged Gb7. A' ends in C (221), followed by a plagal-flavoured codetta.",
+  "events": [
+    {"bar": 115, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.9},
+    {"bar": 131, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.45},
+    {"bar": 133, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 141, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.5},
+    {"bar": 141, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 147, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.4},
+    {"bar": 149, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.8},
+    {"bar": 169, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.4},
+    {"bar": 169, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.45},
+    {"bar": 173, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.4},
+    {"bar": 177, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 190, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.35},
+    {"bar": 197, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 211, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.45},
+    {"bar": 213, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 221, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.5},
+    {"bar": 221, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 227, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.4}
+  ]
+}

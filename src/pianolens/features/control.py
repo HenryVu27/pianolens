@@ -40,12 +40,20 @@ Features
    * ``even_ioi_cv``: coefficient of variation of the tempo-normalized inter-onset intervals
      ``ioi_k / (T(b_{k+1}) - T(b_k))`` (T = F-03 smooth time map), so a smooth ritardando or
      accelerando is not unevenness; only score-adjacent matched onsets in the same tempo
-     segment count. Pooled over runs as ``sqrt(sum_k (x_k / mean_run - 1)^2 / sum(n_run - 1))``.
-     Unit: dimensionless (fraction of the IOI).
+     segment count. Per run with ``m`` such IOIs, ``rel_k = x_k / mean_run - 1`` and the run's CV
+     is ``sqrt(sum_k rel_k^2 / (m - 1))``. Each ``rel_k`` is stored scaled by ``sqrt(m / (m - 1))``
+     (``ioi_rel_scaled``), and the per-bar and pooled values are the RMS of these scaled
+     residuals: ``sqrt(sum_runs (m / (m - 1)) sum_k rel_k^2 / sum_runs m)``, i.e. the per-run
+     variances averaged with weights ``m``. This equals the textbook pooled estimate
+     ``sqrt(sum rel^2 / sum(m - 1))`` only when all runs have the same length; the code form is
+     kept because the same per-note quantity then gives both the per-bar and the pooled value
+     (DEFECTS DF-06). Unit: dimensionless (fraction of the IOI).
    * ``even_vel_sd_midi``: SD of velocity residuals after removing a polynomial trend in score
      position within the run (linear; quadratic for runs of ``long_run_notes`` or more), so a
-     crescendo or a hairpin is not unevenness; pooled over runs with ``n - degree - 1`` degrees
-     of freedom. Unit: MIDI velocity.
+     crescendo or a hairpin is not unevenness. Per run the SD uses ``n - degree - 1`` degrees of
+     freedom; residuals are stored scaled by ``sqrt(n / (n - degree - 1))``
+     (``vel_resid_scaled``), and per-bar and pooled values are their RMS, as for the IOI CV (a
+     weighted mean of per-run variances, weights ``n``). Unit: MIDI velocity.
    **Two variants** (DECISIONS 2026-09-27, F-04 follow-ups; R-04 picks one by predictive
    value). ``even_*`` is the **broad** rule above. ``even_strict_*`` uses the same statistics on
    **strict** runs (:func:`strict_runs`): the notes must be sub-beat (notated duration below one
@@ -127,7 +135,8 @@ Features
    No published norm exists for this window (landscape 1.5); F-04b checked it and the
    threshold on sensor pedal data (Batik, Vienna 4x22) and kept both.
    ``pedal_blur_fraction`` = blurred / changes; ``pedal_blur_beats`` = mean held time after the
-   change until the first lift (0 for clean changes; capped at the next change), in beats.
+   change until the first lift (0 for clean changes; capped at the next change and at
+   ``pedal_max_blur_beats``, default 4 beats), in beats.
    Unit: fraction, beats. Needs pedal data: PianoCoRe has none; ASAP, MAESTRO, Vienna 4x22 and
    Batik do. With no CC64 events the features are NaN and ``pedal_available`` is False.
    Citations (landscape 1.2, 1.5): Liang, Fazekas, Sandler, JAES 2018 (pedalling from sensor

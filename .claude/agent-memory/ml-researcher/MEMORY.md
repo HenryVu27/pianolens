@@ -4,7 +4,7 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 `.claude/rules/` or `.claude/skills/`, not here.
 
 - [percepiano-labels.md](percepiano-labels.md): CSV layout, cleaning rules, filename = piece_Nbars_player_segment, duplicate rows, two differing mean jsons (labels/ one matches the CSV)
-- [library-gotchas.md](library-gotchas.md): factor-analyzer 0.5.1 breaks on sklearn 1.9 (`force_all_finite`); shim in R-01 run.py; phi_/communality helpers
+- [library-gotchas.md](library-gotchas.md): factor-analyzer/sklearn shim; MuQ; **SyMuPe ignores lm_top_p (pass top_p)**; parallel numpy
 - [results-index.md](results-index.md): numbers measured so far and where they live (R-01, R-03 incl. post-audit variants)
 - E-01 harness API: `pianolens.eval` (group_kfold, bootstrap_ci with groups=, rater_parity, fit_bradley_terry); use it, do not re-implement
 - S-02/R-03 facts: `pianolens.audio.render` (Salamander C5 Light, FluidSynth pinned); MuQ gotchas in library-gotchas.md; R-03 numbers in results-index.md
@@ -23,3 +23,6 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [r08c-unfamiliar-repertoire.md](r08c-unfamiliar-repertoire.md): R-08c prep: J. C. Bach Q1-Q5, importlib reuse of R-08a score/render, detector not pass-consistent on JC Bach (propagation changes its F1), worked example moved to bars 25/28
 - [r08d-romantic-repertoire.md](r08d-romantic-repertoire.md): R-08d prep: R1-R5 Romantic draw, runs A/B, no period phrase, recognition non-gating, tempo words in staff text, title-word check false positives, mixed-meter quarter tolerance
 - [r05-context-shortcut.md](r05-context-shortcut.md): R-05 H8 simulated-context shortcut (supported, Provisional); reusable MuQ cache of 1,500 MAJEPPA renders x 4 contexts; zsh word-split trap
+- [r11-teacher-annotations.md](r11-teacher-annotations.md): R-11 tonebase pilot (gate passed, (a)-(c) run, Provisional); PianoCoRe staff/empty-measure/target-grid traps, report tier path
+- [bl17-romantic-llm.md](bl17-romantic-llm.md): BL-17 run (68 blind annotators launched by me): simple 0.635 t [0.549, 0.720] INCONCLUSIVE, Confirmed with caveats; post-audit text fixes applied (what I overclaimed); reuse of R-08b/d code, concurrency limit 20, transcript audit script
+- [r10-h1b-prereg.md](r10-h1b-prereg.md): R-10 prereg + pre-run amendments (content check, dedup, top-p disclosure); 56 primary pieces; analytic oracle; dry-run home; box rates

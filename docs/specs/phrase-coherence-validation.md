@@ -2,7 +2,8 @@
 
 Measured 2026-09-27 by `feature-engineer`. Code: `src/pianolens/features/score_basis.py`
 (new opt-in `phrase_detail` and `cadence` groups), `src/pianolens/features/shaping.py` (new
-opt-in `ShapingConfig.clip_to_train`), script `scripts/check_phrase_f05b.py`. Rerun:
+`ShapingConfig.clip_to_train`, opt-in at the time and the default since DECISIONS 2026-09-27
+after F-05b, item 4), script `scripts/check_phrase_f05b.py`. Rerun:
 
 ```
 OMP_NUM_THREADS=1 uv run python scripts/check_phrase_f05b.py batik lomo   # ~15 min on a busy Mac
@@ -262,8 +263,9 @@ Tempo is centred per movement, and the features have no markings.
     phrase length, and the phrase length times the arc.
   - `cadence` has an approach kernel for each cadence type (PAC, HC, other) and a kernel after
     each cadence.
-- **`ShapingConfig.clip_to_train`** (default False) clips held-out features to the training
-  range, which stops the ridge from extrapolating wildly on sparse features.
+- **`ShapingConfig.clip_to_train`** clips held-out features to the training range, which stops
+  the ridge from extrapolating wildly on sparse features. It was added with default False; it
+  defaults to True since DECISIONS 2026-09-27 (after F-05b, item 4).
 - **`voicing`** (coordinator request, R-04). A zero or non-finite smooth beat period used to
   raise ZeroDivisionError. That onset's `lead_beats` is now NaN, and the summary counts such
   onsets in `n_lead_beats_undefined`.
@@ -510,7 +512,8 @@ Vienna K.331/1, mean over the 22 pianists:
 Measured 2026-09-28 by `feature-engineer`. Pre-registered experiment
 `experiments/2026-09-28-F-05e-llm-phrase-measures/` (README has the rule, all tables, the run
 record and one disclosed deviation). Code: `shaping.merge_short_phrases` (new) and the one-off
-`run.py`. Status: Provisional until `eval-auditor` reviews it.
+`run.py`. Status: Confirmed with caveats (`eval-auditor`, 2026-09-28; see the EXPERIMENTS.md
+row for the caveats: pooled level only, carried by Batik, Romantic placement loss).
 
 ## Answer
 

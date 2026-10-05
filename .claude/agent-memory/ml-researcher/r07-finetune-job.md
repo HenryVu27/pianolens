@@ -41,3 +41,4 @@ no vel offset / tempo change), S-TYP = -sqrt(mean_f z_f^2) vs 16 top-p-1.0 sampl
 own conditioning, S-DEV = composite r with flat targets scored 0. Battery = expression_data.VARIANTS.
 Pass = R1 (7 deadpan variants: AUC>=.75, CI lb>.5, per-work >=.5 on P) + R2 (jitT20/40, jitV8/16)
 + R3 (point AUC>=.75 on V). R1+R3 without R2 = flatness detector only.
+- 2026-10-05 (R-10 dry run): the S-TYP "top-p 1.0" typset samples were really top-p 0.95, because SyMuPe EncDec ignores `lm_top_p` (see library-gotchas). Reported to the lead.

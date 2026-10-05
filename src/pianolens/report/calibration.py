@@ -29,7 +29,11 @@ CORRECTNESS_EXPERT_BARS: dict[str, float] = {
     "wrong_pitch_q99": 2.0,
     "missed_extra_per_note_q95": 0.267,
     "missed_extra_per_note_q99": 0.634,
-    "share_bars_with_error_median": 0.421,  # per performance; 5-95%: 0.113-0.820
+    # per performance; 5-95%: 0.113-0.820. BL-23 (2026-09-29): 0.421 -> 0.420 after the
+    # same-pitch reassignment became the correctness default; every other value in this dict
+    # and the tier limits are unchanged at the precision shown (rerun in
+    # experiments/2026-09-29-BL-23-aligner-ornaments/, variant R).
+    "share_bars_with_error_median": 0.420,
     "error_rate_q50": 0.0465,  # (wrong + missed + extra) / graded notes, per performance
     "error_rate_q95": 0.164,
     "error_rate_q99": 0.207,
@@ -78,6 +82,63 @@ CORRECTNESS_EXPERT_BARS["missed_per_note_q99"] = 0.286
 #: (74.9% with q95).
 EXPERT_CHECK_MIN_REFS = 5
 EXPERT_CHECK_Q = (0.80, 0.99)
+
+#: BL-18 (``docs/specs/report-validation.md``, section 5;
+#: ``scripts/calibrate_strong_tier_bl18.py``).
+#: On transcribed input the strong tier ran above its nominal 1% (A-01 floor, leave-one-out:
+#: Transkun V2 0.58%, Aria-AMT 2.25%). Two changes, for transcribed input only (key-sensor input
+#: keeps the F-08c rule, 0.67% strong):
+#: 1. Per-bar strong limit (``build.expert_bar_limits``, ``strong_margin``): the finite-sample
+#:    order statistic of rank ceil(0.99 (n + 1)). With fewer than 99 experts (always, at up to 15)
+#:    that rank does not exist, so a bar is strong only with more than the worst expert there
+#:    plus EXPERT_CHECK_STRONG_MARGIN_TRANSCRIBED notes.
+#: 2. Strong global limits per transcriber family (notable keeps the key-sensor limits): the 99th
+#:    percentile of the family's A-01 floor bars (75 transcriptions per family, 5 Chopin pieces,
+#:    8,685 bars, extras not counted). The wrong-pitch limit equals the key-sensor one; missed
+#:    notes per note do not (key-sensor 0.286). An unknown family gets the larger limits.
+#: **After the BL-18 audit (DECISIONS 2026-09-29, "lead: BL-18 after audit")** the implemented
+#: R1(2) + R2s was returned: it cut strong detection of injected mistakes to 0.16 of R0's, and the
+#: Aria-AMT limit 0.771 is set by runs of fully missed bars (Aria-MIDI segment truncation; 0.422
+#: without them). Interim default: **R1(0) without R2s**, i.e. margin 0 (strong needs more than
+#: every expert at the bar) and ``ReportConfig.transcribed_strong_limits=False``. Held-out BL-18:
+#: strong 0.62% (Transkun V2) / 1.01% (Aria-AMT). Runs of fully missed bars get their own rule
+#: (NOT_HEARD_*). Provisional until the BL-18b confirmation run (report-validation.md).
+#: The family limits below are kept for that comparison only.
+EXPERT_CHECK_STRONG_MARGIN_TRANSCRIBED = 0
+TRANSCRIBED_STRONG_LIMITS: dict[str, dict[str, float]] = {
+    "Transkun V2": {"wrong_q99": 2.0, "me_q99": 0.308},
+    "Aria-AMT": {"wrong_q99": 2.0, "me_q99": 0.771},
+}
+TRANSCRIBED_STRONG_LIMITS_UNKNOWN: dict[str, float] = {
+    k: max(v[k] for v in TRANSCRIBED_STRONG_LIMITS.values()) for k in ("wrong_q99", "me_q99")
+}
+#: "Passage not heard" (BL-18 audit, section 3-4): on transcribed input, a run of at least
+#: NOT_HEARD_MIN_BARS consecutive graded bars, each with at least NOT_HEARD_MISSED_SHARE of its
+#: graded notes missed, is reported once as "passage not heard (not played, or not in the
+#: recording)", a low-confidence item, and its bars get no correctness tier. Bars without graded
+#: notes neither break nor extend a run. Measured: dev (A-01 floor) 55 such bars in 6 of 75
+#: Aria-AMT transcriptions (0.63% of bars), mostly at the start or end of the piece (Aria-MIDI
+#: segments cut from longer videos); held-out 15 bars in 4 of 109. No per-bar limit can move
+#: them (80% missed is above every candidate limit).
+NOT_HEARD_MIN_BARS = 3
+NOT_HEARD_MISSED_SHARE = 0.8
+
+#: BL-25 (from BL-21, audited): on transcribed input a missed note whose same-pitch predecessor in
+#: the score is due less than FAST_REPEAT_MAX_IOI_SEC earlier (expected onsets at the played
+#: tempo) is low confidence: the transcriber merges fast repeats (PianoVAM, Transkun: recall 0.33
+#: under 80 ms, 0.89 at 80-120 ms, 0.976 for other notes; the loss sits below about 100 ms once
+#: key-bounce echoes are excluded). Such missed notes are shown on the timeline but are not
+#: counted towards correctness tiers (target and, where the table has the column, experts).
+FAST_REPEAT_MAX_IOI_SEC = 0.1
+
+#: BL-20 proposal 3: in fast runs (local inter-onset interval under FAST_RUN_MAX_IOI_SEC: median of
+#: up to 4 gaps between neighbouring chord onsets, chords = onsets within FAST_RUN_CHORD_SEC) the
+#: aligner absorbs or mispairs 6.9-8.3% of wrong pitches (2.5% in slow passages), so the note
+#: checker is reliable about the bar but not about which note. Wrong notes there are worded at bar
+#: level ("wrong notes in this fast run"), never as "X instead of Y". Tiers are unchanged.
+FAST_RUN_MAX_IOI_SEC = 0.1
+FAST_RUN_CHORD_SEC = 0.03
+
 #: Default number of expert performances loaded for the check (ASAP for key-sensor input,
 #: PianoCoRe transcriptions for transcribed input, as in the A-01 floor).
 EXPERT_CHECK_MAX_REFS = 15

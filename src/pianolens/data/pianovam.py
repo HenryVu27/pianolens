@@ -1,4 +1,7 @@
-"""PianoVAM loader, MIDI only (no audio, video or hand skeletons on this Mac).
+"""PianoVAM loader, MIDI only. This loader reads no audio; a 4.4 GB audio subset (84 of the
+107 ``Audio/*.wav``, list in ``Audio_SUBSET.txt``) is on this Mac since A-01b and is read by
+``pianolens.audio`` code (DATASETS.md, DECISIONS 2026-09-28 after A-01b). Video and hand
+skeletons are not downloaded.
 
 Source: https://huggingface.co/datasets/PianoVAM/PianoVAM_v1 (ISMIR 2025, arXiv 2509.08800),
 v1.2, commit ``1f039ab9``; ``MIDI/*.mid`` and ``metadata.json`` under ``data/raw/pianovam``.

@@ -1,0 +1,7 @@
+piece_id,reason
+bach_bwv856,bach_bwv856_prelude / _fugue paired
+bach_bwv857,bach_bwv857_prelude / _fugue paired
+bach_bwv862,bach_bwv862_prelude / _fugue paired
+mozart_k545,mozart_k545_mv1 paired
+clementi_op36_no1,"first movement paired under pianocore:Clementi,_Muzio/Piano_Sonatina_in_C_major,_Op.36,_No.1/1._Spiritoso"
+"pianocore:Bartók,_Béla/Romanian_Folk_Dances,_Sz.56","movements 1-2 paired; fewer than 20 renditions, so never in the H1b statistics"

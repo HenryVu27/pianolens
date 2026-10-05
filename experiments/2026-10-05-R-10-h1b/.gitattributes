@@ -1,0 +1,2 @@
+# Keep LF on Windows checkouts (core.autocrlf=true broke R-07 shell scripts and hashes)
+* text=auto eol=lf

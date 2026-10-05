@@ -27,9 +27,11 @@ What goes in, per bar (rows of the performed, unfolded ``Score.measures``):
   compared with the literature only at a similar note rate (landscape 1.5).
 * **Shaping** (F-05): structural coherence for velocity and articulation (the H4 primary
   channels, without markings; defined only with at least 3 CV blocks), and per-phrase tempo
-  shaping ``concave_excess`` with cadence-derived phrase boundaries (DECISIONS 2026-09-28,
-  after D-11 / F-05c). Tempo coherence R² is not reported: it needs annotated phrases
-  (DECISIONS, after F-05b).
+  shaping ``concave_excess`` with LLM phrase boundaries where the piece has a cached set
+  (DF-02; F-05e, DECISIONS 2026-09-28: reported with the phrase-count ratio, the detector value,
+  the run spread and the BL-17 accuracy caveats, and as "undetermined" when LLM and detector
+  disagree in sign), otherwise cadence-derived boundaries (after D-11 / F-05c). Tempo
+  coherence R² is not reported: it needs annotated phrases (DECISIONS, after F-05b).
 
 There is no overall grade and no invented weighting: the rating-model weights come from R-04 /
 Phase 3 (plan section 3). Citations are in the feature modules and in
@@ -64,8 +66,8 @@ from pianolens.features.tempo import _beats_per_bar, _measure_info, matched_onse
 from pianolens.report import calibration as cal
 
 __all__ = ["SCHEMA", "ReportConfig", "ReportInputs", "bar_error_table", "build_report",
-           "error_signatures", "expert_bar_limits", "expert_error_keys", "recurring_errors",
-           "to_jsonable"]
+           "error_signatures", "expert_bar_limits", "expert_error_keys", "fast_repeat_notes",
+           "fast_run_notes", "local_ioi", "not_heard_runs", "recurring_errors", "to_jsonable"]
 
 SCHEMA = "pianolens.report/1"
 TIERS = ("none", "notable", "strong")
@@ -94,8 +96,24 @@ class ReportConfig:
         expert_check_min_refs: per-bar expert check (F-08c): experts that must cover a bar
             before its correctness tier is checked against them.
         expert_check_q: per-bar expert quantiles that notable / strong must exceed.
+        expert_check_strong_margin_transcribed: BL-18, transcribed experts only: strong needs the
+            finite-sample order statistic (``expert_bar_limits``, ``strong_margin``), with fewer
+            than 99 experts the per-bar maximum plus this many notes. None = the F-08c q99.
+            Default 0 (R1(0), interim after the BL-18 audit): more than every expert.
+        transcribed_strong_limits: BL-18 R2s: for transcribed input the global strong limits come
+            from the transcriber family (``calibration.TRANSCRIBED_STRONG_LIMITS``; unknown
+            family: the larger ones). Notable keeps the key-sensor limits. Off by default since
+            the BL-18 audit (the Aria-AMT limit measures corpus truncation).
         extras_low_confidence: extra notes do not count towards correctness tiers (shown only).
             None = automatic: True for transcribed input (A-01, ``rules/audio.md``).
+        not_heard: "passage not heard" rule (``calibration.NOT_HEARD_*``; :func:`not_heard_runs`):
+            runs of mostly missed bars are one low-confidence item, not correctness tiers.
+            None = automatic: True for transcribed input.
+        fast_repeat_low_confidence: BL-25: missed notes on same-pitch repeats due less than
+            ``fast_repeat_max_ioi_sec`` after the previous one are shown but not counted towards
+            tiers. None = automatic: True for transcribed input.
+        fast_run_max_ioi_sec: BL-20: wrong notes in runs with a local inter-onset interval below
+            this are worded at bar level (:func:`fast_run_notes`).
     """
 
     interpretation: InterpretationConfig = field(default_factory=InterpretationConfig)
@@ -109,7 +127,15 @@ class ReportConfig:
     recurring_min_experts: int = cal.RECURRING_MIN_EXPERTS
     expert_check_min_refs: int = cal.EXPERT_CHECK_MIN_REFS
     expert_check_q: tuple[float, float] = cal.EXPERT_CHECK_Q
+    expert_check_strong_margin_transcribed: int | None = cal.EXPERT_CHECK_STRONG_MARGIN_TRANSCRIBED
+    transcribed_strong_limits: bool = False
     extras_low_confidence: bool | None = None
+    not_heard: bool | None = None
+    not_heard_min_bars: int = cal.NOT_HEARD_MIN_BARS
+    not_heard_missed_share: float = cal.NOT_HEARD_MISSED_SHARE
+    fast_repeat_low_confidence: bool | None = None
+    fast_repeat_max_ioi_sec: float = cal.FAST_REPEAT_MAX_IOI_SEC
+    fast_run_max_ioi_sec: float = cal.FAST_RUN_MAX_IOI_SEC
 
 
 @dataclass(eq=False)
@@ -135,6 +161,8 @@ class ReportInputs:
             (:func:`bar_error_table`), for the per-bar expert check (F-08c). Their capture
             method must match the target's (transcribed experts for transcribed input).
         expert_bar_provenance: capture method of ``expert_bar_tables``.
+        transcriber: transcription model family of a transcribed target (PianoCoRe
+            ``capture_model`` name, e.g. ``"Transkun V2"``, ``"Aria-AMT"``); None = unknown.
         paths: file paths for the header (``score``, ``performance``, ``takes``, ...).
         notes: extra provenance notes for the header.
     """
@@ -151,6 +179,7 @@ class ReportInputs:
     correctness_refs: Sequence[Any] = ()
     expert_bar_tables: Sequence[pd.DataFrame] = ()
     expert_bar_provenance: str = "unknown"
+    transcriber: str | None = None
     paths: dict[str, Any] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
 
@@ -388,22 +417,132 @@ def _correctness_tier(n_wrong: int, n_missed_extra: int, n_notes: int,
     return tier, float(mag)
 
 
-def bar_error_table(cr: Any, labels: Sequence[str]) -> pd.DataFrame:
+def bar_error_table(cr: Any, labels: Sequence[str],
+                    fast_repeat_max_ioi_sec: float = cal.FAST_REPEAT_MAX_IOI_SEC) -> pd.DataFrame:
     """Per-bar error counts of one performance, keyed by bar label (:func:`bar_labels`), so
     performances that take different repeat paths line up bar by bar. ``cr``: its
     :class:`~pianolens.features.correctness.CorrectnessResult`. Columns: ``label``,
-    ``n_score_notes`` (graded), ``n_wrong_pitch``, ``n_missed``, ``n_extra``."""
+    ``n_score_notes`` (graded), ``n_wrong_pitch``, ``n_missed``, ``n_extra``, and
+    ``n_missed_fast_repeat`` (missed notes on fast same-pitch repeats, BL-25,
+    :func:`fast_repeat_notes`; tables cached before BL-25 lack it)."""
     b = cr.bars
+    nb = len(b)
+    fr = fast_repeat_notes(cr.score_notes, fast_repeat_max_ioi_sec)
+    sn = cr.score_notes
+    sel = fr & (sn["label"].astype(str).to_numpy() == "missed") & \
+        (sn["measure_index"].to_numpy(int) >= 0)
+    n_fr = np.bincount(sn["measure_index"].to_numpy(int)[sel], minlength=nb)[:nb]
     return pd.DataFrame({"label": list(labels),
                          "n_score_notes": b["n_score_notes"].to_numpy(int),
                          "n_wrong_pitch": b["n_wrong_pitch"].to_numpy(int),
                          "n_missed": b["n_missed"].to_numpy(int),
-                         "n_extra": b["n_extra"].to_numpy(int)})  # fmt: skip
+                         "n_extra": b["n_extra"].to_numpy(int),
+                         "n_missed_fast_repeat": n_fr.astype(int)})  # fmt: skip
+
+
+def fast_repeat_notes(score_notes: pd.DataFrame,
+                      max_ioi_sec: float = cal.FAST_REPEAT_MAX_IOI_SEC) -> np.ndarray:
+    """BL-25: True for score notes whose same-pitch predecessor in the score is due less than
+    ``max_ioi_sec`` earlier.
+
+    Definition: for each score note, the predecessor is the latest score note of the same pitch
+    with a strictly earlier ``onset_quarter`` (so a unison of two voices is not a repeat); the
+    interval is the difference of their ``expected_onset_sec`` (expected onsets at the played
+    tempo, from the matched notes; :func:`pianolens.features.correctness.expected_onsets`), in
+    seconds. NaN intervals are not flagged. Keyed on the score, not on what was transcribed,
+    because a merged repeat leaves no second transcribed note (BL-21). Source: BL-21
+    (``experiments/2026-09-29-BL-21-repeated-notes/``), cut-off per its audit.
+    """
+    n = len(score_notes)
+    out = np.zeros(n, bool)
+    if n == 0:
+        return out
+    pitch = score_notes["pitch"].to_numpy(int)
+    q = score_notes["onset_quarter"].to_numpy(float)
+    t = score_notes["expected_onset_sec"].to_numpy(float)
+    order = np.lexsort((q, pitch))
+    prev_t, prev_p = np.nan, None
+    cur_q, cur_t = np.nan, np.nan  # latest onset of this pitch
+    for i in order:
+        if pitch[i] != prev_p:
+            prev_p, prev_t, cur_q, cur_t = pitch[i], np.nan, np.nan, np.nan
+        if not (q[i] == cur_q):  # a new onset of this pitch: the latest one is the predecessor
+            prev_t = cur_t
+            cur_q, cur_t = q[i], t[i]
+        elif np.isfinite(t[i]) and not np.isfinite(cur_t):
+            cur_t = t[i]
+        gap = t[i] - prev_t
+        out[i] = bool(np.isfinite(gap) and gap < max_ioi_sec)
+    return out
+
+
+def local_ioi(onsets: np.ndarray, chord_sec: float = cal.FAST_RUN_CHORD_SEC) -> np.ndarray:
+    """Local inter-onset interval (seconds) of each onset, as in BL-20
+    (``scripts/eval_correctness_density.py``): onsets within ``chord_sec`` of a chord's first
+    onset form one chord; the value of chord k is the median of the gaps between consecutive
+    chord onsets among chords k-2..k+2 (up to 4 gaps; NaN with a single chord). Every onset takes
+    its chord's value."""
+    from pianolens.data.perturb import chord_clusters
+
+    x = np.asarray(onsets, dtype=float)
+    if len(x) == 0:
+        return np.empty(0)
+    ch = chord_clusters(x, chord_sec)
+    n = int(ch.max()) + 1
+    first = np.full(n, np.inf)
+    np.minimum.at(first, ch, x)
+    gaps = np.diff(first)
+    val = np.full(n, np.nan)
+    for k in range(n):
+        lo, hi = max(0, k - 2), min(len(gaps), k + 2)
+        if hi > lo:
+            val[k] = float(np.median(gaps[lo:hi]))
+    return val[ch]
+
+
+def fast_run_notes(notes: pd.DataFrame, max_ioi_sec: float = cal.FAST_RUN_MAX_IOI_SEC
+                   ) -> np.ndarray:
+    """BL-20 proposal 3: True for performed notes (rows of ``CorrectnessResult.notes``) whose
+    local inter-onset interval (:func:`local_ioi`, over all played notes) is below
+    ``max_ioi_sec``. In such runs the note checker finds the bar's wrong notes but often not
+    which note was wrong (BL-20: 6.9-8.3% of wrong pitches under 100 ms absorbed or mispaired,
+    2.5% over 200 ms)."""
+    out = np.zeros(len(notes), bool)
+    played = notes["label"].astype(str).to_numpy() != "interpolated"
+    if played.sum() < 2:
+        return out
+    ioi = local_ioi(notes["onset_sec"].to_numpy(float)[played])
+    out[played] = np.isfinite(ioi) & (ioi < max_ioi_sec)
+    return out
+
+
+def not_heard_runs(n_missed: Sequence[int], n_notes: Sequence[int],
+                   min_bars: int = cal.NOT_HEARD_MIN_BARS,
+                   share: float = cal.NOT_HEARD_MISSED_SHARE) -> list[list[int]]:
+    """"Passage not heard" (BL-18 audit): runs of at least ``min_bars`` consecutive graded bars
+    (bars with ``n_notes > 0``, in performed order) in each of which at least ``share`` of the
+    graded notes are missed. Bars without graded notes are skipped: they neither break nor extend
+    a run. Returns the bar indices (graded bars only) of each run. Unit: share of notes."""
+    runs, cur = [], []
+    for i, (m, n) in enumerate(zip(n_missed, n_notes, strict=True)):
+        if n <= 0:
+            continue
+        if m / n >= share:
+            cur.append(i)
+        else:
+            if len(cur) >= min_bars:
+                runs.append(cur)
+            cur = []
+    if len(cur) >= min_bars:
+        runs.append(cur)
+    return runs
 
 
 def expert_bar_limits(expert_tables: Sequence[pd.DataFrame], labels: Sequence[str],
                       extras: bool = True, q: tuple[float, float] = cal.EXPERT_CHECK_Q,
-                      min_refs: int = cal.EXPERT_CHECK_MIN_REFS) -> pd.DataFrame:
+                      min_refs: int = cal.EXPERT_CHECK_MIN_REFS,
+                      strong_margin: int | None = None,
+                      drop_fast_repeats: bool = False) -> pd.DataFrame:
     """Per-bar expert error distribution (F-08c): for each bar label of the target, the number of
     expert performances that played the bar and the ``q`` quantiles of their wrong-pitch count
     and of their missed (+ extra, if ``extras``) notes per graded score note there.
@@ -411,33 +550,88 @@ def expert_bar_limits(expert_tables: Sequence[pd.DataFrame], labels: Sequence[st
     Bars covered by fewer than ``min_refs`` experts get NaN quantiles (no check). A bar whose
     target value is within these quantiles matches what experts of the same score show there:
     most such bars are score, edition or checker artefacts (Op. 64 No. 2, A-01), not mistakes.
+
+    ``strong_margin`` (BL-18; None = the interpolated ``q[1]`` quantile, F-08c): the strong limit
+    is the finite-sample order statistic instead. With n experts it is the value of rank
+    ``r = ceil(q[1] (n + 1))``, so an exchangeable target exceeds it with probability at most
+    ``1 - q[1]``. When ``r > n`` (fewer than 99 experts for q99) no rank qualifies, and the limit
+    is the per-bar maximum plus ``strong_margin`` notes: added directly to the wrong-pitch limit,
+    and returned in ``me_q99_margin_notes`` for the per-note quantity, which
+    :func:`_checked_correctness_tier` divides by the target bar's graded notes.
+
+    ``drop_fast_repeats`` (BL-25): missed notes on fast same-pitch repeats
+    (``n_missed_fast_repeat``, when a table has that column) are not counted, as for the target.
     """
     rows = {lab: [] for lab in labels}
     for t in expert_tables:
+        fr = drop_fast_repeats and "n_missed_fast_repeat" in t.columns
         for r in t.itertuples(index=False):
             if r.label in rows and r.n_score_notes > 0:
-                me = r.n_missed + (r.n_extra if extras else 0)
+                me = r.n_missed - (r.n_missed_fast_repeat if fr else 0) + \
+                    (r.n_extra if extras else 0)
                 rows[r.label].append((r.n_wrong_pitch, me / r.n_score_notes))
     out = []
     for lab in labels:
         v = np.array(rows[lab], float).reshape(-1, 2)
-        ok = len(v) >= min_refs
+        n = len(v)
+        ok = n >= min_refs
         qq = (np.quantile(v, q, axis=0) if ok else np.full((2, 2), np.nan))
-        out.append({"label": lab, "n_experts": len(v), "wrong_q95": qq[0, 0],
-                    "wrong_q99": qq[1, 0], "me_q95": qq[0, 1], "me_q99": qq[1, 1]})
+        margin = 0.0
+        if ok and strong_margin is not None:
+            rank = math.ceil(q[1] * (n + 1) - 1e-9)
+            srt = np.sort(v, axis=0)
+            if rank <= n:
+                qq[1] = srt[rank - 1]
+            else:
+                qq[1] = srt[-1]
+                qq[1, 0] += strong_margin
+                margin = float(strong_margin)
+        out.append({"label": lab, "n_experts": n, "wrong_q95": qq[0, 0],
+                    "wrong_q99": qq[1, 0], "me_q95": qq[0, 1], "me_q99": qq[1, 1],
+                    "me_q99_margin_notes": margin})
     return pd.DataFrame(out)
 
 
+def _checked_correctness_tier(n_wrong: int, n_missed_extra: int, n_notes: int,
+                              glim: dict[str, float], e: Any) -> tuple[str, float]:
+    """Tier of one bar under the per-bar expert check: each limit is the larger of the global
+    limit ``glim`` and the bar's expert limit ``e`` (a row of :func:`expert_bar_limits`), with the
+    BL-18 margin of ``me_q99_margin_notes`` notes added to the per-bar missed (+ extra) limit."""
+    lim = {k: max(glim[k], float(e[k])) for k in glim}
+    add = float(e.get("me_q99_margin_notes", 0.0) or 0.0)
+    if add and n_notes > 0:
+        lim["me_q99"] = max(glim["me_q99"], float(e["me_q99"]) + add / n_notes)
+    return _correctness_tier(n_wrong, n_missed_extra, n_notes, lim)
+
+
 def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
-                         expert: pd.DataFrame | None = None
-                         ) -> tuple[dict, pd.DataFrame, Any]:
+                         expert: pd.DataFrame | None = None,
+                         strong_limits: dict[str, float] | None = None,
+                         cfg: ReportConfig | None = None, not_heard: bool = False,
+                         fast_repeat: bool = False) -> tuple[dict, pd.DataFrame, Any]:
     """Correctness per bar with tiers. ``extras=False``: extra notes are shown but do not count
     towards the tier (low confidence). ``expert`` (:func:`expert_bar_limits`): per-bar expert
-    check; the tier before it is kept in ``tier_global``."""
+    check; the tier before it is kept in ``tier_global``. ``strong_limits`` (keys ``wrong_q99``,
+    ``me_q99``) replace the global strong limits (BL-18: transcriber family).
+    ``fast_repeat`` (BL-25): missed notes on fast same-pitch repeats do not count towards tiers.
+    ``not_heard``: bars in a "passage not heard" run (:func:`not_heard_runs`) get no tier
+    (``expert_check`` = ``not_heard``) and are listed once in ``summary["not_heard"]``."""
+    cfg = cfg or ReportConfig()
     c = correctness(ap)
     b = c.bars.copy()
-    b["n_missed_extra"] = b["n_missed"] + (b["n_extra"] if extras else 0)
+    nb = len(b)
+    tab = bar_error_table(c, labels, cfg.fast_repeat_max_ioi_sec)
+    b["n_missed_fast_repeat"] = tab["n_missed_fast_repeat"].to_numpy(int)
+    fast = fast_run_notes(c.notes, cfg.fast_run_max_ioi_sec)
+    wsel = fast & (c.notes["label"].astype(str).to_numpy() == "wrong_pitch") & \
+        (c.notes["measure_index"].to_numpy(int) >= 0)
+    b["n_wrong_fast_run"] = np.bincount(c.notes["measure_index"].to_numpy(int)[wsel],
+                                        minlength=nb)[:nb]
+    b["n_missed_low_confidence"] = b["n_missed_fast_repeat"] if fast_repeat else 0
+    b["n_missed_extra"] = b["n_missed"] - b["n_missed_low_confidence"] + \
+        (b["n_extra"] if extras else 0)
     glim = global_correctness_limits(extras)
+    glim.update(strong_limits or {})
     tiers = [_correctness_tier(int(w), int(me), int(n), glim) for w, me, n in zip(
         b["n_wrong_pitch"], b["n_missed_extra"], b["n_score_notes"], strict=True)]
     b["tier_global"] = [t for t, _ in tiers]
@@ -455,17 +649,40 @@ def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
                 new_m.append(b["magnitude"].iat[i])
                 stat.append("unchecked" if tg != "none" else "none")
                 continue
-            lim = {k: max(glim[k], float(e[k])) for k in glim}
-            t, m = _correctness_tier(int(b["n_wrong_pitch"].iat[i]),
-                                     int(b["n_missed_extra"].iat[i]),
-                                     int(b["n_score_notes"].iat[i]), lim)
+            t, m = _checked_correctness_tier(int(b["n_wrong_pitch"].iat[i]),
+                                             int(b["n_missed_extra"].iat[i]),
+                                             int(b["n_score_notes"].iat[i]), glim, e)
             new_t.append(t)
             new_m.append(m)
             stat.append("none" if tg == "none" else "confirmed" if t == tg else
                         "suppressed" if t == "none" else "down_tiered")
         b["tier"], b["magnitude"], b["expert_check"] = new_t, new_m, stat
         b["n_experts"] = expert["n_experts"].to_numpy(int)
+    b["not_heard"] = False
+    runs = not_heard_runs(b["n_missed"].to_numpy(int), b["n_score_notes"].to_numpy(int),
+                          cfg.not_heard_min_bars, cfg.not_heard_missed_share) if not_heard else []
+    graded = np.flatnonzero(b["n_score_notes"].to_numpy(int) > 0)
+    nh = []
+    for run in runs:
+        b.loc[run, "tier"] = "none"
+        b.loc[run, "magnitude"] = np.nan
+        b.loc[run, "expert_check"] = "not_heard"
+        b.loc[run, "not_heard"] = True
+        miss = b.loc[run, "n_missed"].sum() / max(1, b.loc[run, "n_score_notes"].sum())
+        nh.append({"bars": [int(i) for i in run], "bars_label": span_label(labels, run),
+                   "n_bars": len(run), "missed_share": float(miss),
+                   "at_start": bool(len(graded) and run[0] == graded[0]),
+                   "at_end": bool(len(graded) and run[-1] == graded[-1])})
     s = dict(c.summary)
+    s["not_heard"] = nh
+    s["not_heard_rule"] = {"applied": bool(not_heard), "min_bars": cfg.not_heard_min_bars,
+                           "missed_share": cfg.not_heard_missed_share}
+    s["n_bars_not_heard"] = int(sum(len(r) for r in runs))
+    s["fast_repeat_low_confidence"] = bool(fast_repeat)
+    s["fast_repeat_max_ioi_sec"] = cfg.fast_repeat_max_ioi_sec
+    s["n_missed_fast_repeat"] = int(b["n_missed_fast_repeat"].sum())
+    s["n_wrong_fast_run"] = int(b["n_wrong_fast_run"].sum())
+    s["fast_run_max_ioi_sec"] = cfg.fast_run_max_ioi_sec
     s["n_bars_strong"] = int((b["tier"] == "strong").sum())
     s["n_bars_notable"] = int((b["tier"] == "notable").sum())
     s["extras_counted"] = bool(extras)
@@ -585,11 +802,97 @@ def _interpretation_section(inp: ReportInputs, target: Any, refs: ReferenceSet, 
     return out
 
 
-def _shaping_section(ap: Any, tc: Any, cfg: ReportConfig, errors: dict[str, str]) -> dict:
+#: Meters (``ts_beats``) that R-08 / F-05e never validated LLM boundaries on (R-08d scope).
+COMPOUND_TS_BEATS = (6, 9, 12)
+
+
+def _phrase_tempo_block(ap: Any, tc: Any) -> dict[str, Any]:
+    """Per-phrase tempo shaping (F-05c measure) with LLM phrase boundaries when the piece has a
+    usable cache (DF-02, ``BasisConfig(phrase_source="llm")``), else the cadence detector.
+
+    With LLM boundaries (F-05e, DECISIONS 2026-09-28): the measure is computed per annotator run
+    on the raw phrase starts and averaged over runs (as F-05e measured it); the phrase-count
+    ratio against the cadence detector on the same score is reported next to it (no expert
+    phrase annotation exists for an arbitrary piece, so the detector is the reference count);
+    ``caveats`` lists ``romantic`` (BL-17 boundary accuracy below the 0.70 bar; F-05e measure
+    below the DCML level there), ``style_unvalidated`` (neither Classical nor Romantic),
+    ``compound_meter`` (BL-17: n = 6, descriptive only) and ``genre_untested`` (a nocturne or
+    waltz: no piece of that genre was tested; ``untested_genre`` names it) when they apply.
+    ``llm_provenance`` carries ``recognised_runs`` (runs whose annotator named the piece, from
+    the cache's ``recognised_piece``) and ``n_runs``. ``undetermined`` is True when the LLM and
+    cadence-detector values have opposite signs (BL-17 audit): the report then states no
+    direction. The value never enters "what to practise".
+    Without a cache, ``llm_fallback_reason`` says why the detector was used.
+    """
     from pianolens.features.score_basis import BasisConfig, score_basis
+    from pianolens.features.shaping import phrase_tempo_shaping
+
+    cad_basis = score_basis(ap.score, config=BasisConfig(phrase_source="cadence",
+                                                         include_tension=False))
+    cad = phrase_tempo_shaping(ap, cad_basis.phrases["start_beat"].tolist(), tempo=tc).summary
+    llm_basis = score_basis(ap.score, config=BasisConfig(phrase_source="llm",
+                                                         include_tension=False))
+    llm = llm_basis.meta.get("llm_phrases")
+    if llm_basis.meta.get("phrase_source") != "llm" or llm is None:
+        out = {k: _f(v) for k, v in cad.items()}
+        out["boundaries"] = "cadence"
+        out["llm_fallback_reason"] = str(llm_basis.meta.get("phrase_source_fallback", ""))
+        return out
+    runs = [(r.run, phrase_tempo_shaping(ap, r.starts, tempo=tc).summary) for r in llm.runs]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)  # a measure undefined in every run
+        out = {k: _f(np.nanmean([_f(s.get(k)) for _, s in runs])) for k in cad}
+    out["boundaries"] = "llm"
+    out["llm_runs"] = [{"run": r, "n_phrases": _f(s["n_phrases"]),
+                        "concave_excess": _f(s["concave_excess"])} for r, s in runs]
+    n_cad = _f(cad["n_phrases"])
+    out["n_phrases_cadence"] = n_cad
+    out["concave_excess_cadence"] = _f(cad["concave_excess"])
+    out["phrase_count_ratio"] = out["n_phrases"] / n_cad if n_cad > 0 else np.nan
+    out["phrase_count_reference"] = "cadence detector"
+    n_bars = len(ap.score.measures)
+    out["bars_per_phrase"] = n_bars / out["n_phrases"] if out["n_phrases"] > 0 else np.nan
+    prov = llm.provenance
+    rec = prov.get("recognised_piece")
+    rec = rec if isinstance(rec, dict) else {}
+    out["llm_provenance"] = {"model": prov.get("model"), "date": prov.get("date"),
+                             "protocol": prov.get("protocol"), "style": llm.style,
+                             "mapping": llm.mapping, "score_hash": prov.get("score_hash"),
+                             "recognised_runs": sum(bool(rec.get(r.run)) for r in llm.runs),
+                             "n_runs": len(llm.runs)}
+    ce, cc = out["concave_excess"], out["concave_excess_cadence"]
+    out["undetermined"] = bool(np.isfinite(ce) and np.isfinite(cc) and ce * cc < 0)
+    caveats = []
+    if llm.style == "romantic":
+        caveats.append("romantic")
+    elif llm.style != "classical":
+        caveats.append("style_unvalidated")
+    names = ap.score.notes.dtype.names or ()
+    if "ts_beats" in names and np.isin(ap.score.notes["ts_beats"].astype(int),
+                                       COMPOUND_TS_BEATS).any():
+        caveats.append("compound_meter")
+    genre = _untested_genre(llm.piece_id)
+    if genre:
+        caveats.append("genre_untested")
+        out["untested_genre"] = genre
+    out["caveats"] = caveats
+    return out
+
+
+#: Genres no LLM phrase validation (R-08a-d, BL-17) ever included; matched in the piece id.
+UNTESTED_GENRES = {"nocturne": "nocturne", "waltz": "waltz", "valse": "waltz"}
+
+
+def _untested_genre(piece_id: str) -> str:
+    """The first untested genre named in ``piece_id`` (case-insensitive), else ``""``."""
+    low = str(piece_id).lower()
+    return next((g for k, g in UNTESTED_GENRES.items() if k in low), "")
+
+
+def _shaping_section(ap: Any, tc: Any, cfg: ReportConfig, errors: dict[str, str]) -> dict:
+    from pianolens.features.score_basis import score_basis
     from pianolens.features.shaping import (
         dynamic_compliance,
-        phrase_tempo_shaping,
         structural_coherence,
         voicing,
     )
@@ -615,11 +918,7 @@ def _shaping_section(ap: Any, tc: Any, cfg: ReportConfig, errors: dict[str, str]
     except Exception as e:  # noqa: BLE001
         errors["coherence"] = repr(e)
     try:
-        bc = score_basis(ap.score, config=BasisConfig(phrase_source="cadence"))
-        starts = bc.phrases["start_beat"].tolist()
-        pts = phrase_tempo_shaping(ap, starts, tempo=tc, basis=bc)
-        out["phrase_tempo"] = {k: _f(v) for k, v in pts.summary.items()}
-        out["phrase_tempo"]["boundaries"] = "cadence"
+        out["phrase_tempo"] = _phrase_tempo_block(ap, tc)
     except Exception as e:  # noqa: BLE001
         errors["phrase_tempo"] = repr(e)
     try:
@@ -800,9 +1099,20 @@ def recurring_errors(signatures: Sequence[dict[str, set[tuple]]], min_takes: int
             if any(c >= min_takes for c in d.values())}
 
 
-def _describe_error(key: tuple, score_pitch: dict[str, int]) -> str:
+def _fast_wrong_keys(cr: Any, max_ioi_sec: float) -> set[tuple]:
+    """Wrong-pitch error keys (:func:`error_signatures`) of notes in a fast run (BL-20)."""
+    n = cr.notes
+    sel = fast_run_notes(n, max_ioi_sec) & (n["label"].astype(str).to_numpy() == "wrong_pitch")
+    return {("wrong_pitch", str(r.score_id), int(r.pitch)) for r in n[sel].itertuples()}
+
+
+def _describe_error(key: tuple, score_pitch: dict[str, int],
+                    fast_keys: set[tuple] | frozenset = frozenset()) -> str:
     from pianolens.report.text import pitch_name
 
+    if key[0] == "wrong_pitch" and key in fast_keys:
+        # BL-20 proposal 3: in a fast run the checker is reliable about the bar, not the note
+        return "a wrong note in this fast run"
     if key[0] == "wrong_pitch":
         sp = score_pitch.get(key[1])
         return (f"{pitch_name(key[2])} instead of {pitch_name(sp)}" if sp is not None
@@ -827,6 +1137,7 @@ def _takes_section(main_cr: Any, takes: Sequence[Any], labels: list[str], cfg: R
     """
     rows = []
     sigs = [error_signatures(main_cr, labels)]
+    fast_keys = _fast_wrong_keys(main_cr, cfg.fast_run_max_ioi_sec)
     main_bars = main_cr.bars
     err_by_label = dict(zip(labels, (main_bars["n_errors"] > 0).astype(int).to_numpy(),
                             strict=True))
@@ -837,6 +1148,7 @@ def _takes_section(main_cr: Any, takes: Sequence[Any], labels: list[str], cfg: R
             c = correctness(t)
             tl = bar_labels(t.score)
             sigs.append(error_signatures(c, tl))
+            fast_keys |= _fast_wrong_keys(c, cfg.fast_run_max_ioi_sec)
             for sid, p in zip(c.score_notes["score_id"].astype(str),
                               c.score_notes["pitch"].astype(int), strict=True):
                 sp.setdefault(sid, int(p))
@@ -869,8 +1181,9 @@ def _takes_section(main_cr: Any, takes: Sequence[Any], labels: list[str], cfg: R
     for lab in labels:
         if lab in rec:
             items = sorted(rec[lab].items(), key=lambda kv: (-kv[1], kv[0]))
-            rec_bars[lab] = [{"kind": k[0], "n_takes": c, "text": _describe_error(k, sp)}
-                             for k, c in items]
+            rec_bars[lab] = [{"kind": k[0], "n_takes": c,
+                              "text": _describe_error(k, sp, fast_keys),
+                              "fast_run": k in fast_keys} for k, c in items]
     return {"n_takes": n_all, "takes": rows,
             "errors_per_bar": [err_by_label.get(lab, 0) for lab in labels],
             "recurring_min_takes": cfg.recurring_min_takes,
@@ -985,18 +1298,35 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
     errors: dict[str, str] = {}
     perf = ap.performance
 
+    transcribed = inp.provenance == "transcribed"
     extras = not (cfg.extras_low_confidence if cfg.extras_low_confidence is not None
-                  else inp.provenance == "transcribed")
+                  else transcribed)
+    not_heard = cfg.not_heard if cfg.not_heard is not None else transcribed
+    fast_repeat = (cfg.fast_repeat_low_confidence if cfg.fast_repeat_low_confidence is not None
+                   else transcribed)
     expert = None
+    # BL-18: transcribed input gets a finite-sample per-bar strong limit (transcribed experts;
+    # interim default margin 0 after the audit) and, only if configured, per-family global strong
+    # limits (R2s, off by default); key-sensor input is unchanged.
+    margin = (cfg.expert_check_strong_margin_transcribed
+              if inp.expert_bar_provenance == "transcribed" else None)
+    strong_lim = None
+    if inp.provenance == "transcribed" and cfg.transcribed_strong_limits and not extras:
+        strong_lim = cal.TRANSCRIBED_STRONG_LIMITS.get(inp.transcriber or "",
+                                                       cal.TRANSCRIBED_STRONG_LIMITS_UNKNOWN)
     if inp.expert_bar_tables:
         expert = expert_bar_limits(inp.expert_bar_tables, labels, extras, cfg.expert_check_q,
-                                   cfg.expert_check_min_refs)
-    corr_summary, cbars, cres = _correctness_section(ap, labels, extras, expert)
+                                   cfg.expert_check_min_refs, strong_margin=margin,
+                                   drop_fast_repeats=fast_repeat)
+    corr_summary, cbars, cres = _correctness_section(ap, labels, extras, expert, strong_lim,
+                                                     cfg, not_heard, fast_repeat)
     ec = {"n_expert_performances": len(inp.expert_bar_tables),
           "provenance": inp.expert_bar_provenance if inp.expert_bar_tables else None,
+          "strong_margin_notes": margin, "transcriber": inp.transcriber,
+          "strong_limits": dict(strong_lim) if strong_lim else None,
           "min_refs": cfg.expert_check_min_refs, "quantiles": list(cfg.expert_check_q),
           "n_bars_checked": int((cbars["n_experts"] >= cfg.expert_check_min_refs).sum())}
-    for st in ("suppressed", "down_tiered", "confirmed", "unchecked"):
+    for st in ("suppressed", "down_tiered", "confirmed", "unchecked", "not_heard"):
         ec[f"bars_{st}"] = [labels[i] for i in np.flatnonzero(cbars["expert_check"] == st)]
     corr_summary["expert_check"] = ec
     tc = tempo_model(ap)
@@ -1071,6 +1401,10 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
                             "tier_global": c["tier_global"],
                             "expert_check": c["expert_check"],
                             "n_experts": int(c["n_experts"]),
+                            "n_missed_fast_repeat": int(c["n_missed_fast_repeat"]),
+                            "n_missed_low_confidence": int(c["n_missed_low_confidence"]),
+                            "n_wrong_fast_run": int(c["n_wrong_fast_run"]),
+                            "not_heard": bool(c["not_heard"]),
                             "recurring": (takes or {}).get("recurring", {}).get(labels[i], [])},
         }  # fmt: skip
         for ch in ("tempo", "velocity"):

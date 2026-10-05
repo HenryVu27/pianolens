@@ -1,0 +1,21 @@
+{
+  "movement": "P08",
+  "recognised_piece": null,
+  "notes": "ABA: G major waltz-like theme (two 8-bar phrases, HC then PAC), middle section in Eb major (opening on Ab minor) with IAC then reinforcing PAC in each half, return of the G major theme. D7-G alternations inside the G phrases treated as tonic prolongation, not cadences.",
+  "events": [
+    {"bar": 393, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.9},
+    {"bar": 401, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.7},
+    {"bar": 402, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 409, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.75},
+    {"bar": 410, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 415, "beat": 1, "type": "cadence", "cadence": "IAC", "confidence": 0.45},
+    {"bar": 417, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.6},
+    {"bar": 418, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 423, "beat": 1, "type": "cadence", "cadence": "IAC", "confidence": 0.45},
+    {"bar": 425, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.65},
+    {"bar": 426, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 433, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.7},
+    {"bar": 434, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 441, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.75}
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "movement": "P23",
+  "recognised_piece": null,
+  "notes": "E major. Intro chords (ii-V) lead into a tonic-pedal theme closing with a PAC at 74. Middle section moves by sequence through F# major, A major and G major, then reaches a half cadence on B9 at 90, with the dominant held until the return at 98. In the reprise, the tonic arrival is evaded twice (108, 113) before the PAC at 119. The codetta over a tonic pedal and the chordal close are marked as arrivals without standard cadences.",
+  "events": [
+    {"bar": 64, "beat": "1+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.8},
+    {"bar": 74, "beat": 2, "type": "phrase_end", "cadence": "PAC", "confidence": 0.75},
+    {"bar": 75, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.75},
+    {"bar": 78, "beat": 2, "type": "phrase_end", "cadence": "PAC", "confidence": 0.55},
+    {"bar": 79, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.55},
+    {"bar": 82, "beat": 2, "type": "phrase_end", "cadence": "PAC", "confidence": 0.5},
+    {"bar": 83, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 86, "beat": 2, "type": "phrase_end", "cadence": "PAC", "confidence": 0.5},
+    {"bar": 87, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 90, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.6},
+    {"bar": 98, "beat": "1+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 108, "beat": 2, "type": "cadence", "cadence": "EC", "confidence": 0.65},
+    {"bar": 113, "beat": 2, "type": "cadence", "cadence": "EC", "confidence": 0.6},
+    {"bar": 119, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8},
+    {"bar": 120, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 124, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.4},
+    {"bar": 125, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 130, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.3},
+    {"bar": 130, "beat": 2, "type": "phrase_start", "cadence": "none", "confidence": 0.35},
+    {"bar": 138, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.4}
+  ]
+}

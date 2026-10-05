@@ -43,32 +43,43 @@ from scipy.stats import chi2, norm
 
 from pianolens.study.psychometric import fit_detection, fit_logit
 
-__all__ = ["Assumptions", "h6_verdict", "session_minutes", "simulate_once", "power_table"]
+__all__ = ["H6_MARGIN", "Assumptions", "h6_verdict", "session_minutes", "simulate_once",
+           "power_table"]
+
+#: Pre-registered H6 margin (protocol-S03.md section 2): a two-fold difference in cost per
+#: threshold unit. The single source for :func:`h6_verdict` and :class:`Assumptions`.
+H6_MARGIN: float = 2.0
 
 
 @dataclass(frozen=True)
 class Assumptions:
-    """Simulation parameters. Thresholds are 1 in every dimension (the unit is arbitrary)."""
+    """Simulation parameters. Thresholds are 1 in every dimension (the unit is arbitrary).
+
+    The design defaults are design A2 of the protocol (sections 4.2-4.3): detection at 0.5, 1,
+    2, 4 x threshold with 3 trials per level (84 trials), preference at 2, 4, 8 x threshold with
+    2 trials per level plus 7 identical pairs (49 trials). ``scripts/power_s03.py`` builds its
+    A2 design from these defaults and derives A1 and B2 from it.
+    """
 
     n_dims: int = 7
     n_excerpts: int = 8
     # Part A
     det_levels_rel: tuple[float, ...] = (0.5, 1.0, 2.0, 4.0)
-    det_reps: int = 2
+    det_reps: int = 3
     det_slope: float = 2.0  # psychometric slope per log2 unit of level
     det_tau_log2: float = 0.5  # between-listener s.d. of log2 threshold
     det_excerpt_sd_log2: float = 0.3  # between-excerpt s.d. of log2 threshold
     ladder_error_log2: float = 0.0  # pilot misplaces the ladder by this (log2)
     lapse: float = 0.02
     # Part B
-    pref_levels_rel: tuple[float, ...] = (1.0, 2.0, 4.0)
+    pref_levels_rel: tuple[float, ...] = (2.0, 4.0, 8.0)
     pref_reps: int = 2
     pref_identical: int = 7
     pref_beta: float = 0.4  # logit of preferring the original per threshold unit
     pref_beta_sd: float = 0.2  # between-listener s.d. of beta
     position_bias: float = 0.3  # logit bias toward the second item
     ratio: float = 1.0  # beta of dimension 0 / beta of the others (H6 alternative)
-    margin: float = 2.0  # H6 margin: "differ enough" = a slope ratio beyond this
+    margin: float = H6_MARGIN  # H6 margin: "differ enough" = a slope ratio beyond this
     # session timing (seconds)
     det_clip_sec: float = 6.0
     pref_clip_sec: float = 12.0
@@ -86,9 +97,13 @@ def session_minutes(a: Assumptions) -> dict[str, float]:
             "pref_min": t_pref / 60, "total_min": (t_det + t_pref) / 60}  # fmt: skip
 
 
-def h6_verdict(beta: np.ndarray, cov: np.ndarray, margin: float = 1.5, alpha: float = 0.05
-               ) -> dict[str, object]:
-    """Apply the pre-registered H6 reading to cost slopes ``beta`` with covariance ``cov``."""
+def h6_verdict(beta: np.ndarray, cov: np.ndarray, margin: float = H6_MARGIN,
+               alpha: float = 0.05) -> dict[str, object]:
+    """Apply the pre-registered H6 reading to cost slopes ``beta`` with covariance ``cov``.
+
+    ``margin`` defaults to the pre-registered :data:`H6_MARGIN` (2). Other values are for
+    sensitivity analyses only and must be reported as such.
+    """
     d = len(beta)
     C = np.zeros((d - 1, d))
     C[:, 0] = -1

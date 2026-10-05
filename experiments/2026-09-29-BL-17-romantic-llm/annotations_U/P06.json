@@ -1,0 +1,21 @@
+{
+  "movement": "P06",
+  "recognised_piece": null,
+  "notes": "Ternary form in C major: A (bars 1-33, 8+8 bars played twice), middle section over a D pedal (bars 34-41) ending on G7 as retransition, A returns (bars 41-57). The first 8-bar phrase of each A statement closes on tonic over a C pedal (weaker, IAC); the second closes with a root-position V-I (PAC). Style suggests a Chopin mazurka, but I could not name it with confidence.",
+  "events": [
+    {"bar": 1, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.95},
+    {"bar": 9, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.55},
+    {"bar": 10, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 17, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8},
+    {"bar": 17, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.75},
+    {"bar": 25, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.55},
+    {"bar": 26, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 33, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.8},
+    {"bar": 34, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 41, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.5},
+    {"bar": 41, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 49, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.55},
+    {"bar": 50, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 57, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.85}
+  ]
+}

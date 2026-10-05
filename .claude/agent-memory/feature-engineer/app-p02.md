@@ -35,3 +35,20 @@ Data: `data/interim/app/{catalog.json,scores/,jobs/<id>/}`. PERSONAL: jobs hold 
   cancelled.
 - Henry take 04 (Op. posth) wav via the app: Transkun 10 s (MPS), align 82% matched, report
   20 s, 8 windows / 30 clips in 20 s; ~1 min total. Practise bars 27/41/51 = A-01 report's.
+
+## DF-05 fixes (2026-09-29)
+- Job id includes `jobs.code_version()` (sha256 of src/pianolens/**/*.py minus app/server.py,
+  app/pages.py, plus `PIPELINE_VERSION`); `ignore_wrong_piece`, title, composer not hashed.
+- MIDI can be marked `transcribed:transkun` / `transcribed` (spec.capture_model); pipeline uses
+  `transcribed = audio or provenance == "transcribed"` for notes, filter, expert capture model;
+  results/JS/history key the wrong+missed headline on `transcribed`, not input_kind.
+- Wrong-piece stop: Dice < `pipeline.WRONG_PIECE_MATCH` (0.5) -> state `stopped`,
+  `wrong_piece`; POST /api/jobs/<id>/override sets spec flag in job.json and reruns. Measured:
+  right 0.818-0.939 (Henry Transkun takes), 0.960-0.984 (ASAP); wrong 0.083-0.314 (32 pairs).
+  Scripts in the session scratchpad only (not kept).
+- Same-score refs: only key-captured MIDI + n_references == 0 + >= 10 ASAP perfs (4 pieces).
+  Trap: PianoCoRe holds all 978 ASAP perfs and build merges same_score_refs into tier D ->
+  double count for other pieces; adding ASAP_<stem> to exclude_references would also strip
+  them from the expert-check fallback and the correctness refs. Needs a report/ change.
+  Haydn 50/1: 17 refs, evenness 5/150 bars tiered, pedal 0; expert check reuses the alignments.
+- In-process `pipeline.run(job_dir)` works for tests (needs catalog.json copied into the root).

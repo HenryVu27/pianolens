@@ -6,7 +6,7 @@ ratios, plus sensitivity runs on the assumptions, and writes
     data/interim/study_s03/power/power_grid.csv
     data/interim/study_s03/power/summary.md
 
-Usage: uv run python scripts/power_s03.py [--n-rep 200] [--seed 0]
+Usage: uv run python scripts/power_s03.py [--n-rep 200] [--seed 0] [--out DIR]
 
 All parameters are assumptions (see pianolens.study.power.Assumptions); the output says how
 the design behaves *if* they hold.
@@ -28,15 +28,15 @@ OUT = Path(__file__).resolve().parents[1] / "data" / "interim" / "study_s03" / "
 # Clip lengths: medians of the built pilot stimuli (det 7.3 s, pref 13.8 s, release and tail
 # included; data/interim/study_s03/manifest.json). They only affect the minutes column.
 _CLIPS = {"det_clip_sec": 7.3, "pref_clip_sec": 13.8, "response_sec": 3.0}
+# Design A2 is the Assumptions defaults (the single source); A1 and B2 are derived from it.
+_A2 = Assumptions(**_CLIPS)
 DESIGNS = {
     # one session per part: 3 detection trials per level (4 levels), 2 preference trials per level
-    "A1_one_session_pref124": Assumptions(det_reps=3, pref_reps=2,
-                                          pref_levels_rel=(1.0, 2.0, 4.0), **_CLIPS),
-    "A2_one_session_pref248": Assumptions(det_reps=3, pref_reps=2,
-                                          pref_levels_rel=(2.0, 4.0, 8.0), **_CLIPS),
+    "A1_one_session_pref124": dataclasses.replace(_A2, pref_levels_rel=(1.0, 2.0, 4.0)),
+    "A2_one_session_pref248": _A2,
     # two sessions per part: double the trials
-    "B2_two_sessions_pref248": Assumptions(det_reps=6, pref_reps=4, pref_identical=14,
-                                           pref_levels_rel=(2.0, 4.0, 8.0), **_CLIPS),
+    "B2_two_sessions_pref248": dataclasses.replace(_A2, det_reps=6, pref_reps=4,
+                                                   pref_identical=14),
 }
 N_GRID = [16, 24, 32, 48, 64, 96, 128, 160]
 RATIOS = [1.0, 2.0, 3.0]
@@ -71,8 +71,10 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n-rep", type=int, default=200)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--out", type=Path, default=OUT, help="output folder (default: %(default)s)")
     args = ap.parse_args()
-    OUT.mkdir(parents=True, exist_ok=True)
+    out = args.out
+    out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     frames = []
     for name, a in DESIGNS.items():
@@ -91,7 +93,7 @@ def main() -> None:
             frames.append(df)
         print(vname, f"{time.time() - t0:.0f}s", flush=True)
     grid = pd.concat(frames, ignore_index=True)
-    grid.to_csv(OUT / "power_grid.csv", index=False)
+    grid.to_csv(out / "power_grid.csv", index=False)
 
     lines = ["# S-03 power analysis (simulation)", "",
              f"n_rep = {args.n_rep} per cell, seed = {args.seed}, wall time "
@@ -120,7 +122,7 @@ def main() -> None:
     lines += ["", "## Assumptions (base)", ""]
     for k, v in dataclasses.asdict(DESIGNS[base_name]).items():
         lines.append(f"- `{k}` = {v}")
-    (OUT / "summary.md").write_text("\n".join(lines) + "\n")
+    (out / "summary.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines[:40]))
 
 

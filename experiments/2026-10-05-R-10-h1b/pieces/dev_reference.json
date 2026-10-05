@@ -1,0 +1,39 @@
+{
+ "note": "Mac reference for the box (R-10 pre-run amendment R4). Mismatches are logged, not fatal.",
+ "r10u_dev_digest": {
+  "items": {
+   "n": 4059,
+   "sha256": "20bdcb0ddc34c57fe7bd96a47f17340c617c80665f122497ffb7ee7305de724b"
+  },
+  "gen_items": {
+   "n": 91,
+   "sha256": "164eec660ec9308099c49bd7b3a412e7e2af52757082c2228d8749c61780e819"
+  }
+ },
+ "r10s_dev_digest": {
+  "items": {
+   "n": 1931,
+   "sha256": "dcb549600a0d33bb541d27e9c10af771b084fdff62f7ef41b78d5dc3ce9011d7"
+  },
+  "gen_items": {
+   "n": 48,
+   "sha256": "6eb3944afe91213b294705ca355c23aef4114bbb9bd3d3a4daf05fb710e12a58"
+  }
+ },
+ "ridge": {
+  "n_notes": {
+   "velocity": 209446,
+   "log_ioi": 208954
+  },
+  "alpha": {
+   "velocity": 1000.0,
+   "log_ioi": 1.0
+  },
+  "cv_r": {
+   "velocity": 0.5162897926558948,
+   "log_ioi": 0.166820366353095
+  },
+  "n_pieces": 138,
+  "n_works": 97
+ }
+}

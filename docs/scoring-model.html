@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PianoLens scoring model</title>
+<meta name="description" content="How PianoLens judges a piano performance, as it stands.">
+<style>
+:root{--bg:#fbfaf7;--fg:#1f2328;--muted:#5b6470;--line:#e3e0d8;--card:#ffffff;
+--accent:#2f5d8a;--accent-soft:#e8eef5;--code:#f3f1ec;--good:#2e7d4f;--warn:#9a6b00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--fg:#e6e6e3;
+--muted:#9aa3ad;--line:#2c3036;--card:#1c1f23;--accent:#8fb6e0;--accent-soft:#1f2a36;
+--code:#22262b;--good:#6fcf97;--warn:#e0b458}}
+:root[data-theme="dark"]{--bg:#15171a;--fg:#e6e6e3;--muted:#9aa3ad;--line:#2c3036;--card:#1c1f23;
+--accent:#8fb6e0;--accent-soft:#1f2a36;--code:#22262b;--good:#6fcf97;--warn:#e0b458}
+*{box-sizing:border-box}
+header.tabs{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;
+padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--line)}
+header.tabs .brand{font-weight:700;margin-right:18px}
+header.tabs a{color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:999px;
+font-size:14px}
+header.tabs a:hover{color:var(--accent)}
+header.tabs a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+header.tabs .theme{margin-left:auto;position:static}
+main [id]{scroll-margin-top:64px}
+figure.diagram{margin:1.6rem 0;padding:1rem;background:var(--card);border:1px solid var(--line);
+border-radius:10px;overflow-x:auto}
+figure.diagram svg{display:block;max-width:100%;height:auto;margin:0 auto}
+figure.diagram figcaption{font-size:.88rem;color:var(--muted);margin-top:.6rem}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{display:grid;grid-template-columns:260px minmax(0,760px);gap:48px;
+max-width:1100px;margin:0 auto;padding:32px 24px 96px}
+nav.toc{position:sticky;top:76px;align-self:start;max-height:calc(100vh - 96px);overflow:auto;
+font-size:14px;line-height:1.45;border-right:1px solid var(--line);padding-right:16px}
+nav.toc .title{font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+font-size:12px;margin-bottom:10px}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 0 3px 8px;
+border-left:2px solid transparent}
+nav.toc a.h2{color:var(--fg);font-weight:600;margin-top:12px}
+nav.toc a.h3{padding-left:20px;font-size:13px}
+nav.toc a:hover{color:var(--accent)}
+nav.toc a.active{color:var(--accent);border-left-color:var(--accent)}
+nav.toc .sub{display:none;margin:2px 0 6px}
+nav.toc .sub.open{display:block}
+nav.toc a.h4{padding-left:32px;font-size:12.5px;line-height:1.35}
+p.coderef{font-size:.85rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:.4rem}
+main h1{font-size:2.1rem;line-height:1.2;margin:0 0 .4rem}
+main h2{font-size:1.75rem;line-height:1.25;margin:4.5rem 0 1rem;padding-top:1.4rem;
+border-top:3px solid var(--accent)}
+main h3{font-size:1.3rem;margin:2.8rem 0 .7rem;padding-top:.4rem;border-top:1px solid var(--line)}
+main h4{font-size:1.05rem;margin:1.9rem 0 .4rem;color:var(--accent)}
+main h5{font-size:.98rem;margin:1.4rem 0 .3rem}
+main p,main li{max-width:72ch}
+main a{color:var(--accent)}
+blockquote{margin:1.2rem 0;padding:.9rem 1.2rem;background:var(--accent-soft);
+border-left:4px solid var(--accent);border-radius:6px}
+blockquote p{margin:.3rem 0}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font-size:.88em}
+table{width:100%;border-collapse:collapse;margin:1rem 0 1.4rem;font-size:.92rem;
+background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:block;
+overflow-x:auto}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--accent-soft);font-weight:600}
+tr:last-child td{border-bottom:none}
+hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
+.meta{color:var(--muted);font-size:.95rem;margin-bottom:1.5rem}
+.theme{background:var(--card);color:var(--fg);
+border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+@media (max-width:900px){.wrap{grid-template-columns:1fr;gap:0;padding:56px 16px 64px}
+nav.toc{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line);
+padding:0 0 16px;margin-bottom:24px}}
+@media (max-width:600px){header.tabs{padding:8px 12px;flex-wrap:wrap}
+header.tabs .brand{display:none}}
+@media print{nav.toc,header.tabs{display:none}.wrap{display:block}}
+</style></head>
+<body><header class="tabs"><span class="brand">PianoLens</span><a class="on" href="scoring-model.html">The scoring model</a><a class="" href="research-log.html">Research log</a><button class="theme" type="button">Light / dark</button></header>
+<div class="wrap"><nav class="toc"><div class="title">Contents</div><a class="h2" href="#the-short-answer">The short answer</a><a class="h2" href="#the-shape-of-the-model">The shape of the model</a><a class="h3" href="#from-a-raw-measurement-to-a-finding">From a raw measurement to a finding</a><a class="h3" href="#how-correctness-is-judged">How correctness is judged</a><a class="h3" href="#how-settled-the-strong-note-flag-is-on-phone-input">How settled the strong note flag is on phone input</a><a class="h3" href="#a-small-worked-illustration-real-numbers">A small worked illustration (real numbers)</a><a class="h3" href="#the-shared-core-and-your-freedom">The shared core and your freedom</a><a class="h2" href="#what-counts-as-good">What counts as good</a><a class="h3" href="#correctness">Correctness</a><a class="h3" href="#control">Control</a><a class="h3" href="#shaping">Shaping</a><a class="h3" href="#interpretation">Interpretation</a><a class="h2" href="#every-metric">Every metric</a><a class="h3" href="#correctness-1">Correctness</a><a class="h3" href="#control-1">Control</a><a class="h3" href="#shaping-1">Shaping</a><a class="h3" href="#interpretation-1">Interpretation</a><a class="h2" href="#the-learned-models">The learned models</a><a class="h3" href="#the-rating-model-r-04">The rating model (R-04)</a><a class="h3" href="#muq-the-large-audio-model-r-03-r-05">MuQ, the large audio model (R-03, R-05)</a><a class="h3" href="#expression-models-symupe-and-pianist-transformer-r-06-r-07">Expression models: SyMuPe and Pianist Transformer (R-06, R-07)</a><a class="h3" href="#what-listeners-judge-r-01">What listeners judge (R-01)</a><a class="h2" href="#how-far-to-trust-each-number">How far to trust each number</a><a class="h2" href="#a-worked-example">A worked example</a><a class="h2" href="#what-a-real-grade-would-take">What a real grade would take</a></nav>
+<main><h1 id="how-pianolens-scores-a-performance">How PianoLens scores a performance</h1>
+<p>PianoLens does not give your playing a mark out of ten. It compares what you played with the printed score and with hundreds of expert recordings of the same piece, bar by bar, and tells you where you stand outside what experts do, how far outside, and how much to trust each finding.</p>
+<figure class="diagram"><svg viewBox="0 0 800 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The shape of the PianoLens scoring model" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+<style>
+.bx{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+.ac{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.t{fill:var(--fg);font-size:12px}
+.tb{fill:var(--fg);font-size:13.5px;font-weight:600}
+.ts{fill:var(--muted);font-size:11.5px}
+.ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+.lnd{stroke:var(--accent);stroke-width:1.5;fill:none;stroke-dasharray:4 3}
+</style>
+<text class="ts" x="20" y="22">1. INPUT</text>
+<text class="ts" x="200" y="22">2. MATCH</text>
+<text class="ts" x="370" y="22">3. MEASURE (four layers)</text>
+<text class="ts" x="605" y="22">4. JUDGE AND REPORT</text>
+<rect class="bx" x="20" y="40" width="150" height="62" rx="8"/>
+<text class="tb" x="32" y="64">MIDI</text><text class="ts" x="32" y="84">from a digital piano</text>
+<rect class="bx" x="20" y="120" width="150" height="80" rx="8"/>
+<text class="tb" x="32" y="144">Phone audio</text><text class="ts" x="32" y="164">turned into notes by</text><text class="ts" x="32" y="180">a transcription model</text>
+<path class="ln" d="M170 71 H185 V140 H198" marker-end="url(#ar)"/>
+<path class="ln" d="M170 160 H185 V140" />
+<rect class="ac" x="200" y="100" width="148" height="84" rx="8"/>
+<text class="tb" x="212" y="126">Match each note</text><text class="tb" x="212" y="144">to the score</text><text class="ts" x="212" y="166">hand, beat, harmony</text>
+<path class="ln" d="M348 142 H352" />
+<path class="ln" d="M352 70 V370" />
+<path class="ln" d="M352 70 H366" marker-end="url(#ar)"/><path class="ln" d="M352 170 H366" marker-end="url(#ar)"/><path class="ln" d="M352 270 H366" marker-end="url(#ar)"/><path class="ln" d="M352 370 H366" marker-end="url(#ar)"/>
+<rect class="bx" x="368" y="42" width="200" height="58" rx="8"/><text class="tb" x="380" y="66">Correctness</text><text class="ts" x="380" y="86">wrong, missed, extra notes</text>
+<rect class="bx" x="368" y="142" width="200" height="58" rx="8"/><text class="tb" x="380" y="166">Control</text><text class="ts" x="380" y="186">timing, evenness, hands, pedal</text>
+<rect class="bx" x="368" y="242" width="200" height="58" rx="8"/><text class="tb" x="380" y="266">Shaping</text><text class="ts" x="380" y="286">phrase arcs and structure</text>
+<rect class="bx" x="368" y="342" width="200" height="58" rx="8"/><text class="tb" x="380" y="366">Interpretation</text><text class="ts" x="380" y="386">tempo and loudness vs experts</text>
+<rect class="ac" x="200" y="250" width="148" height="62" rx="8"/><text class="tb" x="212" y="274">The score</text><text class="ts" x="212" y="294">what should be played</text>
+<rect class="ac" x="200" y="330" width="148" height="84" rx="8"/><text class="tb" x="210" y="354">Hundreds of</text><text class="tb" x="210" y="372">expert recordings</text><text class="ts" x="212" y="394">of the same piece</text>
+<path class="lnd" d="M270 250 V184"/>
+<path class="lnd" d="M348 408 H592 V200 H600" marker-end="url(#ar)"/>
+<path class="ln" d="M568 71 H585"/><path class="ln" d="M568 171 H585"/><path class="ln" d="M568 271 H585"/><path class="ln" d="M568 371 H585"/>
+<path class="ln" d="M585 71 V371"/><path class="ln" d="M585 150 H600" marker-end="url(#ar)"/>
+<rect class="ac" x="602" y="42" width="180" height="200" rx="8"/>
+<text class="tb" x="614" y="66">Where does each</text><text class="tb" x="614" y="84">measure fall among</text><text class="tb" x="614" y="102">the experts?</text>
+<rect x="614" y="120" width="12" height="12" rx="2" fill="var(--good)"/><text class="t" x="634" y="131">within experts: fine</text>
+<rect x="614" y="148" width="12" height="12" rx="2" fill="var(--warn)"/><text class="t" x="634" y="159">past most experts:</text><text class="ts" x="634" y="175">notable</text>
+<rect x="614" y="190" width="12" height="12" rx="2" fill="#c0392b"/><text class="t" x="634" y="201">past almost all:</text><text class="ts" x="634" y="217">strong</text>
+<path class="ln" d="M692 242 V268" marker-end="url(#ar)"/>
+<rect class="bx" x="602" y="270" width="180" height="130" rx="8"/>
+<text class="tb" x="614" y="294">Report</text>
+<text class="ts" x="614" y="316">findings per layer</text><text class="ts" x="614" y="334">bar-by-bar timeline</text><text class="ts" x="614" y="352">short practice list</text><text class="ts" x="614" y="370">you vs expert, audible</text><text class="ts" x="614" y="388">no single grade</text>
+<text class="ts" x="20" y="450">Dashed lines: references. Every judgement is a comparison, either with the score or with how experts play this exact piece.</text>
+</svg><figcaption>The shape of the model: measure, then compare with the score and with experts playing the same piece.</figcaption></figure>
+
+
+<h2 id="the-short-answer">The short answer</h2>
+<p>When you give PianoLens a performance (a MIDI file from a digital piano, or a phone recording that it first turns into notes), it hands back a profile, not a grade. The profile has four parts.</p>
+<ul>
+<li><strong>Findings per layer.</strong> Four summary cards, one each for correctness (the right notes), control (steady timing, even runs, clean pedalling, hands together), shaping (how the playing follows the music's structure) and interpretation (how your tempo and loudness shapes compare with experts). Each card is a few sentences with measured numbers.</li>
+<li><strong>Flags per bar.</strong> A timeline with one row per channel and one column per bar. A bar is flagged "notable" or "strong" when its measurement lies beyond what almost all experts do at that same bar.</li>
+<li><strong>A practice list.</strong> The three most important flagged passages, each with one sentence of plain advice.</li>
+<li><strong>Audible comparisons.</strong> For each flagged passage, short clips of your playing, your notes replayed on a neutral piano, a typical expert and a contrasting expert, so you can hear what the flag means.</li>
+</ul>
+<p>There is no overall grade because nobody yet knows how to add these things up honestly. Two results shaped that decision.</p>
+<p>The first is what listeners judge (experiment R-01). In the PercePiano dataset, 1,202 short clips were rated on 19 scales by a panel of expert listeners. A factor analysis, which asks how many independent judgements hide behind many rating scales, found 3 to 5: one dominant general-quality judgement, plus loudness and energy, pedal and legato, and mood. Nobody has yet measured how wrong notes, uneven timing and flat phrasing trade off in a listener's mind, so any weights we chose would be invented.</p>
+<p>The second is how experts differ (R-02). Across 698 pieces with 50 expert performances each, the part of tempo and loudness shaping that experts share beyond chance takes only 3 to 5 basic shapes and covers about 35 to 46 percent of the differences between them. The rest is individuality. A grade that rewarded closeness to the average expert would punish exactly the freedom that makes performances worth hearing. So PianoLens holds you to the small shared core, leaves the rest alone, and reports each layer separately.</p>
+<h2 id="the-shape-of-the-model">The shape of the model</h2>
+<p>The core idea is simple: PianoLens is a <strong>comparison model, not a learned grader</strong>. Nothing in the report was trained to predict "good". Every judgement is a comparison with one of two references.</p>
+<ul>
+<li><strong>The score</strong>: what should be played. It decides which notes are right, where the bars and phrases are, where the harmony changes and which passages are written as even runs.</li>
+<li><strong>The expert distribution</strong>: how the piece is actually played. For most pieces this is several hundred expert performances from the PianoCoRe collection, most of them transcribed from recordings. For a few pieces there are also performances captured on a Disklavier (an acoustic piano with key sensors) or on the same printed score.</li>
+</ul>
+<p>A "percentile" is used throughout. The 95th percentile of a set of values is the value that 95 percent of them stay at or below. In the code, <code>q95</code> means the 95th percentile.</p>
+<figure class="diagram"><svg viewBox="0 -30 760 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of the expert band" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif">
+<style>.ts{fill:var(--muted);font-size:11.5px}.t{fill:var(--fg);font-size:12.5px}</style>
+<polygon points="60.0,75.2 105.3,49.4 150.7,55.6 196.0,45.1 241.3,33.6 286.7,43.9 332.0,22.0 377.3,66.3 422.7,26.7 468.0,30.3 513.3,41.3 558.7,29.7 604.0,54.3 649.3,43.7 694.7,60.6 740.0,95.8 740.0,230.2 694.7,194.9 649.3,197.8 604.0,174.5 558.7,188.3 513.3,168.1 468.0,173.1 422.7,173.7 377.3,190.1 332.0,181.5 286.7,165.5 241.3,184.4 196.0,183.7 150.7,185.9 105.3,206.1 60.0,194.8" fill="var(--accent-soft)" opacity=".55"/>
+<polygon points="60.0,103.5 105.3,86.5 150.7,86.5 196.0,78.0 241.3,69.3 286.7,72.7 332.0,59.7 377.3,95.6 422.7,61.5 468.0,64.1 513.3,71.3 558.7,67.3 604.0,82.8 649.3,80.2 694.7,92.4 740.0,127.6 740.0,198.4 694.7,163.1 649.3,161.3 604.0,146.0 558.7,150.7 513.3,138.0 468.0,139.3 422.7,138.9 377.3,160.8 332.0,143.7 286.7,136.7 241.3,148.7 196.0,150.9 150.7,155.1 105.3,169.0 60.0,166.5" fill="var(--accent-soft)"/>
+<polyline points="60.0,135.0 105.3,127.7 150.7,120.8 196.0,114.4 241.3,109.0 286.7,104.7 332.0,101.7 377.3,128.2 422.7,100.2 468.0,101.7 513.3,104.7 558.7,109.0 604.0,114.4 649.3,120.8 694.7,127.7 740.0,163.0" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>
+<polyline points="60.0,128.0 105.3,138.2 150.7,117.3 196.0,100.4 241.3,116.0 286.7,94.2 332.0,101.7 377.3,110.7 422.7,93.2 468.0,52.7 513.3,20.7 558.7,88.0 604.0,117.9 649.3,113.8 694.7,141.7 740.0,159.5" fill="none" stroke="var(--fg)" stroke-width="2.2"/>
+<line x1="60" y1="240" x2="740" y2="240" stroke="var(--line)"/>
+<text class="ts" x="60.0" y="256" text-anchor="middle">1</text>
+<text class="ts" x="105.3" y="256" text-anchor="middle">2</text>
+<text class="ts" x="150.7" y="256" text-anchor="middle">3</text>
+<text class="ts" x="196.0" y="256" text-anchor="middle">4</text>
+<text class="ts" x="241.3" y="256" text-anchor="middle">5</text>
+<text class="ts" x="286.7" y="256" text-anchor="middle">6</text>
+<text class="ts" x="332.0" y="256" text-anchor="middle">7</text>
+<text class="ts" x="377.3" y="256" text-anchor="middle">8</text>
+<text class="ts" x="422.7" y="256" text-anchor="middle">9</text>
+<text class="ts" x="468.0" y="256" text-anchor="middle">10</text>
+<circle cx="468.0" cy="52.7" r="6" fill="var(--warn)"/>
+<text class="ts" x="513.3" y="256" text-anchor="middle">11</text>
+<circle cx="513.3" cy="20.7" r="6" fill="#c0392b"/>
+<text class="ts" x="558.7" y="256" text-anchor="middle">12</text>
+<text class="ts" x="604.0" y="256" text-anchor="middle">13</text>
+<text class="ts" x="649.3" y="256" text-anchor="middle">14</text>
+<text class="ts" x="694.7" y="256" text-anchor="middle">15</text>
+<text class="ts" x="740.0" y="256" text-anchor="middle">16</text>
+<text class="ts" x="400.0" y="274" text-anchor="middle">bar</text>
+<text class="ts" x="16" y="135.0" transform="rotate(-90 16 135.0)" text-anchor="middle">tempo</text>
+<text class="t" x="513.3" y="4.7" text-anchor="middle">bar 11: past almost all experts (strong)</text>
+<text class="t" x="458.0" y="56.7" text-anchor="end">bar 10: notable</text>
+<line x1="64" y1="312" x2="88" y2="312" stroke="var(--fg)" stroke-width="2.2"/><text class="ts" x="94" y="316">you</text>
+<line x1="144" y1="312" x2="168" y2="312" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/><text class="ts" x="174" y="316">typical expert</text>
+<rect x="274" y="306" width="22" height="12" fill="var(--accent-soft)"/><text class="ts" x="302" y="316">where most experts play (inner) and almost all (outer)</text>
+</svg><figcaption>Illustrative shape, not real data. For each bar, the measurement is placed among expert performances of the same piece; only bars outside the expert range become findings.</figcaption></figure>
+
+<h3 id="from-a-raw-measurement-to-a-finding">From a raw measurement to a finding</h3>
+<p>Every channel goes through the same steps. The code that does this is <code>build_report</code> in <code>src/pianolens/report/build.py</code>.</p>
+<ol>
+<li><strong>Line up the notes with the score.</strong> Each played note is matched to its written note. The score is first unfolded along the repeat path you actually took, so a repeated bar appears twice (labelled "12" and "12 (2)"). If fewer than 80 percent of your notes can be matched, the whole report is marked as unreliable.</li>
+<li><strong>Measure, at the right grain.</strong> Wrong and missed notes are counted per bar. Timing steadiness and tempo and loudness shape are measured per bar. Evenness is measured per run of fast notes. "Too flat" is measured per 16-bar section.</li>
+<li><strong>Pick the matching expert population.</strong> For each channel there is one population to compare against (table below). When an expert is also the performance being scored, it is left out of its own comparison.</li>
+<li><strong>Take that population's 95th and 99th percentiles.</strong> For tempo and loudness the experts are themselves scored by a model fitted without them (10-fold cross-fitting), so their spread is the spread of genuinely unseen performances. A value is only judged when at least 10 reference values exist at that bar or run. With fewer, it is shown but not judged.</li>
+<li><strong>Assign a tier.</strong> Beyond the 95th percentile the bar is <strong>notable</strong> ("outside the usual expert range"). Beyond the 99th it is <strong>strong</strong> ("well outside the expert range"). The comparison is strictly "greater than". By construction about 5 percent of genuine expert bars are notable and about 1 percent strong, so a flag means "rarer than this among experts here", not "wrong". The note channel on transcribed input uses an interim variant for strong, described under "How correctness is judged".</li>
+<li><strong>Record how far past the line it is.</strong> The magnitude is the value divided by its notable limit. It is used only to order the list, never shown as a score.</li>
+<li><strong>Group and rank.</strong> Consecutive flagged bars in one channel become one issue. Issues are ranked by tier (strong first), then by category (notes, then control, then shaping and interpretation), then recurring mistakes first, then magnitude, then the earlier bar. The top three that are allowed onto the practice list become "What to practise".</li>
+</ol>
+<p>Two kinds of issue are listed but kept off the practice list: loudness findings when loudness is low confidence (see "How far to trust each number"), and a per-bar tempo or loudness flag that sits inside a section already flagged as too flat, because the flatness explains it.</p>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>Compared against</th>
+<th>Percentiles are taken over</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Notes (correctness)</td>
+<td>What the same note checker reports on clean expert playing</td>
+<td>12,940 bars of 100 clean expert performances, 62 pieces, plus a per-bar check against experts of the same piece</td>
+</tr>
+<tr>
+<td>Tempo shape, loudness shape</td>
+<td>Tier D references (the large expert set)</td>
+<td>Out-of-fold deviations of the references at that bar</td>
+</tr>
+<tr>
+<td>Too flat (tempo, loudness)</td>
+<td>Tier D references</td>
+<td>The amount of shaping of each reference in the same 16-bar section</td>
+</tr>
+<tr>
+<td>Timing steadiness</td>
+<td>Tier D references</td>
+<td>Each reference's own timing noise at that bar, measured against the other references</td>
+</tr>
+<tr>
+<td>Pedal blur, evenness</td>
+<td>Only performances of the very same score</td>
+<td>Their values at that bar or run</td>
+</tr>
+<tr>
+<td>Whole-piece error rate</td>
+<td>Clean expert performances</td>
+<td>Error rate per performance: median 4.65 percent, 95th percentile 16.4, 99th percentile 20.7</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-correctness-is-judged">How correctness is judged</h3>
+<p>Correctness needs extra care because the note checker is not perfect: it also flags notes in expert playing, partly real slips and partly alignment and data noise. On clean expert recordings, 42 percent of bars in a typical performance have at least one flagged note. So the question is never "was a note flagged?" but "was more flagged than the checker flags on experts?".</p>
+<p><strong>What the checker counts.</strong> The aligner pairs each played note with a written note of the same pitch. Two clean-up steps then run before anything is counted (<code>src/pianolens/features/correctness.py</code>).</p>
+<ul>
+<li><strong>Same-pitch repair (BL-23, on by default).</strong> In a dense run, a wrong key that happens to equal a nearby written pitch can take that written note's match, leaving the played note that really belonged to it unmatched. The repair step estimates when each written note was due from its matched neighbours, leaving its own match out. If an unmatched played note of the same pitch lies within 100 ms of that time and at least 30 ms closer to it than the current partner, the match moves to it (<code>src/pianolens/align/postpass.py</code>). It helps, but it does not close the gap: wrong keys that equal a nearby written note are still named less reliably in fast runs than in slow passages.</li>
+<li><strong>Pitch check on every match (DF-10).</strong> A match between two different pitches stays "correct" only when the ornament rule allows it (a played note within 2 semitones of a trill, turn, mordent or grace note). Otherwise the match is undone and both notes go through wrong-pitch pairing. With the current aligner this check cannot fire, because the aligner only makes different-pitch matches at ornaments, which the rule already allows. It matters only if the aligner or the ornament rule changes.</li>
+</ul>
+<p>A played note left unmatched becomes a wrong pitch when it lies within 100 ms of the time a still-unmatched written note was expected and within 2 semitones of it or an octave away; otherwise it is an extra note, or a tolerated ornament. A written note left unmatched is missed.</p>
+<p>A bar is judged on two numbers: the count of wrong-pitch notes, and missed plus extra notes per graded score note. The bar's tier is the higher of the two. The global limits, measured on the 100 clean expert performances, are in <code>src/pianolens/report/calibration.py</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Notable if more than</th>
+<th>Strong if more than</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wrong-pitch notes in the bar</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Missed plus extra notes per note (MIDI input)</td>
+<td>0.267</td>
+<td>0.634</td>
+</tr>
+<tr>
+<td>Missed notes per note (phone input, extras ignored)</td>
+<td>0.158</td>
+<td>0.286</td>
+</tr>
+</tbody>
+</table>
+<p>So one wrong note in a bar is shown but never flagged (7.1 percent of expert bars have one), two are notable and three are strong.</p>
+<p>Several refinements sit on top. The first and the last apply to any input; the others apply only to transcribed input (a phone recording, or MIDI marked as transcribed).</p>
+<ul>
+<li><strong>The per-bar expert check.</strong> Some bars trip up every expert, usually because the edition differs from what pianists play. When at least 5 expert performances of the same score, captured the same way as yours (up to 15 expert transcriptions for phone input, up to 15 key-sensor recordings otherwise), cover a bar, each limit is raised to the larger of the global limit and those experts' value at that bar: their 80th percentile for notable, and for strong their 99th percentile on key-sensor input or the rule in the next item on transcribed input. A bar that no longer clears the raised limits is labelled a likely score or edition artefact.</li>
+<li><strong>Strong on transcribed input: more than the worst expert (interim).</strong> With only up to 15 expert transcriptions at a bar, a 99th percentile interpolated between the two largest values made a learner who merely equalled the worst expert strong, and strong bars ran above 1 percent. The code now takes the strong limit at a bar as the value of rank 0.99 × (n + 1), rounded up, among the n experts there. With fewer than 99 experts that rank does not exist, which is always the case here, so the limit becomes the worst expert's value at that bar plus a margin of 0 notes. In plain terms: on transcribed input, a bar checked against experts is strong only when it has more wrong notes, or a higher missed-note rate, than every expert transcription at that bar, and also more than the global strong limit. Notable is unchanged, and so is key-sensor input. The per-transcriber strong limits tried in BL-18 are switched off.</li>
+<li><strong>Passage not heard.</strong> A run of at least 3 consecutive graded bars in each of which at least 80 percent of the written notes were not found is not treated as mistakes. It is reported once, as a low-confidence item: "Passage not heard: bars ... (at the start or end of the recording, when it is). This passage was not played, or it may be missing from the recording." Its bars get no correctness tier. Bars without graded notes neither break nor extend a run. The rule exists because such runs in the expert transcriptions came from recordings that start late or are cut, and no per-bar limit could move them. Two known weaknesses are open: a bar just under 80 percent splits a run into fragments, so a cut ending can show as two or three items without the "at the end" note (BL-27); and a recurring mistake across takes can still promote a "not heard" bar to strong.</li>
+<li><strong>Extra notes are ignored.</strong> Phone transcriptions of the owner's playing produced 15 to 29 percent extra notes on three of five recordings, many on fixed high pitches. A later analysis (BL-22) found that these are mostly a second, independent sound in those recordings: a recurring stepwise melody between G6 and G7, about 3 notes per second, with the same phrases in all three recordings and no relation to the notes being played. It is not a fault of the phone or the transcriber, and overtones of played notes are at most a small share. Where the melody comes from, in the room or added when the video was edited, is undetermined until a listening check. Transcribed extras are unreliable in general anyway, so the rule does not depend on that explanation: on transcribed input, extras stay visible but never count towards a tier or a practice item.</li>
+<li><strong>Fast repeated notes (BL-25).</strong> Transcribers often merge a key struck again very quickly into one note: on microphone recordings of a player piano, only a third of same-key repeats closer than 80 ms were found, against 98 percent of other notes, and the loss sits below about 100 ms. So on transcribed input, a missed note whose previous written note of the same pitch was due less than 100 ms earlier (at the tempo you played) is shown on the timeline and in a confidence note but does not count towards any tier. The expert tables used today do not carry this count, so only your side is reduced, which errs towards fewer flags (BL-28).</li>
+<li><strong>Fast runs are judged per bar (BL-20).</strong> Where played notes follow each other less than 100 ms apart, the checker is more reliable about the bar than about which notes were wrong: the aligner absorbs or mispairs 6.9 to 8.3 percent of wrong keys there, against 2.5 percent in slow passages. Wrong notes in such runs are worded per bar ("2 wrong notes in this fast run") and never as "D instead of C". Tiers do not change. Even the bar is not guaranteed on transcribed input: 21 to 24 percent of injected wrong notes in fast runs were not counted at all (BL-18b audit, DF-12).</li>
+<li><strong>Recurring mistakes.</strong> With several takes, the same wrong pitch at the same written note in at least two takes is treated as learned, not a slip, and its bar becomes strong. Mistakes the checker also reports for any expert recording of that score are removed first, and promotion needs at least 2 such recordings. Missed and extra notes never count as recurring.</li>
+</ul>
+<h3 id="how-settled-the-strong-note-flag-is-on-phone-input">How settled the strong note flag is on phone input</h3>
+<p>The interim strong rule and the "passage not heard" rule were tested once on fresh data (BL-18b): 12 new pieces, with expert transcriptions from both transcriber families treated as learners (238 of them), each also given synthetic mistakes. Four criteria were fixed in advance. The verdict is <strong>FAIL by the pre-registered rule</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Transkun V2</th>
+<th>Aria-AMT</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1: strong on clean playing between 0.30 and 1.25 percent of bars</td>
+<td>0.58 percent</td>
+<td>1.04 percent</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>C2: the same notable-or-strong bars as the old rule</td>
+<td>0 bars differ</td>
+<td>0 bars differ</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>C3: strong flags on injected mistakes at least 0.75 of the old rule's</td>
+<td>0.81</td>
+<td>0.84</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>C4: at least 95 percent of bars given exactly 3 wrong notes are strong</td>
+<td>71.5 percent</td>
+<td>68.4 percent</td>
+<td>fail</td>
+</tr>
+</tbody>
+</table>
+<p>The pre-registered consequence of a FAIL was to go back to the old rule (the interpolated 99th percentile). That was not done, and the deviation is recorded in DECISIONS. The old rule scores the same on C4 (71.6 and 68.6 percent), because both rules make a tested bar strong whenever the checker counts all 3 wrong notes, so C4 measured the note checker rather than the rule. And the old rule fails C1 on Aria-AMT, with 2.09 percent. So the interim rule stays, and it is <strong>Provisional</strong>: it meets C1 to C3 on one new sample of 12 pieces, which is not a confirmation. For Transkun V2 the clean rate passes on the point estimate only (its t-interval runs from 0.09 to 0.59 percent).</p>
+<p>What this means for a learner: <strong>on transcribed input, about 7 in 10 bars with 3 wrong notes become strong.</strong> The limit is the note checker, not the tier rule (DF-12). In these tests 16 to 19 percent of injected wrong notes were not counted as wrong notes, against 2.5 to 8.3 percent on key-sensor playing. The auditor followed them one by one: most were left unpaired, shown as an extra note plus a missed note, because they sat more than 100 ms from where the checker expected the written note (median 141 and 180 ms, against 12 to 13 ms for the notes that were counted) (DF-13). Bars where the checker did count all 3 were strong every time. A future confirmation waits for a fix to the checker and will compare the rule with the old one rather than use a fixed 95 percent floor.</p>
+<h3 id="a-small-worked-illustration-real-numbers">A small worked illustration (real numbers)</h3>
+<p>Bar 52 of the owner's phone recording of the Chopin Nocturne discussed later shows the correctness rule end to end.</p>
+<ul>
+<li>The checker found 1 wrong note, 12 missed notes and 2 extra notes among 60 graded score notes. The wrong note sits in a fast run.</li>
+<li>Wrong notes: 1 is not more than the limit of 1, so this quantity is not tiered.</li>
+<li>The recording is transcribed from a phone, so the 2 extras are set aside. None of the missed notes falls on a fast repeat, so all 12 count. Missed notes per note: 12 / 60 = 0.20. That is more than 0.158 (notable) and less than 0.286 (strong), so the bar is <strong>notable</strong>.</li>
+<li>The per-bar check ran against 15 expert transcriptions of the same score. The bar still cleared the raised limits, so the flag was confirmed rather than written off as an edition artefact.</li>
+<li>Magnitude: 0.20 / 0.158, about 1.27.</li>
+<li>The sentence produced: "Bar 52: 1 wrong note in this fast run (the checker is more reliable about the bar than about which notes), 12 missed notes; outside the usual expert range for the note checker. Play this bar slowly, hands separately, until every note is secure."</li>
+</ul>
+<p>It did not reach the practice list, because three strong findings outranked every notable one.</p>
+<h3 id="the-shared-core-and-your-freedom">The shared core and your freedom</h3>
+<p>Tempo and loudness shaping are where "different" and "worse" are hardest to separate. The code in <code>src/pianolens/features/interpretation.py</code> handles this in four layers.</p>
+<p><strong>The band.</strong> At each beat, the expert band is the 10th, 50th and 90th percentile of the reference curves, after each curve is centred on its own average. Your curve is shifted to the same level before comparing, so playing the whole piece a little faster or louder than others does not colour every bar. The band is what the charts draw.</p>
+<p><strong>The shared core and the individual part.</strong> Each 16-bar section is analysed separately. The code asks how many directions of variation experts have in common beyond chance, using parallel analysis against "envelope" surrogates: fake expert sets with the same smoothness and the same per-beat spread but no agreement between performers. Components that beat those fakes form the shared core, usually 1 or 2 per section and channel. Your deviation from the expert mean is split into a shared part (your position along those directions) and an individual part (everything else). The individual part is treated as legitimate freedom: it does not enter the typicality score at all.</p>
+<p><strong>Two-sided typicality.</strong> Typicality asks how usual your position in the shared core is, as the likelihood under a bell-shaped model fitted to the experts, not as a distance to the average. It includes one extra coordinate: the log of how much you shape at all in that section. Without it, a completely flat performance would sit at the centre and look perfectly typical. That is exactly the failure found in neural expression models (below). With it, typicality is two-sided: too little shaping is as unusual as too much. <code>typicality_pct</code> is the share of held-out experts who are at least as unusual as you; small means atypical. In the deadpan sample report (a flat computer rendition of Chopin's Op. 10 No. 3), tempo typicality was at most 0.006 in every section. Typicality is shown on the interpretation card; it does not create flags.</p>
+<p><strong>The too-flat guard.</strong> Separately, each section compares how much you shape (the spread of your curve) with the experts. Below their 5th percentile is too flat at notable, below their 1st at strong; above their 95th is "more extreme than 95% of experts", which is shown on the card but never becomes a practice item. In the deadpan sample every tempo and loudness section was too flat at strong, and the only practice item was "Bars 1-77: too flat. Your tempo varies less than 99% of experts here (SD of log tempo 0.000 vs expert median 0.120)."</p>
+<p>One honest detail: the per-bar tempo and loudness flags use your <em>total</em> deviation from the expert mean at that bar, compared with how far held-out experts deviate there. A flag on the shared part alone is computed but informational only. So individuality is protected in the sense that the threshold is set by how much real experts deviate, including their own individuality, and typicality ignores it; a bar where you go further than 95 percent of experts will still be flagged.</p>
+<h2 id="what-counts-as-good">What counts as good</h2>
+<p>The system never defines "good" directly. For each layer it defines what "within the expert range" means, and flags what falls outside. Here is the working definition layer by layer.</p>
+<h3 id="correctness">Correctness</h3>
+<p>Good means the notes on the page, in the right bar, at no higher error level than the same checker reports on experts playing that bar. A wrong pitch is a played note within 100 ms of where a written note was expected and within 2 semitones of it or an octave away; a missed note is a written note with no partner; an extra is a played note with no written note. Deliberately not penalised: ornaments (extra notes within 2 semitones of a trill, turn, mordent or grace note, and unplayed grace notes), a single wrong note in a bar, errors that experts of the same score also show at that bar, and, on transcribed input, extra notes, missed notes on fast repeats and passages "not heard". In fast runs the report says how many notes in the bar were wrong, not which ones.</p>
+<h3 id="control">Control</h3>
+<p>Good means your fine timing, once the intended tempo shape is removed, stays as close to the expert timing pattern as experts do at that bar; fast runs are as even as experts play the same run; and the pedal is changed at harmony changes as experts on that score do. Timing is measured in beats, so it scales with your tempo, and the expert consensus timing at each note is subtracted first, so a shared agogic lean does not count as unsteadiness. Deliberately not penalised: rubato and phrase-level tempo arcs (they belong to the smooth tempo curve, not to the residual), gradual ritardandi and accelerandi within an evenness run, a consistent lead of one hand (reported, not judged), and pedalling on scores with no expert pedal data.</p>
+<p>Hands are assigned by staff: the upper staff is taken as the right hand. When a score is loaded, its staves are renumbered so that upper is 1 and lower is 2 (DF-09), so scores whose staves are numbered 3 and 4, or split one staff per part, now give hand-synchrony results (before the fix, 25 catalogue scores gave none). Two cases remain wrong. Piano duets have four hands, and the renumbering splits them arbitrarily, so hand synchrony means nothing there; duets are not yet flagged (DF-11). And wherever a hand plays notes from the other staff (cross-staff writing, hand crossings), the assignment is wrong. Score-based proxies put that at about 5 percent of notes, but they miss most places where the engraver marked a hand swap, so the true rate is unknown until it is checked against video hand labels (BL-19, BL-24).</p>
+<h3 id="shaping">Shaping</h3>
+<p>Good, as far as the system measures it, means your expression is related to the music's structure: loudness that is predictable from pitch, harmony, metre and phrase position; phrases that slow at their edges more often than phrases placed at the wrong boundaries would; a melody louder than its accompaniment; hairpins and dynamic markings followed in the marked direction. None of this is compared with experts or flagged. It is reported as description, because no shaping measure has yet been shown to rise with skill once recording conditions are matched (D-10, R-09). Deliberately not penalised: anything. The cards say what you did, not whether it was right.</p>
+<p><strong>Where the phrases come from.</strong> The phrase-timing measure needs phrase boundaries, and the report now takes them from Claude when the piece has a cached set (DF-02). Claude reads a text rendering of the score with no title, twice, in independent blind readings, and the measure is averaged over the readings. Caches exist so far only for the owner's five pieces; any other piece falls back to a rule-based cadence detector, and the card says why. The accuracy is disclosed on the card itself. On Romantic character pieces (BL-17, 24 pieces), Claude's readings matched expert phrase ends at about 0.64 on average (plausible range 0.55 to 0.72), below the project's 0.70 bar, and anywhere from 0.14 to 0.92 on single pieces; the cadence detector reached 0.31. Compound metres such as 6/8 were tested on only 6 pieces, and no nocturne or waltz was ever tested, so the card adds a caution for each of these that applies. It also says how many readings named the piece, because a remembered analysis may have shaped the boundaries. Next to Claude's value the card always shows each reading's value and the cadence detector's value. When Claude's value and the detector's value point in opposite directions, the finding is labelled <strong>undetermined</strong> and no direction is stated. No practice item depends on it either way. The other shaping measures (structure in loudness and note lengths) still take phrase position from a simpler cue-based guess.</p>
+<h3 id="interpretation">Interpretation</h3>
+<p>Good means your tempo and loudness shapes, bar by bar, stay within the range of held-out experts, your amount of shaping in each 16-bar section is not below almost every expert's, and your overall tempo is reported against the experts' 10th to 90th percentile. Deliberately not penalised: being different from the average, choices outside the shared core, an overall tempo or loudness level (the shapes are compared after removing level), and anything "more extreme" than experts (shown, never practised). The card says so directly: "A flag says 'unusual here', not 'wrong'."</p>
+<h2 id="every-metric">Every metric</h2>
+<p>Column key. <strong>Compared against</strong>: score, experts (with which set), a published or perceptual value, a null (a deliberately wrong version of the same measure), or nothing. <strong>From MIDI</strong> and <strong>From phone audio</strong>: trusted, low confidence, or not available. <strong>In the report?</strong>: "yes, flagged" (tiers per bar), "yes, card" (a number in a summary card or chart), "data only" (in the report's data file but not on the page), or "research only" (computed by the feature modules, not by the report).</p>
+<h3 id="correctness-1">Correctness</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>What it measures</th>
+<th>Unit</th>
+<th>Good looks like</th>
+<th>Compared against</th>
+<th>From MIDI</th>
+<th>From phone audio</th>
+<th>In the report?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wrong notes per bar, <code>n_wrong_pitch</code></td>
+<td>Played notes that replace a written note</td>
+<td>count</td>
+<td>At most 1 per bar</td>
+<td>Score; clean experts (limits 1 / 2); per-bar experts (on transcribed input, strong needs more than every expert at the bar)</td>
+<td>Trusted (bar-level precision at least 0.996)</td>
+<td>Low confidence (transcription roughly doubles apparent errors; 16 to 19 percent of wrong notes go uncounted, DF-12)</td>
+<td>yes, flagged</td>
+</tr>
+<tr>
+<td>Missed notes per bar, <code>n_missed</code></td>
+<td>Written notes with no played partner, judged per bar</td>
+<td>count; rate per note</td>
+<td>Under 0.267 per note with extras, 0.158 without</td>
+<td>Score; clean experts; per-bar experts</td>
+<td>Trusted per bar, not per note</td>
+<td>Low confidence (fast repeats and quiet inner notes can be lost)</td>
+<td>yes, flagged</td>
+</tr>
+<tr>
+<td>Extra notes per bar, <code>n_extra</code></td>
+<td>Played notes with no written note, not ornaments</td>
+<td>count</td>
+<td>Counted with missed notes (limit above)</td>
+<td>Score; clean experts</td>
+<td>Trusted</td>
+<td>Not trusted (in three of the owner's recordings, mostly a second, independent melody, BL-22)</td>
+<td>yes, shown only</td>
+</tr>
+<tr>
+<td>Wrong notes in fast runs, <code>n_wrong_fast_run</code></td>
+<td>Wrong notes where played notes are under 100 ms apart</td>
+<td>count</td>
+<td>Not judged separately</td>
+<td>Nothing (wording rule)</td>
+<td>Trusted per bar, not per note</td>
+<td>Same, and more of them go uncounted</td>
+<td>yes, worded per bar</td>
+</tr>
+<tr>
+<td>Missed notes on fast repeats, <code>n_missed_fast_repeat</code></td>
+<td>Missed notes whose previous same-pitch written note was due under 100 ms earlier</td>
+<td>count</td>
+<td>Not judged</td>
+<td>Score</td>
+<td>Counted like any missed note</td>
+<td>Low confidence; not counted towards tiers</td>
+<td>yes, confidence note and timeline</td>
+</tr>
+<tr>
+<td>Passage not heard, <code>not_heard</code></td>
+<td>Runs of 3 or more graded bars, each with at least 80 percent of notes missed</td>
+<td>bars</td>
+<td>None</td>
+<td>Score</td>
+<td>Not applied</td>
+<td>One low-confidence item; its bars get no tier</td>
+<td>yes, confidence note</td>
+</tr>
+<tr>
+<td>Checker clean-up, <code>n_reassigned</code>, <code>n_pitch_dissolved</code>, <code>n_ornament_matches</code></td>
+<td>Matches moved by the same-pitch repair; different-pitch matches undone or kept by the ornament rule</td>
+<td>count</td>
+<td>Not judged</td>
+<td>Score</td>
+<td>Trusted</td>
+<td>Trusted</td>
+<td>data only</td>
+</tr>
+<tr>
+<td>Accuracy, <code>accuracy</code></td>
+<td>Share of graded score notes played as written</td>
+<td>fraction</td>
+<td>High; read against the transcription floor on phone input</td>
+<td>Score</td>
+<td>Trusted</td>
+<td>Low confidence</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Error rate, <code>error_rate</code></td>
+<td>(wrong + missed + extra) per graded note</td>
+<td>fraction</td>
+<td>Below the expert 95th percentile (16.4%)</td>
+<td>Clean experts (median 4.65%)</td>
+<td>Trusted</td>
+<td>Low confidence; a per-piece floor from 15 expert transcriptions is shown</td>
+<td>yes, card (never a practice item)</td>
+</tr>
+<tr>
+<td>Ornaments, <code>n_ornament</code>, <code>n_ornament_skipped</code></td>
+<td>Tolerated extra or skipped notes at ornaments</td>
+<td>count</td>
+<td>Not judged</td>
+<td>Score</td>
+<td>Trusted</td>
+<td>Low confidence</td>
+<td>data only</td>
+</tr>
+<tr>
+<td>Match ratio, <code>match_ratio</code></td>
+<td>Share of notes that aligned to the score</td>
+<td>fraction</td>
+<td>At least 0.8, else the report is marked unreliable</td>
+<td>Score</td>
+<td>Trusted</td>
+<td>Trusted as a warning</td>
+<td>yes, confidence note</td>
+</tr>
+<tr>
+<td>Recurring mistakes, <code>recurring</code></td>
+<td>Same wrong pitch at the same written note in 2 or more takes</td>
+<td>takes</td>
+<td>None</td>
+<td>Other takes; expert recordings of the score</td>
+<td>Trusted</td>
+<td>Low confidence</td>
+<td>yes, flagged strong</td>
+</tr>
+</tbody>
+</table>
+<h3 id="control-1">Control</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>What it measures</th>
+<th>Unit</th>
+<th>Good looks like</th>
+<th>Compared against</th>
+<th>From MIDI</th>
+<th>From phone audio</th>
+<th>In the report?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Timing steadiness, <code>noise_rms_ms</code> / <code>noise_rms_beats</code></td>
+<td>Note timing left after removing your smooth tempo curve and the expert consensus timing</td>
+<td>ms, beats (RMS)</td>
+<td>Within the experts' 95th percentile at that bar</td>
+<td>Tier D experts, each against the others</td>
+<td>Trusted</td>
+<td>Trusted (transcription adds about 2 ms to tens of ms of variation)</td>
+<td>yes, flagged</td>
+</tr>
+<tr>
+<td>Timing without references, <code>jitter_nometric_rms_ms</code></td>
+<td>Fallback: residual minus your own recurring within-bar pattern</td>
+<td>ms</td>
+<td>Lower is steadier</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Trusted</td>
+<td>yes, card, only without references</td>
+</tr>
+<tr>
+<td>Tempo summaries, <code>tempo_bpm_geomean</code>, <code>tempo_log_sd</code>, <code>jitter_rms_ms</code></td>
+<td>Average tempo, amount of tempo variation, raw residual timing</td>
+<td>BPM, log, ms</td>
+<td>Descriptive</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Trusted</td>
+<td>data only</td>
+</tr>
+<tr>
+<td>Evenness of runs (timing), <code>even_strict_ioi_cv</code></td>
+<td>Variation of note spacing in scales, arpeggios and repeated figures, tempo-normalised</td>
+<td>fraction of note length</td>
+<td>Below the 95th percentile of experts on the same run</td>
+<td>Same-score experts; published scale values at a note rate within 20%</td>
+<td>Trusted</td>
+<td>Partial (one transcriber lowered it by about 15%)</td>
+<td>yes, flagged (same-score experts only) and card</td>
+</tr>
+<tr>
+<td>Evenness of runs (loudness), <code>even_strict_vel_sd_midi</code></td>
+<td>Loudness variation in the same runs, after removing a trend</td>
+<td>MIDI velocity</td>
+<td>Near or below the audible step of 2.7 to 4.5 units</td>
+<td>Perceptual threshold (as context)</td>
+<td>Trusted</td>
+<td>Low confidence</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Note rate of runs, <code>even_strict_note_rate_nps</code></td>
+<td>Speed of the runs</td>
+<td>notes per second</td>
+<td>Descriptive; unevenness rises with speed</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Trusted</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Broad evenness, <code>even_ioi_cv</code>, <code>even_vel_sd_midi</code></td>
+<td>Same, on any equal-note stretch</td>
+<td>as above</td>
+<td>As above</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Partial / low</td>
+<td>research only (data only in the report)</td>
+</tr>
+<tr>
+<td>Hand synchrony, <code>hand_async_median_ms</code>, <code>hand_async_resid_sd_ms</code></td>
+<td>Which hand sounds first at shared onsets, and the spread after allowing for the louder hand sounding earlier</td>
+<td>ms</td>
+<td>Within about 30 ms, which is hard to hear</td>
+<td>Perceptual threshold</td>
+<td>Trusted, but hands are assigned by staff (staff numbers normalised, DF-09; meaningless for duets, DF-11)</td>
+<td>Trusted for timing, same staff caveat</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Tempo instability, <code>tempo_instability_log_sd</code>, <code>tempo_drift_log</code></td>
+<td>Tempo wobble between 1.5 and 4 bars; net rushing or dragging in a section</td>
+<td>log tempo</td>
+<td>Descriptive</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Trusted</td>
+<td>data only (not on the page)</td>
+</tr>
+<tr>
+<td>Pedal blur, <code>pedal_blur_fraction</code>, <code>pedal_blur_beats</code></td>
+<td>Share of detected harmony changes the sustain pedal is held through</td>
+<td>fraction, beats</td>
+<td>Below the 95th percentile of experts on the same score</td>
+<td>Same-score experts; harmony changes from the score (detector F1 0.76)</td>
+<td>Trusted, but rarely comparable (the large expert set has no pedal)</td>
+<td>Not trusted (transcription under-reads pedal)</td>
+<td>yes, flagged (same-score experts only) and card</td>
+</tr>
+<tr>
+<td>Pedal down share, <code>pedal_down_fraction</code></td>
+<td>Share of time the pedal is down</td>
+<td>fraction</td>
+<td>Descriptive</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Not trusted</td>
+<td>data only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="shaping-1">Shaping</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>What it measures</th>
+<th>Unit</th>
+<th>Good looks like</th>
+<th>Compared against</th>
+<th>From MIDI</th>
+<th>From phone audio</th>
+<th>In the report?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Structure in loudness, <code>coherence_velocity.r2_no_markings</code></td>
+<td>Share of note-to-note loudness predictable from pitch, harmony, metre and phrase position (a cue-based guess) in held-out bars, markings left out</td>
+<td>R²</td>
+<td>Higher means more structured</td>
+<td>Nothing (cross-validated; needs 12 bars and 3 blocks)</td>
+<td>Trusted</td>
+<td>Low confidence (loudness)</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Structure in note lengths, <code>coherence_articulation</code></td>
+<td>Same for how long keys are held</td>
+<td>R²</td>
+<td>As above</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Not trusted (note ends are not audible under pedal)</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Structure in timing and tempo, <code>coherence</code> timing / tempo channels</td>
+<td>Same for timing and tempo</td>
+<td>R²</td>
+<td>As above</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Trusted</td>
+<td>research only (needs annotated phrases)</td>
+</tr>
+<tr>
+<td>Phrases in time, <code>concave_share</code>, <code>null_concave_share</code>, <code>concave_excess</code></td>
+<td>Share of phrases that slow at both ends, minus the share with boundaries shifted 2 bars</td>
+<td>fraction, points</td>
+<td>Positive excess</td>
+<td>Shifted-boundary null; phrase boundaries from Claude's cached readings where a cache exists (about 0.64 on Romantic pieces, below the 0.70 bar), otherwise from the cadence detector, whose value is always shown too</td>
+<td>Partial (boundary accuracy)</td>
+<td>Partial (same)</td>
+<td>yes, card; "undetermined" when the two boundary sources disagree in sign; never a practice item</td>
+</tr>
+<tr>
+<td>Melody over accompaniment, <code>vel_diff_mean_midi</code>, <code>frac_melody_louder</code></td>
+<td>How much louder the top line is than the other notes at shared onsets</td>
+<td>MIDI velocity, fraction</td>
+<td>Melody louder</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Low confidence</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Melody lead, <code>lead_mean_ms</code>, <code>lead_vel_corr</code></td>
+<td>Whether the melody sounds early, and whether that follows loudness</td>
+<td>ms, r</td>
+<td>Descriptive</td>
+<td>Nothing</td>
+<td>Trusted</td>
+<td>Partial (timing fine, loudness not)</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Written dynamics, <code>hairpin_agree_frac</code>, <code>level_agree_frac</code></td>
+<td>Share of hairpins and dynamic level changes played in the marked direction</td>
+<td>fraction</td>
+<td>Most</td>
+<td>Score</td>
+<td>Trusted</td>
+<td>Low confidence (not separately checked)</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Accents and level ranking, <code>accent_agree_frac</code>, <code>level_velocity_spearman</code></td>
+<td>Accented notes louder than neighbours; loudness follows marked levels</td>
+<td>fraction, rank r</td>
+<td>Positive</td>
+<td>Score</td>
+<td>Trusted</td>
+<td>Low confidence</td>
+<td>data only</td>
+</tr>
+<tr>
+<td>Repeated passages, <code>repeated_material</code></td>
+<td>Whether a repeated passage is shaped the same way</td>
+<td>r, concordance</td>
+<td>Descriptive</td>
+<td>Your first playing</td>
+<td>Trusted</td>
+<td>Partial</td>
+<td>research only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="interpretation-1">Interpretation</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>What it measures</th>
+<th>Unit</th>
+<th>Good looks like</th>
+<th>Compared against</th>
+<th>From MIDI</th>
+<th>From phone audio</th>
+<th>In the report?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tempo shape per bar, <code>tempo.dev_rms</code>, <code>dev_mean</code></td>
+<td>How far your smooth tempo curve departs from the expert mean at that bar, and in which direction</td>
+<td>log tempo ratio (shown as % faster or slower)</td>
+<td>Within the held-out experts' 95th percentile</td>
+<td>Tier D experts, out of fold</td>
+<td>Trusted</td>
+<td>Trusted</td>
+<td>yes, flagged</td>
+</tr>
+<tr>
+<td>Loudness shape per bar, <code>velocity.dev_rms</code>, <code>dev_mean</code></td>
+<td>Same for smooth loudness</td>
+<td>MIDI velocity</td>
+<td>As above</td>
+<td>Tier D experts (key-sensor ones when at least 8 exist)</td>
+<td>Trusted only if the experts are key-sensor too</td>
+<td>Low confidence</td>
+<td>yes, flagged, never practised when low confidence</td>
+</tr>
+<tr>
+<td>Too flat / too extreme per section, <code>too_flat</code>, <code>too_extreme</code>, <code>magnitude</code></td>
+<td>Amount of shaping in each 16-bar section</td>
+<td>SD of log tempo; SD of velocity</td>
+<td>Not below the experts' 5th percentile</td>
+<td>Tier D experts</td>
+<td>Trusted (loudness as above)</td>
+<td>Tempo trusted, loudness low</td>
+<td>too flat: yes, flagged; too extreme: card only</td>
+</tr>
+<tr>
+<td>Typicality, <code>typicality_pct</code></td>
+<td>Share of held-out experts at least as unusual in the shared core plus amount of shaping</td>
+<td>fraction</td>
+<td>Not near 0</td>
+<td>Tier D experts, out of fold</td>
+<td>Trusted</td>
+<td>Tempo trusted, loudness low</td>
+<td>yes, card (least typical section)</td>
+</tr>
+<tr>
+<td>Shared core, <code>k_shared</code>, <code>individual_share</code>, <code>target_z</code></td>
+<td>Number of shared expert directions; share of your deviation outside them</td>
+<td>count, fraction</td>
+<td>Descriptive</td>
+<td>Tier D experts</td>
+<td>Trusted</td>
+<td>As above</td>
+<td>data only</td>
+</tr>
+<tr>
+<td>Expert band</td>
+<td>10th, 50th and 90th percentile of the experts at each beat</td>
+<td>BPM, MIDI velocity</td>
+<td>Your curve mostly inside</td>
+<td>Tier D experts</td>
+<td>Trusted</td>
+<td>As above</td>
+<td>yes, charts</td>
+</tr>
+<tr>
+<td>Overall tempo, <code>tempo_overall</code></td>
+<td>Your average tempo over the bars you played, against the experts over the same bars</td>
+<td>BPM, percentile</td>
+<td>Descriptive</td>
+<td>Tier D experts</td>
+<td>Trusted</td>
+<td>Trusted</td>
+<td>yes, card</td>
+</tr>
+<tr>
+<td>Agreement features, <code>ref__*_r</code>, <code>_rms</code>, <code>_rms_pct</code>, <code>_nn_rms</code></td>
+<td>Correlation and distance to the expert mean and to the nearest expert</td>
+<td>r, units</td>
+<td>Descriptive</td>
+<td>Tier D experts</td>
+<td>Trusted</td>
+<td>As above</td>
+<td>data only (research inputs from R-04)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-learned-models">The learned models</h2>
+<p>Beyond the comparison model, PianoLens has built or tested several learned models. None of them produces anything in today's report. Here is what each is and why.</p>
+<h3 id="the-rating-model-r-04">The rating model (R-04)</h3>
+<p>This is a small model that predicts listener ratings from interpretable MIDI measurements. Its main version uses 62 measurements of one performance alone: correctness, tempo, the control measures, the shaping measures and simple descriptors of loudness, articulation and pedal. It predicts the 19 PercePiano rating scales (the panel's average for each clip), and the model family and settings are chosen inside the training data only. It was tested on whole works it had never seen, with four held-out works, mostly slow Schubert, in short clips of 4 to 16 bars.</p>
+<p>The key test is within a passage: given two performances of the same passage, how often does the model order them the same way as the panel? The model got this right 62.4 percent of the time, and a large pretrained audio model, MuQ, got 62.3 percent. Chance is 50 percent. A single human rater, scored against the panel, lands at 59.0 percent when the rater's ties count as half and 62.7 percent on the pairs the rater did not tie. So the model agrees with the panel about as well as one listener does. The ceiling is much higher: splitting the panel in half suggests a noiseless predictor could reach a within-passage rank correlation of roughly 0.74 against the full panel, against about 0.35 for both models. That extrapolation is rough, but the room is large.</p>
+<p>What drives it, measured by how much accuracy drops when a group of measurements is scrambled: pedal first (0.097), then loudness and dynamics (0.058), tempo shape (0.032) and voicing (0.022), with hand synchrony (0.008) and note rate (0.006) behind. Correctness, fine timing, articulation, structural coherence and dynamic-marking compliance contribute almost nothing on this data (0.000 to 0.004). The single strongest measurement is average pedal depth, the top coefficient for 11 of the 19 scales, which looks like a halo: a wetter sound reads as richer, longer and more expressive.</p>
+<p>Why it is not in the report: it is only at single-rater reliability; it was trained on four works of Disklavier MIDI; its strongest input, pedal, cannot be read from a phone; and correctness hardly matters in data made of expert performances, which says nothing about a learner who plays wrong notes. The report card says "Model-based quality ratings are not included".</p>
+<h3 id="muq-the-large-audio-model-r-03-r-05">MuQ, the large audio model (R-03, R-05)</h3>
+<p>A published result reported that MuQ predicts expert ratings well (R², the share of rating variation explained, of 0.536). We reproduced it at 0.509, then tested on unseen works: it fell to -0.087, worse than always guessing the average, because the model had learned the pieces. Within a passage it still orders performances correctly about 62 percent of the time. A separate simulation (R-05) showed that audio models can read the recording setting as a stand-in for skill: tying the setting to skill raised a skill classifier's score from 0.87 to 0.94, and shuffling it at test time dropped it to 0.73. A model that can cheat on the room cannot judge a phone recording made at home.</p>
+<h3 id="expression-models-symupe-and-pianist-transformer-r-06-r-07">Expression models: SyMuPe and Pianist Transformer (R-06, R-07)</h3>
+<p>These models learn to generate human-like playing from a score. The tempting idea is to ask one how likely your performance is. Both were compared on unseen pieces; they tied on quality, and a pre-registered tie-break chose SyMuPe. The decisive finding was about likelihood: both models detect added random noise well (AUC at least 0.94, where AUC is the chance of ranking a real performance above a corrupted one) but give every flat, deadpan rendition a higher likelihood than the real expert performance (AUC 0.00). Likelihood rewards predictability, and flat playing is the most predictable of all. A fine-tuned version with corrected scores (a likelihood ratio against a model of flat playing, among others) is pre-registered as R-07 but has not been run. Until it passes the same deadpan tests, no expression model is used, and this failure is why the report's own typicality includes the amount-of-shaping coordinate.</p>
+<h3 id="what-listeners-judge-r-01">What listeners judge (R-01)</h3>
+<p>The listener factors are not a model of your playing, but they tell a future grade what it must cover. The ratings reduce to 3 to 5 factors; the four-factor solution is one dominant general-quality factor (interpretation, balance, spaciousness, colour, imagination, low rawness) plus loudness and energy, pedal and articulation, and dark mood. Timing stability is almost unrelated to the rest, and individual raters use about as many factors as the panel. Today's report layers do not map one-to-one onto these factors, which is one more reason not to combine them into a single number yet.</p>
+<h2 id="how-far-to-trust-each-number">How far to trust each number</h2>
+<p>"Trusted" means measured well enough to rank and practise from. "Partial" means shown with a caveat or only partly compared. "Not yet" means shown only, or not usable.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>MIDI from a key-sensor piano</th>
+<th>Phone audio (transcribed)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Correctness: wrong and missed notes</td>
+<td>Trusted per bar. Bar-level wrong-pitch precision at least 0.996; missed notes reliable per bar. In fast runs the checker is more reliable about the bar than about which notes.</td>
+<td>Partial. Transcription roughly doubles the apparent error rate (0.039 to 0.080), so results are read against expert transcriptions of the same piece. Missed fast repeats are set aside, and near-empty runs of bars become "passage not heard".</td>
+</tr>
+<tr>
+<td>Correctness: the strong note flag</td>
+<td>Trusted as "beyond experts' 99th percentile".</td>
+<td>Provisional. An interim rule (more errors than every expert transcription at the bar) that failed its confirmation by the pre-registered rule and is kept as a disclosed deviation. About 7 in 10 bars with 3 wrong notes become strong, because the checker misses some wrong notes (DF-12).</td>
+</tr>
+<tr>
+<td>Correctness: extra notes</td>
+<td>Trusted.</td>
+<td>Not yet. In three of the owner's recordings mostly a second, independent melody (BL-22); ignored for tiers.</td>
+</tr>
+<tr>
+<td>Control: timing steadiness, tempo</td>
+<td>Trusted.</td>
+<td>Trusted. Onset error of a few milliseconds against tens of milliseconds of real variation; timing measures moved by about 1 percent under transcription.</td>
+</tr>
+<tr>
+<td>Control: evenness</td>
+<td>Partial. Flagged only against experts on the same score, which learners rarely have.</td>
+<td>Partial. Timing evenness shifts under one transcriber; loudness evenness is low confidence.</td>
+</tr>
+<tr>
+<td>Control: hand synchrony</td>
+<td>Partial. Measured well, not compared with experts, and hands are assigned by staff (normalised staff numbers; wrong for duets and hand crossings).</td>
+<td>Partial. Same, timing survives.</td>
+</tr>
+<tr>
+<td>Control: pedal</td>
+<td>Partial. Measured well, rarely comparable (no expert pedal data for most pieces).</td>
+<td>Not yet. Transcription roughly halves the pedal-down time.</td>
+</tr>
+<tr>
+<td>Shaping</td>
+<td>Partial. Descriptive only; not validated as a skill measure. Phrase boundaries come from Claude where cached (below the accuracy bar on Romantic pieces, untested on nocturnes, waltzes and most compound metres), otherwise from a rule detector; the phrase finding is undetermined when the two disagree.</td>
+<td>Partial for timing-based measures, not yet for loudness and note-length ones.</td>
+</tr>
+<tr>
+<td>Interpretation: tempo shape, too flat, typicality</td>
+<td>Trusted as "unusual among experts", not as "wrong". Flag rates on expert playing near nominal (tempo strong 0.6 to 1.5 percent).</td>
+<td>Trusted. Disklavier and transcribed versions of the same performance get the same flag rates.</td>
+</tr>
+<tr>
+<td>Interpretation: loudness shape</td>
+<td>Trusted only when the experts are key-sensor too (at least 8 of them).</td>
+<td>Not yet. Loudness from a phone is only relative; kept off the practice list.</td>
+</tr>
+<tr>
+<td>Whole-profile skill claim</td>
+<td>Not yet. No measure has been shown to rise with skill once recording conditions are matched.</td>
+<td>Not yet. Same.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a-worked-example">A worked example</h2>
+<p>This is the current report (rebuilt on 2026-09-29 with the code described above) on the owner's phone recording of Chopin's Nocturne in D-flat major, Op. 27 No. 2, transcribed into notes by Transkun. The piece has 77 bars and 6 beats per bar; the recording lasts about 334 seconds and produced 1,836 notes.</p>
+<p><strong>What it was compared with.</strong> 701 expert performances of the piece from PianoCoRe. The tempo and loudness shape analysis used a random 500 of them; the timing-steadiness comparison used all 701. About 95 percent of the score could be mapped onto the reference edition. For the per-bar correctness check, 15 expert transcriptions of the same score, made by the same transcriber family, were used, and 76 of the 77 bars were covered by enough of them.</p>
+<p><strong>The confidence notes at the top said:</strong> loudness is low confidence because the input is transcribed; transcription roughly doubles the apparent note-error rate; extra notes are low confidence and not ranked; the per-bar expert check ran against 15 expert transcriptions; the checker also flags 42 percent of bars in a typical expert performance; and the control measures are not yet validated as measures of skill. A further note put the correctness numbers in context: the same transcriber on 15 expert recordings of this piece gives a median error rate of 5.4 percent (90th percentile 6.9 percent) and a median extra-note rate of 2.0 percent, against 10.7 and 4.7 percent for this take. There was no note about fast repeats or passages not heard, because neither occurred.</p>
+<p><strong>Correctness.</strong> 1,723 of 1,832 score notes were played as written (94.1 percent), with 19 wrong, 90 missed and 87 extra notes flagged in 54 of 77 bars. Before counting, the same-pitch repair step moved 5 matches. Three of the wrong notes fell in fast runs (in bars 32, 43 and 52), so those bars name their wrong notes only per bar. No missed note fell on a fast repeat, and no run of bars was "not heard". Five bars were notable and none strong, and the per-bar expert check confirmed all five.</p>
+<table>
+<thead>
+<tr>
+<th>Bar</th>
+<th>Wrong</th>
+<th>Missed</th>
+<th>Graded notes</th>
+<th>Why it is notable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>32</td>
+<td>2 (1 in a fast run)</td>
+<td>4</td>
+<td>33</td>
+<td>2 wrong notes, more than the limit of 1</td>
+</tr>
+<tr>
+<td>39</td>
+<td>2</td>
+<td>0</td>
+<td>46</td>
+<td>2 wrong notes</td>
+</tr>
+<tr>
+<td>45</td>
+<td>0</td>
+<td>5</td>
+<td>30</td>
+<td>5 / 30 = 0.167 missed per note, above 0.158</td>
+</tr>
+<tr>
+<td>52</td>
+<td>1 (in a fast run)</td>
+<td>12</td>
+<td>60</td>
+<td>12 / 60 = 0.20 missed per note</td>
+</tr>
+<tr>
+<td>69</td>
+<td>1</td>
+<td>4</td>
+<td>21</td>
+<td>4 / 21 = 0.19 missed per note</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Control.</strong> Overall, the timing departed from the expert timing pattern by 79 ms RMS (0.108 beats). Five bars were flagged:</p>
+<table>
+<thead>
+<tr>
+<th>Bar</th>
+<th>Your timing noise</th>
+<th>Experts' 95th percentile</th>
+<th>Experts' 99th percentile</th>
+<th>Tier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>32</td>
+<td>0.186 beats (131 ms)</td>
+<td>0.158 beats</td>
+<td>0.211 beats</td>
+<td>notable</td>
+</tr>
+<tr>
+<td>43</td>
+<td>0.200 beats (96 ms)</td>
+<td>0.140 beats</td>
+<td>0.190 beats</td>
+<td>strong</td>
+</tr>
+<tr>
+<td>52</td>
+<td>0.207 beats (111 ms)</td>
+<td>0.148 beats</td>
+<td>0.237 beats</td>
+<td>notable</td>
+</tr>
+<tr>
+<td>54</td>
+<td>0.161 beats (110 ms)</td>
+<td>0.160 beats</td>
+<td>0.201 beats</td>
+<td>notable</td>
+</tr>
+<tr>
+<td>60</td>
+<td>0.303 beats (239 ms)</td>
+<td>0.225 beats</td>
+<td>0.287 beats</td>
+<td>strong</td>
+</tr>
+</tbody>
+</table>
+<p>The control card also described things it did not judge: the left hand typically sounded 19 ms before the right, with a spread of 36 ms after allowing for loudness; the pedal was held through 52 percent of 102 detected harmony changes, "not compared" because no expert pedal data exist for this score; and six even runs had a timing variation of 0.42 of the note length at 3.9 notes per second.</p>
+<p><strong>Interpretation.</strong> The overall tempo was 85 beats per minute, against an expert range of 75 to 95 (10th to 90th percentile, median 84): faster than 51 percent of them, which is squarely typical. Four bars were flagged for tempo shape, each one faster than the typical expert shape relative to the owner's own average tempo.</p>
+<table>
+<thead>
+<tr>
+<th>Bar</th>
+<th>Direction</th>
+<th>Your deviation (RMS, log tempo)</th>
+<th>95th / 99th percentile</th>
+<th>Tier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>about 16% faster</td>
+<td>0.168</td>
+<td>0.137 / 0.208</td>
+<td>notable</td>
+</tr>
+<tr>
+<td>52</td>
+<td>about 26% faster</td>
+<td>0.304</td>
+<td>0.254 / 0.382</td>
+<td>notable</td>
+</tr>
+<tr>
+<td>58</td>
+<td>about 21% faster</td>
+<td>0.196</td>
+<td>0.179 / 0.240</td>
+<td>notable</td>
+</tr>
+<tr>
+<td>60</td>
+<td>about 14% faster</td>
+<td>0.649</td>
+<td>0.423 / 0.507</td>
+<td>strong</td>
+</tr>
+</tbody>
+</table>
+<p>At bar 60, in absolute terms, the smooth tempo reached about 133 beats per minute where the experts' 10th to 90th percentile ran from about 71 to 123. The least typical 16-bar section was bars 49-64, where only 6 percent of held-out experts were at least as unusual. That section is also a clear case of the shared-core logic: no shared expert direction cleared the null there, so all of the owner's deviation counted as individual, and what made it unusual was the amount of tempo shaping (0.228 against an expert median of 0.143, more than 98.8 percent of experts). The card reported it as "more extreme than 95% of experts in 1 section", which is never a practice item. No section was too flat. One loudness bar, bar 24, was strong (about 14 velocity units louder than the typical shape) but was kept off the practice list because loudness from a phone is low confidence.</p>
+<p><strong>Shaping,</strong> reported without judgement: 41 percent of note-to-note loudness was predictable from the score's structure in held-out bars, but only 1 percent of note lengths; the melody was louder than the accompaniment at 96 percent of shared onsets; 53 percent of 72 hairpins went the marked way. The phrase-timing finding shows the new phrase source at work, and it came out <strong>undetermined</strong>. With Claude's boundaries (two blind readings, 19.5 phrases on average), 82 percent of phrases slowed at both ends against 51 percent with the boundaries shifted by 2 bars, an excess of +31 points (+32 and +30 in the two readings). With the cadence detector's 14 phrases the excess was -29 points. The two sources point in opposite directions, so the card says that whether the phrases slow at both ends more than chance is undetermined for this performance. It also said that Claude named the piece in both readings, and it carried three cautions: Romantic repertoire, a compound metre, and a nocturne, a genre never tested. No practice item depends on it.</p>
+<p><strong>What to practise</strong> listed three items, all strong, so every notable note bar ranked below them:</p>
+<ol>
+<li>"Bar 43: note timing is less steady than experts (96 ms RMS away from the expert timing pattern, while 95% of experts stay within 67 ms here). Practise with a slow, steady inner pulse."</li>
+<li>"Bar 60: note timing is less steady than experts (239 ms RMS away from the expert timing pattern, while 95% of experts stay within 178 ms here). Practise with a slow, steady inner pulse."</li>
+<li>"Bar 60: you move ahead, about 14% faster than the typical expert shape (relative to your own average tempo); only 1% of experts depart this far here. Check that this timing is what you intend."</li>
+</ol>
+<p>Two timing items outrank the tempo item at the same tier because control comes before interpretation in the ranking.</p>
+<p><strong>The same recording through a second transcriber.</strong> It was also transcribed with Aria-AMT and the report rebuilt. The same 5 timing bars and the same 4 tempo-shape bars were flagged; all 5 note bars reappeared and Aria-AMT added a sixth; and all three practice items were flagged there too. The loudness flags shared only 1 bar out of 9 flagged by either model, which is exactly why loudness is kept off the list. Tiers moved more than bars did. Aria-AMT counted 4 wrong notes in bar 52 (3 of them in a fast run) instead of 1, so that bar became strong and led its practice list, and its timing and tempo flags there also reached strong. That is the DF-12 point in miniature: whether a bar with several wrong notes reaches strong on phone input depends partly on how many of them the checker manages to count.</p>
+<h2 id="what-a-real-grade-would-take">What a real grade would take</h2>
+<p>Everything in this section is plan, not result.</p>
+<p>A trustworthy grade needs ground truth that says how much each kind of flaw matters to a listener. Three studies are designed to supply it.</p>
+<ul>
+<li><strong>Perceptual cost per layer (S-03, hypothesis H6).</strong> Expert recordings are degraded along one dimension at a time (timing jitter, flattened tempo, flattened dynamics, voicing, pedal blur, articulation, wrong notes) at graded levels, rendered on one fixed piano, and played to listeners. Each dimension gets a detection threshold and a preference cost per threshold unit. If the costs differ by a factor of two or more, each layer deserves its own weight; if not, weighting by audibility alone is enough. The study app and stimuli are built; nothing has been run on a listener. Under assumed parameters, 96 listeners would give 0.92 power to detect a three-fold cost difference.</li>
+<li><strong>Pairwise preference among good performances (Phase 4, H7).</strong> Listeners hear two renditions of the same passage, blind and on the same piano, and pick one. A Bradley-Terry scale fitted to those choices is then explained by the measurements, to test whether preference among good players depends on more than closeness to the average.</li>
+<li><strong>Learner takes (O-01).</strong> Two or three takes of one passage in one sitting, captured as MIDI and on a phone together. These give a real learner's noise floor, the first test of recurring mistakes on one player's own habits, and the first fully trusted personal report.</li>
+</ul>
+<p>With those in hand, the profile would change in one specific way. Each layer's flags would carry a measured listener cost instead of an expert percentile alone, so "strong" would mean "a listener would mind this", and the layers could be combined with weights that were measured rather than invented. The grade, if one appears, would sit on top of the profile and never replace it, because the trust in each layer still depends on how the performance was captured.</p></main></div>
+<script>
+(function(){
+var r = document.documentElement, b = document.querySelector('.theme');
+try { var s = localStorage.getItem('rl-theme'); if (s) r.dataset.theme = s; } catch (e) {}
+b.addEventListener('click', function () {
+  var dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  var d = r.dataset.theme || (dark ? 'dark' : 'light');
+  r.dataset.theme = d === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('rl-theme', r.dataset.theme); } catch (e) {}
+});
+var links = {};
+document.querySelectorAll('nav.toc a').forEach(function (a) {
+  links[a.getAttribute('href').slice(1)] = a;
+});
+var hs = [].slice.call(document.querySelectorAll('main h2[id],main h3[id],main h4[id]'));
+function clear(sel, cls) {
+  document.querySelectorAll(sel).forEach(function (e) { e.classList.remove(cls); });
+}
+function spy() {
+  var cur = null;
+  for (var i = 0; i < hs.length; i++) {
+    if (hs[i].getBoundingClientRect().top < 140) cur = hs[i].id; else break;
+  }
+  clear('nav.toc a.active', 'active');
+  clear('nav.toc .sub.open', 'open');
+  var a = cur && links[cur];
+  if (!a) return;
+  a.classList.add('active');
+  var isSub = a.classList.contains('h4');
+  var next = a.nextElementSibling;
+  var sub = isSub ? a.parentNode : (next && next.classList.contains('sub') ? next : null);
+  if (!sub) return;
+  sub.classList.add('open');
+  if (isSub && sub.previousElementSibling) sub.previousElementSibling.classList.add('active');
+}
+addEventListener('scroll', spy, {passive: true});
+spy();
+})();
+</script></body></html>

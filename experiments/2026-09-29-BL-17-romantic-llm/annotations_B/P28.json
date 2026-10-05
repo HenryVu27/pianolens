@@ -1,0 +1,29 @@
+{
+  "movement": "P28",
+  "recognised_piece": null,
+  "notes": "Bb major rounded binary with written-out repeats. A section in three 4-bar phrases (IAC, IAC, PAC), with the final arrival carrying F4 on top before the melody drops to Bb4. B section: a diminished-seventh sequence that reaches an augmented-sixth to D major (HC in G minor) and a dominant pedal. The A section returns, then a short coda.",
+  "events": [
+    {"bar": 160, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.95},
+    {"bar": 164, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.7},
+    {"bar": 164, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 168, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.65},
+    {"bar": 168, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 172, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.6},
+    {"bar": 172, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.8},
+    {"bar": 184, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.6},
+    {"bar": 184, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 192, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.75},
+    {"bar": 196, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.8},
+    {"bar": 200, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.7},
+    {"bar": 200, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 204, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.65},
+    {"bar": 204, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 208, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.6},
+    {"bar": 208, "beat": 3, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 232, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.6},
+    {"bar": 232, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 234, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.35},
+    {"bar": 234, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.3},
+    {"bar": 239, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.4}
+  ]
+}

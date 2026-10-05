@@ -1,0 +1,16 @@
+{
+  "movement": "P24",
+  "recognised_piece": null,
+  "notes": "Excerpt reads as an Eb-major dominant prolongation (retransition-like), ending on an unresolved V7 in bar 237. Grouped into 4-bar phrases; the 2-bar units in 221-224 and 229-232 each also touch V. Bars 225-228 sit over a tonic pedal, so the arrival at 228 is weak (vii o7 to I over pedal).",
+  "events": [
+    {"bar": 221, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 222, "beat": 2, "type": "cadence", "cadence": "HC", "confidence": 0.35},
+    {"bar": 224, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.6},
+    {"bar": 225, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 228, "beat": 2, "type": "phrase_end", "cadence": "IAC", "confidence": 0.35},
+    {"bar": 229, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.65},
+    {"bar": 232, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.5},
+    {"bar": 233, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 236, "beat": 2, "type": "phrase_end", "cadence": "HC", "confidence": 0.55}
+  ]
+}

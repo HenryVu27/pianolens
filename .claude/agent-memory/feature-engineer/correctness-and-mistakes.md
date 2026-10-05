@@ -13,7 +13,9 @@
   ornamented score note (possibly a different pitch); the other trill notes stay insertions ->
   correctness.py whitelists insertions within +-2 st, [onset-0.25 s, expected offset].
 - Missed-note FP on clean perfs = aligner picks another same-pitch duplicate (133/133 checked on
-  3 perfs were GT matches). Note-level missed precision 0.38-0.67; bar level 0.90-0.95.
+  3 perfs were GT matches). Missed precision at the 100 ms default (rates 0.02-0.10): note
+  level 0.385-0.691, bar level 0.921-0.960 (the older 0.38-0.67 / 0.90-0.95 were the 50 ms
+  run; correctness-validation spec, "pipeline as deployed").
 - Wrong-pitch recall with the GT alignment: 0.91 at 50 ms, 0.95 at 100 ms (expected-onset estimate
   from chord-mates misses rolled chords). F-02b: default is now 100 ms
   (`WRONG_PITCH_WINDOW_SEC`, param `wrong_pitch_window_sec`, renamed from `pair_window_sec`);

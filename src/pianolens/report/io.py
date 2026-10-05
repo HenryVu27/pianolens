@@ -218,7 +218,7 @@ def report_from_files(
         ap=ap, piece_id=piece_id, title=title or (piece_id or Path(score).stem),
         provenance=provenance, source_id=src, references=refs, same_score_refs=same,
         same_score_provenance=reference_provenance, takes=tk, correctness_refs=cref,
-        expert_bar_tables=xtabs, expert_bar_provenance=xprov,
+        expert_bar_tables=xtabs, expert_bar_provenance=xprov, transcriber=expert_capture_model,
         paths={"score": str(score), "performance": str(performance),
                "takes": [str(t) for t in takes], "n_reference_midis": len(reference_midis),
                "excluded_references": excl,

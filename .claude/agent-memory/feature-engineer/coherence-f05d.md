@@ -10,7 +10,10 @@ At block_bars=4 the 12-bar rule is the binding one. CV folds still use bar-numbe
 - `extract.segment_features` (R-04 short segments, 1-bar blocks) overrides
   `min_written_bars=ExtractConfig.coherence_min_bars` (8), else every 8-bar PercePiano segment
   would go NaN. Channel rows can span fewer bars than the score (timing: 7 of 8 in D960 mv2/mv3).
-- `takes.py` (F-07) still computes range-based n_blocks on its own: not fixed (not my path).
+- `takes.py` (F-07) now uses the same rule (distinct written bars, `ceil(n / block_bars)`,
+  `min_blocks` and `min_written_bars` from `ShapingConfig`, `undefined_reason`); the old
+  range-based count there is gone (checked 2026-09-29). Short-segment output (1-bar blocks,
+  lowered minimum) is "short-segment coherence", never the H4 measure.
 
 ## Impact measured (outputs `data/interim/f05d_check/`)
 - R-04 (1,202 rows): only timing coherence changes, 11 rows defined -> NaN (5 Score renditions).

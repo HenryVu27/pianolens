@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -484,3 +485,255 @@ def test_report_from_files_takes_expert_tables(tmp_path):
     assert checked["correctness"]["expert_check"]["provenance"] == "transcribed"
     card = [c for c in checked["summary"] if c["title"] == "Correctness"][0]
     assert any("matches expert transcriptions here" in f for f in card["findings"])
+
+
+# ---------------------------------------------------------------- BL-18: strong tier, transcribed
+
+
+def test_expert_bar_limits_order_statistic_known_answer():
+    """Finite-sample strong limit: rank ceil(0.99 (n + 1)); with fewer than 99 experts no rank
+    qualifies, so the limit is the per-bar maximum plus the margin (in notes)."""
+    from pianolens.report.build import expert_bar_limits
+
+    lab = str(WRONG_BAR + 1)
+    labels = [str(i + 1) for i in range(N_BARS)]
+    lim = expert_bar_limits(_expert_tables(lab, [0, 1, 2, 3, 4, 5]), labels, min_refs=5,
+                            strong_margin=2).set_index("label")
+    assert lim.loc[lab, "wrong_q99"] == 7  # max 5 + 2 notes
+    assert lim.loc[lab, "me_q99_margin_notes"] == 2
+    assert lim.loc[lab, "wrong_q95"] == pytest.approx(4.0)  # notable quantile unchanged (q80)
+    # 199 experts: rank ceil(0.99 * 200) = 198 of 199 -> the second largest value, no margin
+    many = expert_bar_limits(_expert_tables(lab, list(range(199))), labels, min_refs=5,
+                             strong_margin=2).set_index("label")
+    assert many.loc[lab, "wrong_q99"] == 197 and many.loc[lab, "me_q99_margin_notes"] == 0
+    # default (None) keeps the F-08c interpolated quantile
+    old = expert_bar_limits(_expert_tables(lab, [0, 1, 2, 3, 4, 5]), labels, min_refs=5)
+    assert old.set_index("label").loc[lab, "wrong_q99"] == pytest.approx(4.95)
+
+
+def test_checked_tier_margin_on_missed_per_note():
+    """The per-note limit gets margin / graded notes: max 0.2 + 2/10 = 0.4 at 10 notes."""
+    import pandas as pd
+
+    from pianolens.report.build import _checked_correctness_tier, global_correctness_limits
+
+    glim = global_correctness_limits(False)
+    e = pd.Series({"wrong_q95": 0.0, "wrong_q99": 2.0, "me_q95": 0.1, "me_q99": 0.2,
+                   "me_q99_margin_notes": 2.0})
+    assert _checked_correctness_tier(0, 4, 10, glim, e)[0] == "notable"  # 0.4, not above 0.4
+    assert _checked_correctness_tier(0, 5, 10, glim, e)[0] == "strong"
+
+
+@pytest.mark.parametrize("prov, tier", [("disklavier", "strong"), ("transcribed", "notable")])
+def test_strong_margin_only_for_transcribed_experts(prov, tier):
+    """3 wrong notes where the worst of 15 experts has 3: strong under the F-08c q99 (2.58,
+    raised to the global 2) for key-sensor input; for transcribed input the interim rule R1(0)
+    (BL-18 audit) needs more than every expert, so the bar is notable (above the per-bar q80 of 0
+    and the global 1). The family limits (R2s) are off by default."""
+    lab = str(WRONG_BAR + 1)
+    inp = ReportInputs(ap=_target(prov), provenance=prov, transcriber=None,
+                       expert_bar_tables=_expert_tables(lab, [0] * 14 + [3]),
+                       expert_bar_provenance=prov)
+    rep = to_jsonable(build_report(inp, CFG))
+    b = rep["bars"][WRONG_BAR]["correctness"]
+    assert b["n_wrong_pitch"] == 3 and b["tier"] == tier
+    xc = rep["correctness"]["expert_check"]
+    assert xc["strong_margin_notes"] == (0 if prov == "transcribed" else None)
+    assert xc["strong_limits"] is None
+
+
+def test_interim_r10_keeps_three_wrong_notes_strong():
+    """BL-18 audit: with every expert at most 2 wrong notes, 3 wrong notes stay strong on
+    transcribed input (the returned R1(2) rule made them notable)."""
+    lab = str(WRONG_BAR + 1)
+    inp = ReportInputs(ap=_target("transcribed"), provenance="transcribed",
+                       transcriber="Aria-AMT",
+                       expert_bar_tables=_expert_tables(lab, [0] * 14 + [2]),
+                       expert_bar_provenance="transcribed")
+    rep = to_jsonable(build_report(inp, CFG))
+    assert rep["bars"][WRONG_BAR]["correctness"]["tier"] == "strong"
+    old = to_jsonable(build_report(inp, replace(CFG, expert_check_strong_margin_transcribed=2,
+                                                transcribed_strong_limits=True)))
+    assert old["bars"][WRONG_BAR]["correctness"]["tier"] == "notable"
+    assert old["correctness"]["expert_check"]["strong_limits"]["me_q99"] == pytest.approx(0.771)
+
+
+def test_interim_defaults():
+    from pianolens.report import calibration as cal
+
+    assert cal.EXPERT_CHECK_STRONG_MARGIN_TRANSCRIBED == 0
+    assert ReportConfig().transcribed_strong_limits is False
+    assert (cal.NOT_HEARD_MIN_BARS, cal.NOT_HEARD_MISSED_SHARE) == (3, 0.8)
+    assert cal.FAST_REPEAT_MAX_IOI_SEC == cal.FAST_RUN_MAX_IOI_SEC == 0.1
+
+
+def test_transcribed_family_limits():
+    from pianolens.report import calibration as cal
+
+    fam = cal.TRANSCRIBED_STRONG_LIMITS
+    assert fam["Transkun V2"]["me_q99"] < fam["Aria-AMT"]["me_q99"]
+    assert cal.TRANSCRIBED_STRONG_LIMITS_UNKNOWN == fam["Aria-AMT"]
+    # the family limits only replace strong: the wrong-pitch limit stays the key-sensor one
+    assert all(v["wrong_q99"] == cal.CORRECTNESS_EXPERT_BARS["wrong_pitch_q99"]
+               for v in fam.values())
+
+
+# ------------------------------------------- BL-18 audit: passage not heard; BL-25; BL-20 prop. 3
+
+
+def _drop_notes(ap, idx):
+    """Turn performed notes ``idx`` into unmatched notes far from any score pitch (+47
+    semitones, never an octave of one here), so their score notes are missed and they are
+    extras."""
+    pairs = [tuple(p) for p in ap.alignment.pairs.tolist()]
+    for i in idx:
+        ap.performance.notes["pitch"][i] += 47
+        pairs.remove(("match", f"n{i}", f"p{i}"))
+        pairs += [("deletion", f"n{i}", ""), ("insertion", "", f"p{i}")]
+    ap.alignment = types.Alignment(np.array(pairs, dtype=types.ALIGNMENT_DTYPE),
+                                   ap.alignment.score_id, ap.alignment.performance_id, False,
+                                   "test")
+    return ap
+
+
+def test_not_heard_runs_known_answer():
+    from pianolens.report.build import not_heard_runs
+
+    miss = [4, 4, 0, 4, 1, 4, 4, 3, 0]
+    notes = [4, 5, 0, 4, 4, 4, 4, 3, 4]  # bar 2 has no graded notes: skipped, does not break
+    assert not_heard_runs(miss, notes) == [[0, 1, 3], [5, 6, 7]]
+    assert not_heard_runs(miss, notes, min_bars=4) == []
+    assert not_heard_runs([4, 4], [4, 4]) == []  # too short
+    assert not_heard_runs([3, 4, 4], [4, 4, 4]) == []  # 0.75 < 0.8
+
+
+@pytest.mark.parametrize("prov", ["transcribed", "disklavier"])
+def test_passage_not_heard_at_start(prov):
+    """Bars 1-4 fully missed: on transcribed input one "passage not heard" item at the start,
+    the bars untiered and not practised; on key-sensor input the rule is off (strong)."""
+    idx = [i for i, (b, *_) in enumerate(NOTES) if b < 16]
+    ap = _drop_notes(_target(prov), idx)
+    rep = to_jsonable(build_report(ReportInputs(ap=ap, provenance=prov), CFG))
+    c = rep["correctness"]
+    tiers = [rep["bars"][i]["correctness"]["tier"] for i in range(4)]
+    if prov == "transcribed":
+        assert tiers == ["none"] * 4
+        assert all(rep["bars"][i]["correctness"]["not_heard"] for i in range(4))
+        assert len(c["not_heard"]) == 1
+        nh = c["not_heard"][0]
+        assert nh["bars"] == [0, 1, 2, 3] and nh["at_start"] and not nh["at_end"]
+        assert nh["missed_share"] == pytest.approx(1.0)
+        assert c["expert_check"]["bars_not_heard"] == ["1", "2", "3", "4"]
+        assert any("Passage not heard: bars 1-4 (at the start" in n
+                   for n in rep["confidence"]["notes"])
+        assert not any(d["category"] == "correctness" and set(d["bars"]) & {0, 1, 2, 3}
+                       for d in rep["issues"])
+        assert rep["bars"][WRONG_BAR]["correctness"]["tier"] == "strong"  # others unaffected
+        assert "passage not heard" in render_html(rep)
+    else:
+        assert tiers == ["strong"] * 4 and c["not_heard"] == []
+
+
+def test_fast_repeat_notes_known_answer():
+    import pandas as pd
+
+    from pianolens.report.build import fast_repeat_notes
+
+    sn = pd.DataFrame({"pitch": [60, 60, 60, 60, 62, 60],
+                       "onset_quarter": [0.0, 0.25, 0.25, 1.0, 0.25, 1.25],
+                       "expected_onset_sec": [0.0, 0.08, 0.08, 0.5, 0.05, np.nan]})
+    got = fast_repeat_notes(sn, 0.1)
+    # the unison pair at q 0.25 both repeat q 0 (80 ms); q 1.0 is 420 ms later; pitch 62 has no
+    # predecessor; NaN time is never flagged
+    assert got.tolist() == [False, True, True, False, False, False]
+    assert fast_repeat_notes(sn, 0.05).tolist() == [False] * 6
+
+
+def _repeat_texture(quarter_sec: float):
+    """One bar per 4 beats: RH repeated sixteenths on one pitch per bar (16 notes)."""
+    notes = [(0.25 * k, 0.25, 72 + (k // 16) % 5, 1, 1) for k in range(16 * 8)]
+    ap = build(notes, lambda b: quarter_sec * b, pid="rep")
+    return notes, ap
+
+
+@pytest.mark.parametrize("quarter_sec, low_conf", [(0.32, True), (1.0, False)])
+def test_fast_repeat_missed_low_confidence(quarter_sec, low_conf):
+    """6 of 16 repeated sixteenths missed in bar 3 (0.375 per note, above the 0.286 strong
+    limit). At 80 ms per sixteenth they are low confidence on transcribed input (BL-25): shown,
+    not tiered; at 250 ms they count."""
+    notes, ap = _repeat_texture(quarter_sec)
+    idx = [i for i, (b, *_) in enumerate(notes) if 8 <= b < 12][1:12:2][:6]
+    ap = _drop_notes(ap, idx)
+    ap.performance.provenance = "transcribed"
+    rep = to_jsonable(build_report(ReportInputs(ap=ap, provenance="transcribed"), CFG))
+    b = rep["bars"][2]["correctness"]
+    assert b["n_missed"] == 6
+    assert b["n_missed_fast_repeat"] == (6 if low_conf else 0)
+    assert b["tier"] == ("none" if low_conf else "strong")
+    if low_conf:
+        assert any("fast repeated notes" in n for n in rep["confidence"]["notes"])
+        # key-sensor input keeps them
+        ks = to_jsonable(build_report(ReportInputs(ap=ap, provenance="disklavier"), CFG))
+        assert ks["bars"][2]["correctness"]["tier"] == "strong"
+
+
+def test_bar_error_table_and_expert_limits_drop_fast_repeats():
+    import pandas as pd
+
+    from pianolens.features.correctness import correctness
+    from pianolens.report.build import bar_error_table, bar_labels, expert_bar_limits
+
+    notes, ap = _repeat_texture(0.32)
+    ap = _drop_notes(ap, [33, 35])
+    t = bar_error_table(correctness(ap), bar_labels(ap.score))
+    assert t.loc[2, "n_missed"] == 2 and t.loc[2, "n_missed_fast_repeat"] == 2
+    labels = list(t["label"])
+    tabs = [t.copy() for _ in range(5)]
+    keep = expert_bar_limits(tabs, labels, extras=False).set_index("label")
+    drop = expert_bar_limits(tabs, labels, extras=False, drop_fast_repeats=True)
+    assert keep.loc["3", "me_q99"] == pytest.approx(2 / 16)
+    assert drop.set_index("label").loc["3", "me_q99"] == 0
+    old = [x.drop(columns="n_missed_fast_repeat") for x in tabs]  # pre-BL-25 cache: unchanged
+    assert expert_bar_limits(old, labels, extras=False, drop_fast_repeats=True).equals(
+        keep.reset_index())
+    assert isinstance(t, pd.DataFrame)
+
+
+def test_local_ioi_and_fast_run_notes():
+    import pandas as pd
+
+    from pianolens.report.build import fast_run_notes, local_ioi
+
+    on = np.array([0.0, 0.01, 0.08, 0.16, 0.24, 0.32, 1.0, 2.0, 3.0, 4.0])
+    ioi = local_ioi(on)
+    assert ioi[0] == ioi[1]  # a chord (within 30 ms) shares one value
+    assert ioi[3] == pytest.approx(0.08)
+    assert ioi[-1] == pytest.approx(1.0)
+    df = pd.DataFrame({"onset_sec": on, "label": ["correct"] * 9 + ["interpolated"]})
+    fast = fast_run_notes(df, 0.1)
+    assert fast[:5].all() and not fast[7:].any()
+
+
+def test_wrong_notes_in_fast_run_worded_per_bar():
+    """BL-20 proposal 3: wrong notes in a fast run are counted per bar, never named."""
+    from pianolens.report.build import _describe_error
+    from pianolens.report.text import issue_text
+
+    notes, ap = _repeat_texture(0.32)  # 80 ms sixteenths
+    idx = [i for i, (b, *_) in enumerate(notes) if 8 <= b < 12][:3]
+    pairs = [tuple(p) for p in ap.alignment.pairs.tolist()]
+    for i in idx:
+        ap.performance.notes["pitch"][i] += 1
+        pairs.remove(("match", f"n{i}", f"p{i}"))
+        pairs += [("deletion", f"n{i}", ""), ("insertion", "", f"p{i}")]
+    ap.alignment = types.Alignment(np.array(pairs, dtype=types.ALIGNMENT_DTYPE), "synth:s",
+                                   "rep", False, "test")
+    rep = to_jsonable(build_report(ReportInputs(ap=ap, provenance="disklavier"), CFG))
+    b = rep["bars"][2]["correctness"]
+    assert b["n_wrong_pitch"] == 3 and b["n_wrong_fast_run"] == 3
+    item = [d for d in rep["issues"] if d["category"] == "correctness"][0]
+    assert "3 wrong notes in this fast run" in item["text"]
+    assert "in this fast run" in issue_text(item, rep)
+    key = ("wrong_pitch", "n32", 73)
+    assert _describe_error(key, {"n32": 72}, {key}) == "a wrong note in this fast run"
+    assert "instead of" in _describe_error(key, {"n32": 72})

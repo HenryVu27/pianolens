@@ -128,7 +128,8 @@ function initJob() {
     if (state === "running" || state === "queued") {
       acts.append(h("button", { type: "button", class: "ghost", onclick: async () => { await api(`/api/jobs/${id}/cancel`, { method: "POST" }); clearTimeout(timer); poll(); } }, "Cancel"));
     } else {
-      if (state !== "done") acts.append(h("button", { type: "button", class: "ghost", onclick: async () => { await api(`/api/jobs/${id}/retry`, { method: "POST" }); poll(); } }, "Run again"));
+      if (state === "stopped") acts.append(h("button", { type: "button", class: "ghost", onclick: async () => { await api(`/api/jobs/${id}/override`, { method: "POST" }); poll(); } }, "Analyse anyway"));
+      else if (state !== "done") acts.append(h("button", { type: "button", class: "ghost", onclick: async () => { await api(`/api/jobs/${id}/retry`, { method: "POST" }); poll(); } }, "Run again"));
       acts.append(h("button", { type: "button", class: "ghost danger", onclick: async () => {
         if (!confirm("Delete this analysis and its uploaded files?")) return;
         await api(`/api/jobs/${id}/delete`, { method: "POST" }); location.href = "/history";
@@ -153,9 +154,9 @@ function renderProgress(el, st) {
       h("span", { class: "muted small" }, right));
     return li;
   });
-  const title = { queued: "Starting...", running: "Analysing", failed: "The analysis failed", cancelled: "Cancelled", interrupted: "Interrupted" }[st.state] || st.state;
+  const title = { queued: "Starting...", running: "Analysing", failed: "The analysis failed", cancelled: "Cancelled", interrupted: "Interrupted", stopped: "Is this the right piece?" }[st.state] || st.state;
   el.replaceChildren(h("h2", {}, title), h("ol", { class: "steps" }, items),
-    st.message ? h("p", { class: "msg" + (st.state === "failed" || st.state === "interrupted" ? " err" : "") }, st.message) : null,
+    st.message ? h("p", { class: "msg" + (["failed", "interrupted", "stopped"].includes(st.state) ? " err" : "") }, st.message) : null,
     st.state === "running" ? h("p", { class: "muted small" }, "You can leave this page; the analysis continues and appears under History.") : null);
 }
 
@@ -165,7 +166,7 @@ function renderResults(el, R) {
   const trust = h("div", { class: "trust" }, R.trust.map(t =>
     h("div", {}, h("span", { class: "lvl " + t.level }, { trust: "Trustworthy", check: "Read with care", low: "Low confidence" }[t.level]), h("b", {}, t.what), t.why)));
   const f = R.facts, facts = h("div", { class: "facts" },
-    R.input_kind === "audio"
+    R.transcribed
       ? h("span", { title: "Extra notes are left out: phone transcriptions add many (A-01)." }, "Wrong + missed notes ", h("b", {}, pct(f.wrong_missed_rate)))
       : h("span", {}, "Note errors ", h("b", {}, pct(f.error_rate))),
     f.tempo_bpm ? h("span", {}, "Tempo ", h("b", {}, f.tempo_bpm.toFixed(0) + " beats/min")) : null,

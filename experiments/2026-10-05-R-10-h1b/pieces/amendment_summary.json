@@ -1,0 +1,44 @@
+{
+ "A1_excluded": [
+  "pianocore:Ravel,_Maurice/Le_Tombeau_de_Couperin,_M.68",
+  "pianocore:Debussy,_Claude/2_Arabesques",
+  "pianocore:Bart\u00f3k,_B\u00e9la/Romanian_Folk_Dances,_Sz.56/3._Pe_loc"
+ ],
+ "A1_max_hits_other_pieces": 4,
+ "A2_dropped_renditions": 25,
+ "A2_pieces_affected": 15,
+ "primary_pieces_after": 56,
+ "primary_works_after": 54,
+ "primary_renditions_after": 1691,
+ "sibling_paired_primary": 28,
+ "R3_r10u_flagged": [
+  "bach_bwv862",
+  "bach_bwv857",
+  "mozart_k545",
+  "bach_bwv856",
+  "mozart_k545_mv1",
+  "haydn_hobxvi34",
+  "bach_bwv872",
+  "haydn_hobxvi34_mv1",
+  "bach_bwv857_fugue",
+  "mozart_k545_mv2",
+  "bach_bwv856_prelude",
+  "bach_bwv862_fugue",
+  "bach_bwv872_fugue",
+  "bach_bwv862_prelude",
+  "mozart_k545_mv3",
+  "bach_bwv856_fugue",
+  "bach_bwv872_prelude",
+  "clementi_op36_no1",
+  "pianocore:Bart\u00f3k,_B\u00e9la/Romanian_Folk_Dances,_Sz.56",
+  "bach_bwv857_prelude"
+ ],
+ "R3_r10u_unseen_flagged_by_paired": [
+  "bach_bwv862",
+  "bach_bwv857",
+  "mozart_k545",
+  "bach_bwv856",
+  "clementi_op36_no1",
+  "pianocore:Bart\u00f3k,_B\u00e9la/Romanian_Folk_Dances,_Sz.56"
+ ]
+}

@@ -56,10 +56,14 @@ def window_curves(rep: dict[str, Any], bars: list[int], pad: int = 1) -> dict[st
     return out
 
 
-def trust_notes(rep: dict[str, Any], input_kind: str) -> list[dict[str, str]]:
-    """What the input supports, per measure (shown above the results)."""
+def trust_notes(rep: dict[str, Any], input_kind: str,
+                transcribed: bool | None = None) -> list[dict[str, str]]:
+    """What the input supports, per measure (shown above the results). Transcribed input
+    (audio, or MIDI marked as transcribed at upload) gets the audio notes."""
     conf = rep.get("confidence") or {}
-    if input_kind == "audio":
+    if transcribed is None:
+        transcribed = input_kind == "audio"
+    if transcribed:
         return [
             {"what": "Timing and tempo", "level": "trust",
              "why": "Onsets from the transcription are accurate enough on phone audio (A-01)."},
@@ -110,8 +114,9 @@ def results_data(job_dir: Path | str, job_id: str) -> dict[str, Any]:
                          "category": d.get("category"), "channel": d.get("channel"),
                          "window": best_window(d.get("bars", []), windows)})  # fmt: skip
     kind = job["spec"]["input_kind"]
+    transcribed = kind == "audio" or job["spec"].get("provenance") == "transcribed"
     corr = rep.get("correctness") or {}
-    trust = trust_notes(rep, kind)
+    trust = trust_notes(rep, kind, transcribed)
     if not (rep.get("references") or {}).get("tier_d_total"):
         trust.append({"what": "Comparison with experts", "level": "low",
                       "why": "No expert references for this score: no interpretation findings "
@@ -120,6 +125,7 @@ def results_data(job_dir: Path | str, job_id: str) -> dict[str, Any]:
         "title": rep.get("piece", {}).get("title") or job["spec"].get("title"),
         "piece_id": rep.get("piece", {}).get("piece_id"),
         "input_kind": kind,
+        "transcribed": transcribed,
         "provenance": rep.get("input", {}).get("provenance"),
         "n_takes": len(job.get("takes", [])),
         "trust": trust,

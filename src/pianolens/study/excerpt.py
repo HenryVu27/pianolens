@@ -1,7 +1,9 @@
 """Cut an aligned performance to a range of score bars, for listening stimuli (S-03).
 
-Cut *after* degrading: degradations such as tempo flattening move events in time, so the cut
-is placed by score bars through the alignment of each version, not by fixed seconds.
+Cut *before* degrading: the S-03 build runs ``degrade(excerpt(original, bars))`` so the dose is
+exact within the clip (degrading the whole piece and then cutting gave short clips with no wrong
+notes and pedal changes outside the clip). The cut is placed by score bars through the
+alignment, not by fixed seconds, so it also works on a version whose events have moved in time.
 
 The cut keeps every performed note whose onset lies in ``[t_start, t_end)``: ``t_start`` is the
 earliest matched onset in the first bar, ``t_end`` the median onset of the first score position

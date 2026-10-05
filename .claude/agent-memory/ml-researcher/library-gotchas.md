@@ -35,3 +35,14 @@
   Launch with `OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1`.
 - `pkill -f "<script> --workers"` also kills your own `until pgrep ...` wait loops (their command
   line contains the pattern). Kill by PID or use a narrower pattern.
+
+## SyMuPe sampling (R-10 dry run, 2026-10-05)
+
+- `generator.perform_score(..., lm_top_p=x)` is IGNORED by EncDec-base: the generator class is
+  `Seq2SeqMusicTransformerGenerator`, whose `_prepare_generator_kwargs` reads `top_p` (or
+  `mlm_top_p`) from **kwargs and defaults to 0.95. Pass `top_p=x` (R-10 `job/symupe_gen.py` passes
+  both and asserts `gen._prepare_generator_kwargs(top_p=x)["top_p"] == x` at start-up). So every
+  R-06 / R-07 SyMuPe sample was top-p 0.95, including R-07's S-TYP "top-p 1.0" typset.
+  Verified: explicit top_p=0.95 reproduces the old default samples bit for bit; 1.0 differs.
+- Pianist Transformer's `batch_performance_render(top_p=...)` does reach HF generate; R-06's
+  adapter hard-codes 0.95, so override by patching `pt_adapter.batch_performance_render`.

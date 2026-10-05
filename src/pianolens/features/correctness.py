@@ -5,12 +5,35 @@ summarised per bar and overall.
 
 Performed notes:
 
-* ``correct``: matched to a score note.
+* ``correct``: matched to a score note of the same pitch, or of another pitch that the ornament
+  rule allows for that score note (see "Pitch check on matches").
 * ``wrong_pitch``: an unmatched performed note paired with an unmatched score note (see below).
 * ``extra``: an unmatched performed note that is neither a wrong pitch nor a tolerated ornament.
 * ``ornament``: an unmatched performed note next to a grace note or an ornamented score note
-  (trill, mordent, turn), within ``ORNAMENT_SEMITONES`` of its pitch. Tolerated, not an error.
+  (trill, mordent, turn, tremolo) whose pitch the ornament rule allows. Tolerated, not an error.
 * ``interpolated``: a synthetic note a dataset pipeline filled in. Excluded from every count.
+
+**Pitch check on matches (DF-10).** parangonar's ornament step matches an ornamented score note
+to the first performed note within ±2 semitones of it, which may be a wrong key. A match whose
+performed pitch differs from the score pitch is kept ``correct`` only when the ornament rule
+allows that pitch for that score note (``ornament_rule``, below); otherwise the match is
+dissolved, both notes go through wrong-pitch pairing, and if pairing leaves both unpaired they
+are paired with each other as a ``wrong_pitch``. ``summary["n_pitch_dissolved"]`` counts them.
+
+**Ornament rule** (``ornament_rule``).
+
+* ``"legacy"`` (F-02): an extra within ``ORNAMENT_SEMITONES`` of any grace or ornamented score
+  note, from ``ORNAMENT_LEAD_SEC`` before its expected onset to its expected offset (grace:
+  ``GRACE_TAIL_SEC`` after the onset), is tolerated. The whitelist runs *before* wrong-pitch
+  pairing.
+* ``"tight"`` (BL-23, not the default: on clean expert playing it turned 6.5% of the notes the
+  legacy rule tolerates into errors, above the pre-registered 5%): wrong-pitch pairing runs
+  first, so an extra that can be paired with its intended score note is a wrong pitch even next
+  to an ornament. Only the ornament's own pitches
+  are then tolerated, in the same time windows: offsets from the ornamented note in
+  :data:`ORNAMENT_PITCH_OFFSETS` (trills and turns ±2, mordent 0..-2, inverted mordent 0..+2,
+  tremolo 0); a played grace note tolerates re-strikes of its own pitch only; an unplayed grace
+  note tolerates ±2 (the grace played at a neighbouring pitch).
 
 Score notes: ``correct``, ``wrong_pitch`` (the note the wrong pitch was meant to be),
 ``missed``, ``ornament_skipped`` (an unplayed grace note; tolerated), ``interpolated``.
@@ -52,6 +75,8 @@ import pandas as pd
 
 __all__ = [
     "ONSET_TOLERANCE_SEC",
+    "ORNAMENT_PITCH_OFFSETS",
+    "ORNAMENT_RULES",
     "ORNAMENT_SEMITONES",
     "WRONG_PITCH_WINDOW_SEC",
     "CorrectnessResult",
@@ -79,6 +104,29 @@ are played before the beat; parangonar uses the same 0.25 s)."""
 GRACE_TAIL_SEC = 0.1
 """After the expected onset of a grace note's principal, extra notes stay tolerated this long."""
 
+ORNAMENT_RULES = ("legacy", "tight")
+"""Values of ``correctness(ornament_rule=...)``; see the module docstring."""
+
+_PM2 = (-2, -1, 0, 1, 2)
+ORNAMENT_PITCH_OFFSETS: dict[str, tuple[int, ...]] = {
+    "trill-mark": _PM2,  # principal and upper auxiliary; lower for the closing turn
+    "wavy-line": _PM2,
+    "shake": _PM2,
+    "turn": _PM2,
+    "inverted-turn": _PM2,
+    "delayed-turn": _PM2,
+    "vertical-turn": _PM2,
+    "haydn": _PM2,
+    "schleifer": _PM2,
+    "other-ornament": _PM2,
+    "mordent": (-2, -1, 0),  # MusicXML: principal, lower auxiliary, principal
+    "inverted-mordent": (0, 1, 2),  # principal, upper auxiliary, principal
+    "tremolo": (0,),  # re-strikes; a two-note tremolo's other note has its own mark
+}
+"""``"tight"`` rule: semitone offsets from an ornamented note that its realisation may use, by
+MusicXML ornament name (partitura ``Note.ornaments``). Unknown names get ±2. Auxiliaries are one
+or two semitones because the diatonic step depends on key and accidentals, which are not read."""
+
 
 @dataclass(eq=False)
 class CorrectnessResult:
@@ -99,7 +147,10 @@ class CorrectnessResult:
         summary: overall counts; ``accuracy`` = correct / graded score notes, ``error_rate`` =
             (wrong_pitch + missed + extra) / graded score notes, ``match_ratio`` as in
             ``pianolens.align.match_ratio`` and ``alignment_suspect`` = match_ratio < 0.8
-            (docs/specs/alignment-validation.md: below that, do not trust the labels).
+            (docs/specs/alignment-validation.md: below that, do not trust the labels);
+            ``n_ornament_matches`` (different-pitch matches kept by the ornament rule),
+            ``n_pitch_dissolved`` (different-pitch matches dissolved, DF-10) and
+            ``n_reassigned`` (post-pass swaps).
         params: the parameters used.
     """
 
@@ -156,11 +207,21 @@ def _interp(x: np.ndarray, xp: np.ndarray, fp: np.ndarray) -> np.ndarray:
     return np.where(x > xp[-1], fp[-1] + (x - xp[-1]) * hi_slope, out)
 
 
-def _ornamented_ids(score: Any) -> set[str]:
+def _ornament_names(score: Any) -> dict[str, tuple[str, ...]]:
+    """Ornament names per note id of the score's kept partitura part (the part the alignment
+    ids refer to, so unfolded ids such as ``n12-1`` match directly)."""
     part = getattr(score, "part", None)
     if part is None:
-        return set()
-    return {str(n.id) for n in part.notes_tied if getattr(n, "ornaments", None)}
+        return {}
+    return {str(n.id): tuple(str(o) for o in n.ornaments)
+            for n in part.notes_tied if getattr(n, "ornaments", None)}  # fmt: skip
+
+
+def _allowed_offsets(names: tuple[str, ...]) -> frozenset[int]:
+    out: set[int] = set()
+    for nm in names:
+        out.update(ORNAMENT_PITCH_OFFSETS.get(nm, _PM2))
+    return frozenset(out)
 
 
 def correctness(
@@ -170,6 +231,8 @@ def correctness(
     max_semitones: int = 2,
     allow_octave: bool = True,
     ornaments: bool = True,
+    ornament_rule: str = "legacy",
+    reassign: bool = True,
 ) -> CorrectnessResult:
     """Label every note of an aligned performance correct / extra / missed / wrong pitch.
 
@@ -182,34 +245,83 @@ def correctness(
         max_semitones: max pitch distance for a wrong-pitch pair (octave errors are separate).
         allow_octave: also pair notes exactly 12 semitones apart.
         ornaments: tolerate extra / unplayed notes around grace notes and ornamented notes.
+            With ``False`` every match must have the score pitch.
+        ornament_rule: ``"legacy"`` or ``"tight"`` (module docstring, "Ornament rule").
+        reassign: apply the same-pitch reassignment post-pass
+            (:func:`pianolens.align.postpass.reassign_same_pitch`) to the alignment before
+            labelling. The alignment object itself is not modified. Default True since BL-23
+            (``ornament_rule`` stays ``"legacy"``: the tight rule failed the genuine-ornament
+            check, ``experiments/2026-09-29-BL-23-aligner-ornaments/``).
 
     Returns:
         :class:`CorrectnessResult`. Unmatched ids that are not in the note arrays are ignored
         and counted in ``summary["n_unknown_ids"]``.
     """
+    if ornament_rule not in ORNAMENT_RULES:
+        raise ValueError(f"ornament_rule must be one of {ORNAMENT_RULES}, not {ornament_rule!r}")
+    tight = ornament_rule == "tight"
     score, perf, al = aligned.score, aligned.performance, aligned.alignment
     sn, pn = score.notes, perf.notes
     s_ids = sn["id"].astype(str)
     p_ids = pn["id"].astype(str)
     s_pos = {k: i for i, k in enumerate(s_ids.tolist())}
     p_pos = {k: i for i, k in enumerate(p_ids.tolist())}
+    p_on = pn["onset_sec"].astype(float)
+    p_pitch = pn["pitch"].astype(int)
+    s_pitch = sn["pitch"].astype(int)
+    names = sn.dtype.names or ()
+    is_grace = sn["is_grace"].astype(bool) if "is_grace" in names else np.zeros(len(sn), bool)
+    orn_names = _ornament_names(score) if ornaments else {}
+    s_orn = [orn_names.get(k, ()) for k in s_ids.tolist()]
+    is_orn = np.array([bool(o) for o in s_orn], dtype=bool)
+
+    def pitch_allowed(i: int, dp: int) -> bool:
+        """Ornament rule for performed pitch - score pitch ``dp`` at score note ``i``."""
+        if not ornaments:
+            return dp == 0
+        if not tight:
+            return (is_grace[i] or is_orn[i]) and abs(dp) <= ORNAMENT_SEMITONES
+        if is_orn[i]:
+            return dp in _allowed_offsets(s_orn[i])
+        return dp == 0
 
     s_label = np.full(len(sn), "missed", dtype=object)  # unaligned score notes count as missed
     p_label = np.full(len(pn), "extra", dtype=object)
     s_partner = np.full(len(sn), -1, dtype=int)
     p_partner = np.full(len(pn), -1, dtype=int)
     n_unknown = 0
+    dissolved: list[tuple[int, int]] = []
+    n_orn_match = 0
     for lab, sid, pid in al.pairs.tolist():
         i = s_pos.get(sid, -1) if sid else -1
         j = p_pos.get(pid, -1) if pid else -1
         if (sid and i < 0) or (pid and j < 0):
             n_unknown += 1
         if lab in ("match", "interpolated") and i >= 0 and j >= 0:
+            if lab == "match" and p_pitch[j] != s_pitch[i]:
+                # DF-10: a different-pitch match is correct only under the ornament rule
+                if not pitch_allowed(i, int(p_pitch[j] - s_pitch[i])):
+                    dissolved.append((i, j))
+                    continue
+                n_orn_match += 1
             tag = "correct" if lab == "match" else "interpolated"
             s_label[i], p_label[j] = tag, tag
             s_partner[i], p_partner[j] = j, i
         elif lab == "ornament" and j >= 0:
             p_label[j] = "ornament"
+
+    n_reassigned = 0
+    if reassign:
+        from pianolens.align.postpass import reassign_same_pitch
+
+        sp = np.where(s_label == "correct", s_partner, -1)
+        swaps = reassign_same_pitch(sn["onset_quarter"], s_pitch, p_on, p_pitch, sp,
+                                    p_label == "extra", is_grace | is_orn)  # fmt: skip
+        for i, j, jn in swaps:
+            p_label[j], p_partner[j] = "extra", -1
+            p_label[jn], p_partner[jn] = "correct", i
+            s_partner[i] = jn
+        n_reassigned = len(swaps)
 
     # score -> performance time map from played matches
     m = (s_label == "correct") & (s_partner >= 0)
@@ -217,48 +329,62 @@ def correctness(
                              pn["onset_sec"][s_partner[m]].astype(float))  # fmt: skip
     exp_on = _interp(sn["onset_quarter"], kq, kt)
     exp_off = _interp(sn["onset_quarter"] + sn["duration_quarter"], kq, kt)
-    p_on = pn["onset_sec"].astype(float)
-    p_pitch = pn["pitch"].astype(int)
-    s_pitch = sn["pitch"].astype(int)
 
-    # ornament whitelist
-    names = sn.dtype.names or ()
-    is_grace = sn["is_grace"].astype(bool) if "is_grace" in names else np.zeros(len(sn), bool)
     if ornaments:
-        orn_ids = _ornamented_ids(score)
-        is_orn = np.array([k in orn_ids for k in s_ids.tolist()], dtype=bool)
-        special = np.flatnonzero((is_grace | is_orn) & np.isfinite(exp_on))
         s_label[(s_label == "missed") & is_grace] = "ornament_skipped"
+
+    def whitelist() -> None:
+        special = np.flatnonzero((is_grace | is_orn) & np.isfinite(exp_on))
         extra_idx = np.flatnonzero(p_label == "extra")
         for i in special:
             lo = exp_on[i] - ORNAMENT_LEAD_SEC
             hi = exp_on[i] + GRACE_TAIL_SEC if is_grace[i] else max(exp_off[i], exp_on[i])
-            near = extra_idx[(p_on[extra_idx] >= lo) & (p_on[extra_idx] <= hi)
-                             & (np.abs(p_pitch[extra_idx] - s_pitch[i]) <= ORNAMENT_SEMITONES)]
+            dp = p_pitch[extra_idx] - s_pitch[i]
+            if not tight:
+                ok = np.abs(dp) <= ORNAMENT_SEMITONES
+            elif is_orn[i]:
+                ok = np.isin(dp, list(_allowed_offsets(s_orn[i])))
+            elif s_label[i] == "correct":  # played grace note: re-strikes of its pitch only
+                ok = dp == 0
+            else:  # unplayed grace note: played at a neighbouring pitch
+                ok = np.abs(dp) <= ORNAMENT_SEMITONES
+            near = extra_idx[(p_on[extra_idx] >= lo) & (p_on[extra_idx] <= hi) & ok]
             p_label[near] = "ornament"
 
-    # wrong-pitch pairing: greedy, closest first
-    dels = np.flatnonzero((s_label == "missed") & np.isfinite(exp_on))
-    ins = np.flatnonzero(p_label == "extra")
-    cands: list[tuple[float, int, int]] = []
-    if len(dels) and len(ins):
-        order = np.argsort(p_on[ins])
-        ins_sorted, on_sorted = ins[order], p_on[ins][order]
-        for i in dels:
-            a = np.searchsorted(on_sorted, exp_on[i] - wrong_pitch_window_sec, side="left")
-            b = np.searchsorted(on_sorted, exp_on[i] + wrong_pitch_window_sec, side="right")
-            for j in ins_sorted[a:b]:
-                dp = abs(int(p_pitch[j]) - int(s_pitch[i]))
-                if 1 <= dp <= max_semitones or (allow_octave and dp == 12):
-                    dt = abs(p_on[j] - exp_on[i])
-                    # cost: time in windows + pitch (an octave costs like 3 semitones)
-                    pitch_cost = (dp if dp <= max_semitones else 3) / 12
-                    cands.append((dt / wrong_pitch_window_sec + pitch_cost, int(i), int(j)))
-    cands.sort()
-    for _, i, j in cands:
-        if s_label[i] == "missed" and p_label[j] == "extra":
-            s_label[i], p_label[j] = "wrong_pitch", "wrong_pitch"
-            s_partner[i], p_partner[j] = j, i
+    def pair() -> None:
+        """Wrong-pitch pairing: greedy, closest first."""
+        dels = np.flatnonzero((s_label == "missed") & np.isfinite(exp_on))
+        ins = np.flatnonzero(p_label == "extra")
+        cands: list[tuple[float, int, int]] = []
+        if len(dels) and len(ins):
+            order = np.argsort(p_on[ins])
+            ins_sorted, on_sorted = ins[order], p_on[ins][order]
+            for i in dels:
+                a = np.searchsorted(on_sorted, exp_on[i] - wrong_pitch_window_sec, side="left")
+                b = np.searchsorted(on_sorted, exp_on[i] + wrong_pitch_window_sec, side="right")
+                for j in ins_sorted[a:b]:
+                    dp = abs(int(p_pitch[j]) - int(s_pitch[i]))
+                    if 1 <= dp <= max_semitones or (allow_octave and dp == 12):
+                        dt = abs(p_on[j] - exp_on[i])
+                        # cost: time in windows + pitch (an octave costs like 3 semitones)
+                        pitch_cost = (dp if dp <= max_semitones else 3) / 12
+                        cands.append((dt / wrong_pitch_window_sec + pitch_cost, int(i), int(j)))
+        cands.sort()
+        for _, i, j in cands:
+            if s_label[i] == "missed" and p_label[j] == "extra":
+                s_label[i], p_label[j] = "wrong_pitch", "wrong_pitch"
+                s_partner[i], p_partner[j] = j, i
+        # DF-10: a dissolved different-pitch match left unpaired is a wrong pitch
+        for i, j in dissolved:
+            if s_label[i] == "missed" and p_label[j] == "extra":
+                s_label[i], p_label[j] = "wrong_pitch", "wrong_pitch"
+                s_partner[i], p_partner[j] = j, i
+
+    if ornaments and not tight:
+        whitelist()
+    pair()
+    if ornaments and tight:
+        whitelist()
 
     # bars
     s_bar = measure_rows(score.measures, sn["onset_quarter"])
@@ -302,6 +428,9 @@ def correctness(
         "n_ornament_skipped": int((s_label == "ornament_skipped").sum()),
         "n_interpolated": int((s_label == "interpolated").sum()),
         "n_unknown_ids": n_unknown,
+        "n_ornament_matches": n_orn_match,
+        "n_pitch_dissolved": len(dissolved),
+        "n_reassigned": n_reassigned,
         "accuracy": n["correct"] / graded if graded else float("nan"),
         "error_rate": (n["wrong_pitch"] + n["missed"] + n_extra) / graded if graded
         else float("nan"),
@@ -312,7 +441,8 @@ def correctness(
         "alignment_suspect": bool(ratio < 0.8),
     }
     params = {"wrong_pitch_window_sec": wrong_pitch_window_sec, "max_semitones": max_semitones,
-              "allow_octave": allow_octave, "ornaments": ornaments}  # fmt: skip
+              "allow_octave": allow_octave, "ornaments": ornaments,
+              "ornament_rule": ornament_rule, "reassign": reassign}  # fmt: skip
     return CorrectnessResult(notes_df, score_df, bars, summary, params)
 
 

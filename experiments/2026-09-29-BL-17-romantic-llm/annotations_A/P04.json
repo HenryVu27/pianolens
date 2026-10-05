@@ -1,0 +1,23 @@
+{
+  "movement": "P04",
+  "recognised_piece": null,
+  "notes": "Gb major, 2/4 rounded binary: A (two 4-bar phrases ending I with 3rd on top), B over a Db dominant pedal, A' closing with cadential 6/4 PAC; B+A' repeated; codetta of two 4-bar PACs. B section treated as one phrase standing on the dominant.",
+  "events": [
+    {"bar": 332, "beat": "2+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.9},
+    {"bar": 336, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 336, "beat": "2+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 340, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.7},
+    {"bar": 340, "beat": "2+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 348, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.35},
+    {"bar": 348, "beat": "2+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 352, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.6},
+    {"bar": 352, "beat": "2+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 356, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.85},
+    {"bar": 356, "beat": "2+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 372, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.85},
+    {"bar": 372, "beat": "2+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 376, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.7},
+    {"bar": 376, "beat": "2+1/2", "type": "phrase_start", "cadence": "none", "confidence": 0.6},
+    {"bar": 380, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.85}
+  ]
+}

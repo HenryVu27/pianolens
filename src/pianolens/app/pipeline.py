@@ -7,9 +7,13 @@ Steps (each recorded in ``status.json``):
    ``pianolens.audio.transcription.onset_sanity`` checks it for gross failures. Optionally the
    A-01b rule filter removes likely transcription extras (off by default).
 2. ``align``: the first take is aligned to the score once, as a fast check that the recording is
-   the chosen piece (match ratio, alignment-suspect flag) before the long steps.
+   the chosen piece before the long steps. A match ratio below ``WRONG_PIECE_MATCH`` stops the
+   run (state ``stopped``, ``wrong_piece`` in the status) unless the user overrode the check;
+   between that and 0.8 (``alignment_suspect``) the run goes on with a warning.
 3. ``report``: ``pianolens.report.report_from_files`` (features, PianoCoRe references, per-bar
    expert check, practise items) and ``write_report`` -> ``report.html`` / ``report.json``.
+   Same-score references (:func:`same_score_references`): only for key-captured MIDI of a piece
+   with no PianoCoRe references and enough ASAP performances; see docs/APP.md.
 4. ``clips``: ``pianolens.compare.inputs_from_report`` + ``build_comparison`` -> ``compare/``.
 
 All files stay inside the job folder (under ``data/interim/app``); nothing is uploaded anywhere.
@@ -37,14 +41,59 @@ REPO = Path(__file__).resolve().parents[3]
 TRANSKUN_ENV = REPO / "data" / "interim" / "envs" / "transkun"
 TRANSKUN_CAPTURE_MODEL = "Transkun V2"  # PianoCoRe's name for the same model family (A-01 floor)
 
+#: Quick-check match ratio (Dice, ``pianolens.align.match_ratio``) below which the run stops as
+#: "probably another piece". Measured 2026-09-29 (DEFECTS DF-05): Henry's five Transkun takes
+#: (A-01) gave 0.818-0.939 on their own score and 0.163-0.280 on the 20 wrong-score pairs; one
+#: ASAP performance each of Chopin Op. 10/3, 10/4, 10/12 and Beethoven Op. 53/1 gave
+#: 0.960-0.984 on their own score and 0.083-0.314 on the 12 wrong-score pairs.
+WRONG_PIECE_MATCH = 0.5
+
 AUDIO_NOTE = ("Input: a transcription of an uploaded audio recording (Transkun). From phone or "
               "room audio, timing and tempo are trustworthy (A-01). Extra notes, velocity "
               "(dynamics, voicing) and pedal are low confidence; wrong and missed notes are read "
               "against expert transcriptions of the same piece.")  # fmt: skip
 
 
+TRANSCRIBED_MIDI_NOTE = ("Input: MIDI marked at upload as transcribed from audio. It is read "
+                         "like the app's own transcriptions: timing and tempo are trustworthy; "
+                         "extra notes, velocity (dynamics, voicing) and pedal are low "
+                         "confidence; wrong and missed notes are read against expert "
+                         "transcriptions of the same piece.")  # fmt: skip
+
+
 class Cancelled(Exception):
     pass
+
+
+def same_score_references(piece_id: str | None, n_pianocore: int, provenance: str,
+                          exclude: list[str], upload_bytes: list[bytes],
+                          min_refs: int | None = None) -> list[Path]:
+    """ASAP performances of the piece to pass as same-score references, or ``[]``.
+
+    Pedal blur and evenness are tiered only against performances aligned to the same score
+    (``ReportInputs.same_score_refs``, at least ``MIN_TIER_REFERENCES`` on the target's repeat
+    path). They are supplied only when all of these hold:
+
+    * the input is key-captured MIDI (not transcribed): ASAP is Disklavier MIDI, and pedal and
+      velocity from a transcription are not comparable with it (A-01);
+    * the piece has no PianoCoRe references (``n_pianocore == 0``): the report merges same-score
+      references into the tier D set, and PianoCoRe already holds the ASAP performances
+      (978 of them), so for other pieces they would be counted twice;
+    * at least ``min_refs`` ASAP performances remain after leaving out ``exclude`` and any file
+      identical to an upload.
+    """
+    import hashlib
+
+    from pianolens.report import calibration as cal
+    from pianolens.report.io import _asap_performances
+
+    min_refs = cal.MIN_TIER_REFERENCES if min_refs is None else min_refs
+    if not piece_id or n_pianocore > 0 or provenance == "transcribed":
+        return []
+    own = {hashlib.sha256(b).hexdigest() for b in upload_bytes}
+    paths = [p for p in _asap_performances(piece_id, exclude, 10_000)
+             if hashlib.sha256(p.read_bytes()).hexdigest() not in own]
+    return paths if len(paths) >= min_refs else []
 
 
 def transkun_binary() -> Path:
@@ -120,6 +169,7 @@ def run(job_dir: Path) -> None:
     work.mkdir(exist_ok=True)
     takes = [job_dir / "inputs" / t["file"] for t in job["takes"]]
     audio = spec["input_kind"] == "audio"
+    transcribed = audio or spec.get("provenance") == "transcribed"
     notes: list[str] = []
     summary: dict[str, Any] = {"input_kind": spec["input_kind"], "n_takes": len(takes)}
 
@@ -157,10 +207,27 @@ def run(job_dir: Path) -> None:
         set_step(job_dir, "transcribe", "done", f"{model}, {secs:.0f} s", 1.0)
     else:
         mids = takes
-    provenance = "transcribed" if audio else spec.get("provenance", "unknown")
+        if transcribed:
+            notes.append(TRANSCRIBED_MIDI_NOTE + (f" Transcriber: {spec['capture_model']}."
+                                                  if spec.get("capture_model") else ""))
+            if spec.get("filter_extras"):
+                fl = []
+                n_rm = n_in = 0
+                for k, m in enumerate(mids, 1):
+                    fi = filter_extras(m, work / f"take{k}_filtered.mid")
+                    n_rm, n_in = n_rm + fi["n_removed"], n_in + fi["n_in"]
+                    fl.append(work / f"take{k}_filtered.mid")
+                mids = fl
+                summary["extra_filter"] = {"n_in": n_in, "n_removed": n_rm}
+                notes.append(f"Extra-note filter (rule, A-01b) removed {n_rm} of {n_in} "
+                             "transcribed notes before scoring. Extra-note flags stay low "
+                             "confidence.")  # fmt: skip
+    provenance = "transcribed" if transcribed else spec.get("provenance", "unknown")
+    summary["transcribed"] = transcribed
 
     # ---------------------------------------------------------------- score
     score: Path | None = None
+    piece = None
     if spec.get("score_source") == "upload":
         score = job_dir / "inputs" / job["score_upload"]["file"]
     elif spec.get("piece_id"):
@@ -189,11 +256,38 @@ def run(job_dir: Path) -> None:
     summary["align"] = {"match_ratio": float(cs.get("match_ratio", float("nan"))),
                         "error_rate": float(cs.get("error_rate", float("nan"))),
                         "alignment_suspect": bool(cs.get("alignment_suspect", False))}  # fmt: skip
-    detail = f"{100 * summary['align']['match_ratio']:.0f}% of notes matched"
+    ratio = summary["align"]["match_ratio"]
+    detail = f"{100 * ratio:.0f}% of notes matched"
+    if ratio < WRONG_PIECE_MATCH and not spec.get("ignore_wrong_piece"):
+        set_step(job_dir, "align", "failed", detail + " - probably not this piece")
+        update_status(job_dir, state="stopped", wrong_piece=True, summary=summary,
+                      finished=time.time(), message=(
+                          f"Stopped: only {100 * ratio:.0f}% of the notes match the chosen "
+                          "score, so this recording is probably another piece (in our tests "
+                          "the right piece matched 82% or more, other pieces 31% or less). "
+                          "Check the piece and upload again, or choose Analyse anyway if it "
+                          "is the right piece (for example a short excerpt)."))  # fmt: skip
+        return
     if summary["align"]["alignment_suspect"]:
         detail += " - alignment suspect: is this the right piece?"
+        notes.append(f"The quick alignment check matched only {100 * ratio:.0f}% of the notes "
+                     "(below 80%): check that the recording is this piece; findings may be "
+                     "unreliable.")  # fmt: skip
+    if ratio < WRONG_PIECE_MATCH:
+        notes.append(f"The quick alignment check matched only {100 * ratio:.0f}% of the notes, "
+                     "which usually means another piece; the analysis ran because the check "
+                     "was overridden.")  # fmt: skip
     set_step(job_dir, "align", "done", detail)
     del ap
+
+    same_refs = same_score_references(
+        spec.get("piece_id"), piece.n_references if piece is not None else 1, provenance,
+        list(spec.get("exclude_references") or []), [t.read_bytes() for t in takes])
+    summary["same_score_references"] = len(same_refs)
+    if same_refs:
+        notes.append(f"{len(same_refs)} ASAP (Disklavier) performances of this piece were "
+                     "aligned to the same score as same-score references (pedal and evenness "
+                     "tiers, timing and expert comparison).")  # fmt: skip
 
     # ---------------------------------------------------------------- 3. report
     set_step(job_dir, "report", "running", "features, references, expert check")
@@ -203,7 +297,9 @@ def run(job_dir: Path) -> None:
         mids[0], score=score, piece_id=spec.get("piece_id") or None, provenance=provenance,
         title=spec.get("title") or "", takes=mids[1:],
         exclude_references=spec.get("exclude_references") or [], notes=notes,
-        expert_capture_model=TRANSKUN_CAPTURE_MODEL if audio else None)  # fmt: skip
+        reference_midis=same_refs, reference_provenance="disklavier",
+        expert_capture_model=(spec.get("capture_model") or TRANSKUN_CAPTURE_MODEL) if audio
+        else spec.get("capture_model") if transcribed else None)  # fmt: skip
     write_report(rep, job_dir / "report.html")
     summary["report"] = {
         "n_practise": len(rep.get("practise", [])),

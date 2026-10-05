@@ -1,0 +1,27 @@
+{
+  "movement": "P02",
+  "recognised_piece": null,
+  "notes": "Eb major section (score bars 284-324), repeated. Bars 288-289 and 292-293 cadence onto a tonic 6/4 sonority over a dominant pedal bass, so marked IAC. Bars 294-301 prolong V7 of Eb. Bars 310-322 are a codetta over a tonic pedal; 362-363 is a transition ending on Bb.",
+  "events": [
+    {"bar": 284, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.85},
+    {"bar": 289, "beat": 2, "type": "phrase_end", "cadence": "IAC", "confidence": 0.5},
+    {"bar": 290, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 293, "beat": 2, "type": "phrase_end", "cadence": "IAC", "confidence": 0.45},
+    {"bar": 294, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.7},
+    {"bar": 298, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.35},
+    {"bar": 298, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.4},
+    {"bar": 301, "beat": 3, "type": "phrase_end", "cadence": "HC", "confidence": 0.5},
+    {"bar": 302, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 305, "beat": 1, "type": "phrase_end", "cadence": "IAC", "confidence": 0.5},
+    {"bar": 306, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.55},
+    {"bar": 309, "beat": 1, "type": "phrase_end", "cadence": "PAC", "confidence": 0.45},
+    {"bar": 310, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.5},
+    {"bar": 311, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.35},
+    {"bar": 312, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.35},
+    {"bar": 315, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.3},
+    {"bar": 316, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.3},
+    {"bar": 322, "beat": 1, "type": "phrase_end", "cadence": "none", "confidence": 0.3},
+    {"bar": 362, "beat": 1, "type": "phrase_start", "cadence": "none", "confidence": 0.3},
+    {"bar": 363, "beat": 1, "type": "phrase_end", "cadence": "HC", "confidence": 0.3}
+  ]
+}

@@ -38,4 +38,16 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [compare-p01.md](compare-p01.md) - P-01 A/B clips: report-JSON-only coupling, window merge,
   isotonic time map, expert choice, excerpt render, tuplet tolerance, check biases, measured.
 - [app-p02.md](app-p02.md) - P-02 local app: stdlib server + guards, subprocess worker and
-  cancel, job hashing, catalog (584 PianoCoRe + 221 ASAP), clip/curve joining, measured runs.
+  cancel, job hashing, catalog (584 PianoCoRe + 221 ASAP), clip/curve joining, measured runs;
+  DF-05: code-version key, transcribed MIDI, wrong-piece stop (Dice 0.5), same-score ref trap.
+- DF-06 (2026-09-29): pooled evenness = RMS of per-note scaled residuals (code intended,
+  docstring fixed in control.py); pedal_blur_beats capped at 4 beats.
+- [df02-llm-phrase-cache.md](df02-llm-phrase-cache.md) - DF-02: LLM phrase cache + loader,
+  report disclosure, build protocol traps (prompt location, title-word removals), O-01 numbers;
+  post-BL-17 disclosure (undetermined on sign disagreement, genre/recognition caveats).
+- [bl19-bl20-density-staff.md](bl19-bl20-density-staff.md) - BL-20 density (aligner absorbs wrong keys equal to nearby pitch; window fine; F-02 repro) and BL-19 staff proxies (5.2% notes at risk; partitura Words has no staff; staff-numbering gap; PianoVAM Fingering/ upstream).
+- [bl18-strong-tier.md](bl18-strong-tier.md) - BL-18: strong tier on transcribed input; cause (Aria missed
+  notes), R1(2)+R2s implemented but overshoots (0.2%), R1(0) nearest nominal, dev LOO overstates.
+- [bl23-df09-df10.md](bl23-df09-df10.md) - DF-10 pitch check is a no-op under the legacy ornament rule; DF-09 staff fix in `to_part` (25 -> 0 zero-event scores); BL-23 tight whitelist fails genuine-ornament check, post-pass `reassign=True` is default.
+- [bl18b-interim-rules.md](bl18b-interim-rules.md) - interim R1(0) + passage-not-heard rule, BL-25 fast-repeat
+  missed (score IOI < 100 ms), BL-20 fast-run wording; BL-18b FAIL on C4 = checker loss (DF-12).

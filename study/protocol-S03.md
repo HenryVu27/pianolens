@@ -177,7 +177,13 @@ uses group-level thresholds, so different listener groups may even do the two pa
 - 2 catch trials (gross wrong notes).
 - 1 practice trial.
 - Every (dimension, level) cell is compared about 2N times over the eight excerpts. With N = 96
-  that is about 24 comparisons per stimulus, above the 12-17 target in rules/study.md.
+  that is about 2 x 96 / 8 = 24 comparisons per stimulus (7 x 3 x 8 = 168 degraded stimuli,
+  42 x 96 = 4,032 judgements, above 10 x 168). This meets the rules/study.md target of at least
+  20 comparisons per item on average. Design B2 at N = 48 also gives about 24 (4 x 48 / 8).
+  Designs with fewer than 80 listeners in A2 fall below 20 per stimulus. (Corrected 2026-09-29,
+  DF-08: this line used to cite the withdrawn "12-17" target.) The scale-separation reliability
+  part of that rule is for Bradley-Terry scaling (S-04 onward); here reliability is the
+  split-half reliability of section 7.6.
 
 ### 4.4 Counterbalancing and randomisation (`study/app/design.js`)
 
