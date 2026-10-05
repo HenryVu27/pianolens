@@ -1,0 +1,771 @@
+{
+ "set": "C:\\Personal\\pianolens\\experiments\\2026-09-28-R-07-symupe-finetune\\job\\outputs\\eval_sets\\R10s",
+ "arms": {
+  "frozen": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/frozen/R10s",
+  "E": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/E/R10s",
+  "F": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/F/R10s",
+  "pt_frozen": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/pt_frozen/R10s",
+  "pt_E": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/pt_E/R10s"
+ },
+ "n_real": 1812,
+ "n_passages": 48,
+ "n_works": 24,
+ "a": {
+  "E": {
+   "velocity": [
+    0.608652479532602,
+    0.5763226573185677,
+    0.6303189074235265
+   ],
+   "log_ioi": [
+    0.38874768688005906,
+    0.3307140443719437,
+    0.41581051808397107
+   ],
+   "log_art": [
+    0.5394170392248808,
+    0.5027740394204414,
+    0.5616854352625337
+   ],
+   "composite": [
+    0.5122724018791807,
+    0.480656185337512,
+    0.5251298488737385
+   ],
+   "per_work_composite": {
+    "albeniz_op47": 0.47052507456715525,
+    "bach_bwv808": 0.4372941288070326,
+    "bach_bwv830": 0.41766596994359995,
+    "bach_bwv875": 0.4978320572516218,
+    "beethoven_op10_no2": 0.4671814181630228,
+    "beethoven_op49_no2": 0.5635043714363449,
+    "beethoven_op53": 0.516823024833168,
+    "beethoven_woo59": 0.3861647975029492,
+    "chopin_op28_no13": 0.6262241926631373,
+    "chopin_op28_no16": 0.49320204513668797,
+    "chopin_op66": 0.5564454777532766,
+    "debussy_l123_no10": 0.6044754146695489,
+    "debussy_l136_no1": 0.5644737064718048,
+    "faure_op63": 0.5905028037063643,
+    "grieg_op12_no4": 0.5185143366655572,
+    "liszt_s145": 0.47070087058384086,
+    "macdowell_op51_no1": 0.6050322371744216,
+    "mozart_k576": 0.5108227161148292,
+    "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5": 0.36116290814181307,
+    "pianocore:Chopin,_Fr\u00e9d\u00e9ric/Nocturnes,_Op.48/Nocturne_No.13_in_C_minor,_Lento": 0.48199212531360713,
+    "pianocore:Ravel,_Maurice/Pavane_pour_une_infante_d\u00e9funte,_M.19": 0.4741671641314215,
+    "pianocore:Satie,_Erik/Gnossiennes,_IES_24/2._Avec_\u00e9tonnement": 0.6638808754755692,
+    "schubert_d760_no2": 0.5538161740065337,
+    "schubert_d959": 0.4621337545870278
+   }
+  },
+  "frozen": {
+   "velocity": [
+    0.6215937389109726,
+    0.5817148079910851,
+    0.6458246278953536
+   ],
+   "log_ioi": [
+    0.43811355665668383,
+    0.3667722889475664,
+    0.46566418104322144
+   ],
+   "log_art": [
+    0.4727558479598693,
+    0.4394234400138664,
+    0.5186289402679507
+   ],
+   "composite": [
+    0.5108210478425086,
+    0.4754900898673825,
+    0.5316411639970097
+   ],
+   "per_work_composite": {
+    "albeniz_op47": 0.49351232059665245,
+    "bach_bwv808": 0.46880767974602483,
+    "bach_bwv830": 0.451322470609034,
+    "bach_bwv875": 0.4697695822354638,
+    "beethoven_op10_no2": 0.46363602273127136,
+    "beethoven_op49_no2": 0.5458458704594513,
+    "beethoven_op53": 0.5768874294189184,
+    "beethoven_woo59": 0.3195598897987462,
+    "chopin_op28_no13": 0.6133859894710547,
+    "chopin_op28_no16": 0.5033234585235992,
+    "chopin_op66": 0.5639361323068045,
+    "debussy_l123_no10": 0.581499139060125,
+    "debussy_l136_no1": 0.586571354267649,
+    "faure_op63": 0.6159740437277703,
+    "grieg_op12_no4": 0.5105404685030653,
+    "liszt_s145": 0.4663453179266,
+    "macdowell_op51_no1": 0.5569141140100369,
+    "mozart_k576": 0.43241184418693324,
+    "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5": 0.3807386663046691,
+    "pianocore:Chopin,_Fr\u00e9d\u00e9ric/Nocturnes,_Op.48/Nocturne_No.13_in_C_minor,_Lento": 0.3786217647180635,
+    "pianocore:Ravel,_Maurice/Pavane_pour_une_infante_d\u00e9funte,_M.19": 0.5736103270563438,
+    "pianocore:Satie,_Erik/Gnossiennes,_IES_24/2._Avec_\u00e9tonnement": 0.6912289861480021,
+    "schubert_d760_no2": 0.6656811472261889,
+    "schubert_d959": 0.34958112918773854
+   }
+  },
+  "pt_E": {
+   "velocity": [
+    0.5570092749439333,
+    0.5252126750283048,
+    0.591313283918326
+   ],
+   "log_ioi": [
+    0.3456984677749578,
+    0.3053851082514271,
+    0.37083749749533107
+   ],
+   "log_art": [
+    0.5018554404203668,
+    0.4549596432432226,
+    0.5397920707894766
+   ],
+   "composite": [
+    0.468187727713086,
+    0.4416716401057305,
+    0.4861385590148541
+   ],
+   "per_work_composite": {
+    "albeniz_op47": 0.42523452885698504,
+    "bach_bwv808": 0.43681677387280193,
+    "bach_bwv830": 0.37604644986432556,
+    "bach_bwv875": 0.4703591825729829,
+    "beethoven_op10_no2": 0.47646630178120253,
+    "beethoven_op49_no2": 0.4651959461025748,
+    "beethoven_op53": 0.42330357128754886,
+    "beethoven_woo59": 0.4419392398475171,
+    "chopin_op28_no13": 0.3869549327738854,
+    "chopin_op28_no16": 0.44752029010612754,
+    "chopin_op66": 0.4777764364101774,
+    "debussy_l123_no10": 0.5026396345331106,
+    "debussy_l136_no1": 0.3886953265822327,
+    "faure_op63": 0.6172133227297919,
+    "grieg_op12_no4": 0.4416365357296902,
+    "liszt_s145": 0.45457804267724883,
+    "macdowell_op51_no1": 0.672693021404192,
+    "mozart_k576": 0.5145380829540538,
+    "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5": 0.5092578316268309,
+    "pianocore:Chopin,_Fr\u00e9d\u00e9ric/Nocturnes,_Op.48/Nocturne_No.13_in_C_minor,_Lento": 0.4204614189957843,
+    "pianocore:Ravel,_Maurice/Pavane_pour_une_infante_d\u00e9funte,_M.19": 0.3535560067551738,
+    "pianocore:Satie,_Erik/Gnossiennes,_IES_24/2._Avec_\u00e9tonnement": 0.5670713997504215,
+    "schubert_d760_no2": 0.5470107578126003,
+    "schubert_d959": 0.4195404300868041
+   }
+  },
+  "pt_frozen": {
+   "velocity": [
+    0.5612044712972603,
+    0.5225293690320328,
+    0.5895291323208381
+   ],
+   "log_ioi": [
+    0.2785851937102979,
+    0.22958922985070254,
+    0.3102184838079757
+   ],
+   "log_art": [
+    0.3872540236184568,
+    0.3474948660285505,
+    0.4245574679493243
+   ],
+   "composite": [
+    0.40901456287533833,
+    0.3820489593492027,
+    0.42599176049602805
+   ],
+   "per_work_composite": {
+    "albeniz_op47": 0.33453808541263164,
+    "bach_bwv808": 0.36212547754837626,
+    "bach_bwv830": 0.32360427718275514,
+    "bach_bwv875": 0.35434904758718366,
+    "beethoven_op10_no2": 0.4372179828301128,
+    "beethoven_op49_no2": 0.4080970432426228,
+    "beethoven_op53": 0.401158658701625,
+    "beethoven_woo59": 0.26229819725188447,
+    "chopin_op28_no13": 0.47555478735343654,
+    "chopin_op28_no16": 0.39928864851967316,
+    "chopin_op66": 0.3919878782141758,
+    "debussy_l123_no10": 0.3220390277594353,
+    "debussy_l136_no1": 0.3736882643825266,
+    "faure_op63": 0.4995514753065363,
+    "grieg_op12_no4": 0.4602007917956442,
+    "liszt_s145": 0.4419634195480918,
+    "macdowell_op51_no1": 0.3851549064960028,
+    "mozart_k576": 0.4592620514545723,
+    "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5": 0.33589189582734696,
+    "pianocore:Chopin,_Fr\u00e9d\u00e9ric/Nocturnes,_Op.48/Nocturne_No.13_in_C_minor,_Lento": 0.4542228335928283,
+    "pianocore:Ravel,_Maurice/Pavane_pour_une_infante_d\u00e9funte,_M.19": 0.3824399662447232,
+    "pianocore:Satie,_Erik/Gnossiennes,_IES_24/2._Avec_\u00e9tonnement": 0.6351577618724156,
+    "schubert_d760_no2": 0.510739631629553,
+    "schubert_d959": 0.4058173992539663
+   }
+  },
+  "E-frozen": {
+   "velocity": [
+    -0.012941259378370623,
+    -0.024071443270258584,
+    0.005144502873772819
+   ],
+   "log_ioi": [
+    -0.049365869776624716,
+    -0.07233195221234359,
+    -0.016253377195885464
+   ],
+   "log_art": [
+    0.06666119126501154,
+    0.021425984873476047,
+    0.0825726432350044
+   ],
+   "composite": [
+    0.0014513540366720573,
+    -0.015646376149086132,
+    0.015292511988743769
+   ],
+   "per_work_composite": {
+    "albeniz_op47": -0.02298724602949725,
+    "bach_bwv808": -0.031513550938992274,
+    "bach_bwv830": -0.033656500665434096,
+    "bach_bwv875": 0.028062475016158016,
+    "beethoven_op10_no2": 0.003545395431751415,
+    "beethoven_op49_no2": 0.017658500976893567,
+    "beethoven_op53": -0.0600644045857503,
+    "beethoven_woo59": 0.06660490770420299,
+    "chopin_op28_no13": 0.012838203192082575,
+    "chopin_op28_no16": -0.010121413386911249,
+    "chopin_op66": -0.007490654553527932,
+    "debussy_l123_no10": 0.022976275609423943,
+    "debussy_l136_no1": -0.022097647795844094,
+    "faure_op63": -0.025471240021405855,
+    "grieg_op12_no4": 0.007973868162491949,
+    "liszt_s145": 0.004355552657240904,
+    "macdowell_op51_no1": 0.048118123164384664,
+    "mozart_k576": 0.07841087192789604,
+    "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5": -0.019575758162856092,
+    "pianocore:Chopin,_Fr\u00e9d\u00e9ric/Nocturnes,_Op.48/Nocturne_No.13_in_C_minor,_Lento": 0.10337036059554364,
+    "pianocore:Ravel,_Maurice/Pavane_pour_une_infante_d\u00e9funte,_M.19": -0.09944316292492227,
+    "pianocore:Satie,_Erik/Gnossiennes,_IES_24/2._Avec_\u00e9tonnement": -0.027348110672432906,
+    "schubert_d760_no2": -0.11186497321965516,
+    "schubert_d959": 0.11255262539928924
+   }
+  },
+  "F-frozen": {
+   "velocity": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "log_ioi": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "log_art": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "composite": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "per_work_composite": {},
+   "t_interval_composite": [
+    NaN,
+    NaN,
+    NaN
+   ]
+  },
+  "pt_frozen-frozen": {
+   "velocity": [
+    -0.06038926761371233,
+    -0.07894406051637129,
+    -0.03677917236751066
+   ],
+   "log_ioi": [
+    -0.15952836294638595,
+    -0.18750478194769205,
+    -0.1043552399229284
+   ],
+   "log_art": [
+    -0.08550182434141253,
+    -0.11913921023827138,
+    -0.06509643569579542
+   ],
+   "composite": [
+    -0.10180648496717026,
+    -0.12258776203464102,
+    -0.07721010915995921
+   ],
+   "per_work_composite": {
+    "albeniz_op47": -0.15897423518402082,
+    "bach_bwv808": -0.10668220219764862,
+    "bach_bwv830": -0.12771819342627894,
+    "bach_bwv875": -0.11542053464828007,
+    "beethoven_op10_no2": -0.02641803990115853,
+    "beethoven_op49_no2": -0.13774882721682843,
+    "beethoven_op53": -0.17572877071729331,
+    "beethoven_woo59": -0.05726169254686173,
+    "chopin_op28_no13": -0.13783120211761823,
+    "chopin_op28_no16": -0.10403481000392606,
+    "chopin_op66": -0.17194825409262868,
+    "debussy_l123_no10": -0.2594601113006897,
+    "debussy_l136_no1": -0.21288308988512233,
+    "faure_op63": -0.11642256842123393,
+    "grieg_op12_no4": -0.050339676707421115,
+    "liszt_s145": -0.024381898378508154,
+    "macdowell_op51_no1": -0.1717592075140341,
+    "mozart_k576": 0.026850207267639037,
+    "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5": -0.04484677047732217,
+    "pianocore:Chopin,_Fr\u00e9d\u00e9ric/Nocturnes,_Op.48/Nocturne_No.13_in_C_minor,_Lento": 0.07560106887476478,
+    "pianocore:Ravel,_Maurice/Pavane_pour_une_infante_d\u00e9funte,_M.19": -0.19117036081162064,
+    "pianocore:Satie,_Erik/Gnossiennes,_IES_24/2._Avec_\u00e9tonnement": -0.05607122427558649,
+    "schubert_d760_no2": -0.15494151559663588,
+    "schubert_d959": 0.05623627006622777
+   }
+  },
+  "pt_E-frozen": {
+   "velocity": [
+    -0.06458446396703933,
+    -0.0826611424133308,
+    -0.029100281842308402
+   ],
+   "log_ioi": [
+    -0.09241508888172596,
+    -0.12687643522364578,
+    -0.03241325554852794
+   ],
+   "log_art": [
+    0.029099592460497464,
+    -0.02097572926438991,
+    0.0596229672157724
+   ],
+   "composite": [
+    -0.042633320129422614,
+    -0.06786456096533644,
+    -0.01179985366283019
+   ],
+   "per_work_composite": {
+    "albeniz_op47": -0.06827779173966747,
+    "bach_bwv808": -0.03199090587322293,
+    "bach_bwv830": -0.0752760207447085,
+    "bach_bwv875": 0.0005896003375192211,
+    "beethoven_op10_no2": 0.012830279049931151,
+    "beethoven_op49_no2": -0.08064992435687654,
+    "beethoven_op53": -0.1535838581313695,
+    "beethoven_woo59": 0.12237935004877086,
+    "chopin_op28_no13": -0.22643105669716942,
+    "chopin_op28_no16": -0.05580316841747169,
+    "chopin_op66": -0.086159695896627,
+    "debussy_l123_no10": -0.07885950452701444,
+    "debussy_l136_no1": -0.1978760276854163,
+    "faure_op63": 0.001239279002021616,
+    "grieg_op12_no4": -0.06890393277337516,
+    "liszt_s145": -0.011767275249351113,
+    "macdowell_op51_no1": 0.11577890739415501,
+    "mozart_k576": 0.08212623876712057,
+    "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5": 0.1285191653221618,
+    "pianocore:Chopin,_Fr\u00e9d\u00e9ric/Nocturnes,_Op.48/Nocturne_No.13_in_C_minor,_Lento": 0.041839654277720774,
+    "pianocore:Ravel,_Maurice/Pavane_pour_une_infante_d\u00e9funte,_M.19": -0.22005432030117,
+    "pianocore:Satie,_Erik/Gnossiennes,_IES_24/2._Avec_\u00e9tonnement": -0.12415758639758057,
+    "schubert_d760_no2": -0.1186703894135886,
+    "schubert_d959": 0.0699593008990655
+   }
+  }
+ },
+ "pass_fail": {
+  "E:B-amount": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": false,
+    "jitV16": false
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "E:B-smooth": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "E:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "E:S-LR": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": true,
+   "R3_point_pass": true
+  },
+  "E:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "F:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": false,
+   "R3_point_pass": false
+  },
+  "frozen:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": true,
+   "R3_point_pass": true
+  },
+  "frozen:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "pt_E:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": true,
+   "R3_point_pass": true
+  },
+  "pt_E:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "pt_frozen:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": true,
+   "R3_point_pass": true
+  },
+  "pt_frozen:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  }
+ },
+ "h1b": {
+  "E": {
+   "r2c_velocity": 0.5229901392648392,
+   "reliability_velocity": 0.9774015775388049,
+   "r2c_log_ioi": -0.09401337156529332,
+   "reliability_log_ioi": 0.9688554362135625,
+   "k": 6.0,
+   "captured": 0.08649888747523009,
+   "random_mean": 0.008250028141209832,
+   "random_p95": 0.009932103180736075
+  },
+  "frozen": {
+   "r2c_velocity": 0.4769642512662414,
+   "reliability_velocity": 0.9774015775388049,
+   "r2c_log_ioi": 0.2227468944054125,
+   "reliability_log_ioi": 0.9688554362135625,
+   "k": 6.0,
+   "captured": 0.11030642247926412,
+   "random_mean": 0.008250028141209832,
+   "random_p95": 0.009932103180736075
+  },
+  "pt_E": {
+   "r2c_velocity": 0.4724669704893927,
+   "reliability_velocity": 0.9774015775388049,
+   "r2c_log_ioi": 0.18112790594665806,
+   "reliability_log_ioi": 0.9688554362135625,
+   "k": 6.0,
+   "captured": 0.10740088281797015,
+   "random_mean": 0.008250028141209832,
+   "random_p95": 0.009932103180736075
+  },
+  "pt_frozen": {
+   "r2c_velocity": 0.32485851955177025,
+   "reliability_velocity": 0.9774015775388049,
+   "r2c_log_ioi": -0.23702774752924305,
+   "reliability_log_ioi": 0.9688554362135625,
+   "k": 6.0,
+   "captured": 0.10257050935446675,
+   "random_mean": 0.008250028141209832,
+   "random_p95": 0.009932103180736075
+  }
+ }
+}

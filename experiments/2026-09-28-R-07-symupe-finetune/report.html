@@ -1,0 +1,1336 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R-07 run report</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1f2328;--muted:#5b6470;--line:#e3e0d8;--card:#ffffff;
+--accent:#2f5d8a;--accent-soft:#e8eef5;--code:#f3f1ec;--good:#2e7d4f;--warn:#9a6b00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15171a;--fg:#e6e6e3;
+--muted:#9aa3ad;--line:#2c3036;--card:#1c1f23;--accent:#8fb6e0;--accent-soft:#1f2a36;
+--code:#22262b;--good:#6fcf97;--warn:#e0b458}}
+:root[data-theme="dark"]{--bg:#15171a;--fg:#e6e6e3;--muted:#9aa3ad;--line:#2c3036;--card:#1c1f23;
+--accent:#8fb6e0;--accent-soft:#1f2a36;--code:#22262b;--good:#6fcf97;--warn:#e0b458}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{display:grid;grid-template-columns:260px minmax(0,760px);gap:48px;
+max-width:1100px;margin:0 auto;padding:48px 24px 96px}
+nav.toc{position:sticky;top:24px;align-self:start;max-height:calc(100vh - 48px);overflow:auto;
+font-size:14px;line-height:1.45;border-right:1px solid var(--line);padding-right:16px}
+nav.toc .title{font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+font-size:12px;margin-bottom:10px}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:3px 0}
+nav.toc a.h3{padding-left:12px;font-size:13px}
+nav.toc a:hover{color:var(--accent)}
+main h1{font-size:2.1rem;line-height:1.2;margin:0 0 .4rem}
+main h2{font-size:1.45rem;margin:2.6rem 0 .8rem;padding-top:.6rem;border-top:1px solid var(--line)}
+main h3{font-size:1.12rem;margin:2rem 0 .5rem;color:var(--accent)}
+main p,main li{max-width:72ch}
+main a{color:var(--accent)}
+blockquote{margin:1.2rem 0;padding:.9rem 1.2rem;background:var(--accent-soft);
+border-left:4px solid var(--accent);border-radius:6px}
+blockquote p{margin:.3rem 0}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font-size:.88em}
+table{width:100%;border-collapse:collapse;margin:1rem 0 1.4rem;font-size:.92rem;
+background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:block;
+overflow-x:auto}
+th,td{text-align:left;padding:.55rem .75rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--accent-soft);font-weight:600}
+tr:last-child td{border-bottom:none}
+hr{border:none;border-top:1px solid var(--line);margin:2rem 0}
+.meta{color:var(--muted);font-size:.95rem;margin-bottom:1.5rem}
+.theme{position:fixed;top:14px;right:16px;background:var(--card);color:var(--fg);
+border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+@media (max-width:900px){.wrap{grid-template-columns:1fr;gap:0;padding:56px 16px 64px}
+nav.toc{position:static;max-height:none;border-right:none;border-bottom:1px solid var(--line);
+padding:0 0 16px;margin-bottom:24px}}
+@media print{nav.toc,.theme{display:none}.wrap{display:block}}
+</style></head>
+<body><button class="theme" type="button">Light / dark</button>
+<div class="wrap"><nav class="toc"><div class="title">Contents</div><a class="h2" href="#1-what-r-07-is-and-why">1. What R-07 is and why</a><a class="h3" href="#the-problem-it-follows-from">The problem it follows from</a><a class="h3" href="#the-questions-readme-question">The questions (README &quot;Question&quot;)</a><a class="h3" href="#decision-rules-fixed-before-any-results">Decision rules (fixed before any results)</a><a class="h3" href="#the-split-readme-splits-split-summary-json">The split (README &quot;Splits&quot;, split/summary.json)</a><a class="h2" href="#2-the-models">2. The models</a><a class="h3" href="#symupe-encdec-base-arms-frozen-e-and-f">SyMuPe EncDec-base (arms &quot;frozen&quot;, &quot;E&quot; and &quot;F&quot;)</a><a class="h3" href="#pianist-transformer-rendering-arms-pt-frozen-and-pt-e">Pianist Transformer rendering (arms &quot;pt_frozen&quot; and &quot;pt_E&quot;)</a><a class="h3" href="#fine-tuning-recipe-readme-method-job-run-sh-train-config-json-files">Fine-tuning recipe (README &quot;Method&quot;; job/run.sh; train_config.json files)</a><a class="h2" href="#3-what-was-done-in-order">3. What was done, in order</a><a class="h2" href="#4-results-so-far-training-only-no-evaluation-results-yet">4. Results so far (training only; no evaluation results yet)</a><a class="h3" href="#data-job-outputs-data-prep-meta-json-leakage-report-json">Data (job/outputs/data/prep_meta.json, leakage_report.json)</a><a class="h3" href="#cost-question-d">Cost (question (d))</a><a class="h3" href="#training-curves">Training curves</a><a class="h2" href="#4b-first-evaluation-results-set-p-provisional-not-audited">4b. First evaluation results: set P (provisional, not audited)</a><a class="h3" href="#reproduction-gate-missed-by-0-001">Reproduction gate: missed by 0.001</a><a class="h3" href="#a-per-note-prediction-on-p-harms">(a) Per-note prediction on P: harms</a><a class="h3" href="#c-typicality-scores-e-on-p">(c) Typicality scores, E on P</a><a class="h3" href="#set-v-vienna-4x22-added-about-02-00-utc-job-outputs-results-v">Set V (Vienna 4x22), added about 02:00 UTC (job/outputs/results/V/)</a><a class="h3" href="#set-a-n-asap-80-renditions-16-works-added-about-03-00-utc-job-outputs-results-a">Set A ((n)ASAP, 80 renditions, 16 works), added about 03:00 UTC (job/outputs/results/A/)</a><a class="h3" href="#secondary-arm-fine-tuned-pianist-transformer-pt-e-added-about-12-30-utc-2026-10-01">Secondary arm: fine-tuned Pianist Transformer (pt_E), added about 12:30 UTC 2026-10-01</a><a class="h3" href="#set-r10u-b-h1b-preview-and-secondary-a-added-2026-10-04-00-20-utc-results-r10u">Set R10u: (b) H1b preview and secondary (a), added 2026-10-04 00:20 UTC (results/R10u/)</a><a class="h3" href="#set-r10s-added-2026-10-05-04-25-utc-results-r10s-all-five-arms">Set R10s, added 2026-10-05 04:25 UTC (results/R10s/, all five arms)</a><a class="h2" href="#5-what-is-still-running-and-what-each-result-will-decide">5. What is still running, and what each result will decide</a><a class="h3" href="#running-at-the-time-of-writing">Running at the time of writing</a><a class="h3" href="#arms-and-sets-that-remain">Arms and sets that remain</a><a class="h3" href="#what-each-pending-result-decides-the-pre-registered-readings-no-other-reading-applies">What each pending result decides (the pre-registered readings; no other reading applies)</a><a class="h2" href="#gaps-and-things-not-verified">Gaps and things not verified</a></nav>
+<main><h1 id="r-07-report-fine-tuning-symupe-and-pianist-transformer-on-piece-disjoint-pianocore">R-07 report: fine-tuning SyMuPe (and Pianist Transformer) on piece-disjoint PianoCoRe</h1>
+<p>Written 2026-09-29, about 22:10 UTC (17:10 local), while the job was still running. This is a readable companion to <code>README.md</code>, which holds the pre-registration and the lead's run record. <strong>Nothing here is a verdict.</strong> Every number cites the file it came from, and paths are relative to this folder unless they start with <code>C:\</code>. Section 4b (added later) has the first evaluation results, for set P; they are provisional and not audited.</p>
+<hr />
+<h2 id="1-what-r-07-is-and-why">1. What R-07 is and why</h2>
+<h3 id="the-problem-it-follows-from">The problem it follows from</h3>
+<p>R-06 compared two pretrained, frozen expressive-performance models on PercePiano passages that neither model had seen. SyMuPe EncDec-base and Pianist Transformer tied on per-note prediction (composite r 0.388 vs 0.393, from <code>EXPERIMENTS.md</code>, R-06 row). The R-06 audit also found a serious flaw: a model's likelihood ranks every <em>deadpan</em> (flat, mechanical) rendition above the real expert one (AUC 0.00). So "how probable does the model find this performance?" cannot serve as a quality or typicality score as it stands (DECISIONS 2026-09-28).</p>
+<p>R-07 asks whether fine-tuning fixes the first problem, and whether a corrected score fixes the second.</p>
+<h3 id="the-questions-readme-question">The questions (README "Question")</h3>
+<ol>
+<li><strong>Per-note prediction.</strong> Does fine-tuning SyMuPe EncDec-base on PianoCoRe tier A plus (n)ASAP, with whole works held out, predict the per-note expression of unseen pieces better than the frozen model did in R-06?</li>
+<li><strong>H1b preview.</strong> How much of the <em>shared</em> expert variation (the R-02 audit method) does the variation between the fine-tuned model's samples cover, on pieces that neither pretraining nor fine-tuning saw? (R-10 owns the real H1b verdict.)</li>
+<li><strong>Corrected typicality.</strong> Can a corrected score rank real expert performances above every deadpan variant from the R-06 audit? The three candidates are a likelihood ratio against a flat-playing model, a typical-set distance, and deviation-only agreement. A score may be used anywhere only if it passes.</li>
+<li><strong>Secondary arm.</strong> The same fine-tune for Pianist Transformer, for questions 1 and 2.</li>
+<li><strong>Cost</strong> on the 16 GB RTX 5080.</li>
+</ol>
+<h3 id="decision-rules-fixed-before-any-results">Decision rules (fixed before any results)</h3>
+<p>The primary evaluation set is <strong>P</strong>: PercePiano segments of Beethoven WoO 80 and Schubert D960 mv2 / mv3, with 981 human renditions in 86 passages, unseen by SyMuPe pretraining and held out here.</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Statistic</th>
+<th>Reading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(a) per-note prediction</td>
+<td>Paired difference, fine-tuned E minus frozen, in the per-rendition composite r (the mean over velocity, log IOI ratio and log articulation of the Pearson r against the mean of K = 8 samples). 95% CI from a two-way passage x performer cluster bootstrap (2,000 resamples, seed 0), plus a t-interval over the 3 works.</td>
+<td><strong>improves</strong> if the whole CI is above 0; <strong>harms</strong> if the whole CI is below 0; otherwise <strong>no detectable change</strong>.</td>
+</tr>
+<tr>
+<td>(a) reproduction gate</td>
+<td>The frozen model re-run through this pipeline must give a P composite within 0.01 of R-06's 0.388.</td>
+<td>If it misses, that is the first finding, and the comparison uses the re-run numbers.</td>
+</tr>
+<tr>
+<td>(a) use downstream</td>
+<td>E replaces the frozen model in R-10 / tier D only if (a) on P reads "improves" or "no detectable change" <strong>and</strong> E's best validation loss is below the frozen model's (step 0).</td>
+<td>Otherwise R-10 keeps the frozen model.</td>
+</tr>
+<tr>
+<td>(b) H1b preview</td>
+<td>On R10u pieces with at least 20 renditions: the median share of the expert variance in the k shared components that lies in the span of E's K = 16 sample deviations. It is compared with a random 15-dimensional subspace.</td>
+<td>median at least 0.50: "consistent with H1b"; at most 0.20: "at the H1b falsification level"; otherwise inconclusive. The same thresholds apply to the mean-curve R²c, per target.</td>
+</tr>
+<tr>
+<td>(c) typicality</td>
+<td>Four scores: S-RAW (reference), S-LR = ℓ_E − ℓ_F, S-TYP (typical-set distance), S-DEV (shape-only agreement). Each gets a paired AUC against each variant in the deadpan / noise battery.</td>
+<td><strong>pass</strong> needs R1 (deadpan battery: AUC ≥ 0.75, CI above 0.5, ≥ 0.5 in each P work), R2 (still detects jitter) and R3 (replicates on Vienna). R1 + R3 without R2 means <strong>flatness detector only</strong>. Anything else is <strong>fail</strong>, and that score is used nowhere.</td>
+</tr>
+<tr>
+<td>(d) cost</td>
+<td>Seconds per step and peak memory from <code>calibrate</code>; wall time per stage.</td>
+<td>Descriptive.</td>
+</tr>
+</tbody>
+</table>
+<p>Secondary sets (reported, not deciding): <strong>R10u</strong> (76 R-02 pieces unseen by pretraining and by fine-tuning; transcribed MIDI), <strong>R10s</strong> (held out here but seen in pretraining), <strong>V</strong> (Vienna 4x22), <strong>A</strong> ((n)ASAP, Pianist Transformer's test folders).</p>
+<h3 id="the-split-readme-splits-split-summary-json">The split (README "Splits", <code>split/summary.json</code>)</h3>
+<p>The unit of the split is the <strong>work</strong>: all movements of a sonata, or a prelude with its fugue, go to one side. Test: 257 piece ids in 129 works. Validation: 91 piece ids in 59 works, used only for early stopping. Quarantine: 81 piece ids that might alias a test piece. Train: everything else. The split is committed in <code>split/pieces.csv</code>.</p>
+<hr />
+<h2 id="2-the-models">2. The models</h2>
+<h3 id="symupe-encdec-base-arms-frozen-e-and-f">SyMuPe EncDec-base (arms "frozen", "E" and "F")</h3>
+<p>Sources: <code>C:\Users\Vuduc\r07\models\EncDec-base\config.json</code>, <code>tokenizer.json</code>, <code>README.md</code> (model card), and a CPU parameter count run for this report.</p>
+<ul>
+<li><strong>Origin.</strong> Borovik et al., <em>SyMuPe</em>, ACM MM 2025. HF <code>SyMuPe/EncDec-base</code> at revision <code>1b942f28</code>; code <code>symupe</code> at commit <code>13cc57d</code>. The model card says it was pretrained for 300,000 iterations on PERiScoPe v1.0. License CC BY-NC-SA 4.0.</li>
+<li><strong>Type.</strong> <code>Seq2SeqMusicTransformer</code>, a Transformer encoder-decoder. The model card gives the objective as causal language modelling over performance tokens.</li>
+<li><strong>Size.</strong> 25,106,586 parameters (<code>job/outputs/symupe_E/run_meta.json</code>, <code>n_params</code>):</li>
+<li>encoder 12,099,680, of which the token embeddings are 296,544;</li>
+<li>decoder 13,303,450, including its embeddings and output heads.</li>
+<li><strong>Transformer blocks</strong> (same in the encoder and the decoder):</li>
+<li>model width 512, depth 4;</li>
+<li>8 heads of dimension 64, with one shared key/value head (multi-query);</li>
+<li>rotary position embeddings (base 1024) and no absolute positions;</li>
+<li>GLU-Swish feed-forward, ×3 width;</li>
+<li>dropout 0.1, and 4 memory tokens.</li>
+<li><strong>One position per note.</strong> A note is a compound token with several fields. Each field gets a 64-dimensional embedding, and the field embeddings are concatenated. The embeddings are continuous-valued (sinusoidal, learned frequencies; <code>"discrete": false</code>), not lookup tables.</li>
+<li><strong>Fields</strong> (<code>num_tokens</code> = vocabulary size per field):</li>
+<li><strong>Score</strong> (encoder side): <code>Pitch</code> 97, <code>Position</code> 202, <code>PositionShift</code> 142, <code>Duration</code> 142.</li>
+<li><strong>Performance</strong> (what the model predicts): <code>Velocity</code> 137, <code>TimeShift</code> 371, <code>TimeDuration</code> 319, <code>TimeDurationSustain</code> 319. <code>TimeDurationSustain</code> is the note's length with the sustain pedal applied. Its embedding is tied to <code>TimeDuration</code>.</li>
+<li>The <code>TimeShift</code> bins run from −0.5 to 10.0, and the <code>TimeDuration</code> bins from 0 to 10.0, both on non-uniform grids that are finer near zero. The units are whatever the SyMuPe tokenizer defines; they were not checked for this report.</li>
+<li><strong>Conditioning context</strong> (decoder side): score-level <code>Velocity</code> (137) and <code>Tempo</code> (170) tokens, concatenated into the decoder input. The config also sets score-token dropout to 0.2. In this project each rendition's conditioning is one global tempo (60 / its seconds-per-quarter) and one velocity (its median velocity), exactly as in R-06.</li>
+<li><strong>Inputs and outputs in this job</strong> (<code>job/symupe_train.py</code>):</li>
+<li>The encoder gets the score plus the performance fields <em>masked</em>, built with the package's own <code>prepare_sequence</code>.</li>
+<li>The decoder predicts the four performance fields note by note. The output is one categorical distribution per field.</li>
+<li>The loss is the package's cross-entropy. The logged total equals the mean of the four field losses; this was checked against the step-0 validation values in <code>train_log.jsonl</code>.</li>
+<li><strong>Context window.</strong> 256 notes, the paper's context. Training windows start at random. Validation windows are fixed, non-overlapping 256-note windows from the start of each validation item, up to 2,048 windows. SOS and EOS are added only when a window touches the true start or end of the piece.</li>
+<li><strong>Tokenization failures.</strong> <code>encode_pair</code> (the R-06 adapter) refuses an item when the tokenizer's note order differs from our alignment order. That skipped 636 of 37,295 train items and 9 of 2,350 validation items (1.7%). The failures are listed in <code>job/outputs/tokens/tokenize_meta.json</code>. The pre-registration did not anticipate this rate; the run record discloses it.</li>
+</ul>
+<h3 id="pianist-transformer-rendering-arms-pt-frozen-and-pt-e">Pianist Transformer rendering (arms "pt_frozen" and "pt_E")</h3>
+<p>Sources: <code>C:\Users\Vuduc\r07\models\pianist-transformer-rendering\config.json</code>, <code>README.md</code> (model card), <code>C:\Users\Vuduc\r07\src\PianistTransformer\src\model\pianoformer.py</code>, <code>...\src\utils\midi.py</code>, and the R-06 adapter <code>../2026-09-27-R-06-expression-model-h2h/adapters/pt_adapter.py</code>.</p>
+<ul>
+<li><strong>Origin.</strong> You et al., arXiv 2512.02652. HF <code>yhj137/pianist-transformer-rendering</code> at <code>8f156820</code>; code at <code>747df2d</code>. License Apache-2.0. The model card describes self-supervised pretraining on a 10-billion-token MIDI corpus followed by supervised fine-tuning (SFT) for rendering.</li>
+<li><strong>Type.</strong> <code>PianoT5Gemma</code>, an asymmetric T5Gemma encoder-decoder.</li>
+<li><strong>Size.</strong> 135,742,464 parameters (<code>job/outputs/pt_E/run_meta.json</code>). The model card says 135M.</li>
+<li><strong>Transformer blocks</strong> (hidden size 768):</li>
+<li>8 query heads and 4 key/value heads (grouped-query attention), head dimension 128;</li>
+<li>GELU-tanh feed-forward of width 3072;</li>
+<li>RoPE (θ 10,000); attention logits soft-capped at 50 and final logits at 30.</li>
+<li><strong>Encoder.</strong> 10 layers, alternating sliding-window (4,096) and full attention.</li>
+<li><strong>Decoder.</strong> 2 layers.</li>
+<li><strong>Tokens: 8 per note</strong>, from one vocabulary of 5,389 ids (<code>midi_to_ids</code>; <code>config.json</code> gives the id ranges):</li>
+<li>pitch;</li>
+<li>interval: the time since the previous note's onset, in ms;</li>
+<li>velocity;</li>
+<li>duration, in ms;</li>
+<li>four sustain-pedal samples, taken at 0, ¼, ½ and ¾ of the way to the next onset.</li>
+</ul>
+<p>The id ranges:</p>
+<table>
+<thead>
+<tr>
+<th>Ids</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0-4</td>
+<td>special: pad, mask, bos, eos, play</td>
+</tr>
+<tr>
+<td>5-132</td>
+<td>pitch</td>
+</tr>
+<tr>
+<td>133-260</td>
+<td>velocity</td>
+</tr>
+<tr>
+<td>261 onward</td>
+<td>timing (interval and duration)</td>
+</tr>
+<tr>
+<td>5,261-5,388</td>
+<td>pedal</td>
+</tr>
+</tbody>
+</table>
+<p>In the labels, the pedal samples are binarised at 64 (the authors' <code>sft.py</code> <code>group_ids</code>).
+- <strong>Sequence compression.</strong> The encoder embeds the 8 tokens of each note, projects each one 768 → 96 with its own linear layer, and concatenates the results into one 768-dimensional vector per note. A 4,096-token window is therefore 512 encoder positions. The decoder generates all 4,096 tokens autoregressively, with cross-attention to the encoder.
+- <strong>Inputs and outputs in this job</strong> (<code>job/pt_train.py</code>, R-06 <code>PTScorer.ids</code>):
+  - The input is a score MIDI with one tempo and one velocity on every note (the same conditioning as SyMuPe).
+  - The labels are the authors' SFT label format built from our alignment: notes in score order, sorted performed onsets assigned in that order, each note's own velocity and key-down duration, and the four pedal samples.
+  - The loss is the model's own seq2seq cross-entropy over all 8 tokens of each note. That includes pitch, which is copied from the score. <strong>The PT loss is therefore not comparable in size to SyMuPe's.</strong>
+- <strong>Context window.</strong> 512 notes = 4,096 tokens, the authors' maximum context. Validation uses up to 512 fixed windows (the <code>--max-val-windows</code> default). No item failed PT tokenization: 37,295 / 2,350 items, 0 failures (<code>job/outputs/tokens_pt/tokenize_meta.json</code>).</p>
+<h3 id="fine-tuning-recipe-readme-method-job-run-sh-train-config-json-files">Fine-tuning recipe (README "Method"; <code>job/run.sh</code>; <code>train_config.json</code> files)</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>E (primary)</th>
+<th>F (flat model, for S-LR)</th>
+<th>pt_E (secondary)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start from</td>
+<td>released EncDec-base</td>
+<td>released EncDec-base</td>
+<td>released PT SFT weights</td>
+</tr>
+<tr>
+<td>Training targets</td>
+<td>real renditions</td>
+<td>one random <em>flat</em> rendition per training item</td>
+<td>real renditions</td>
+</tr>
+<tr>
+<td>Window</td>
+<td>256 notes</td>
+<td>256 notes</td>
+<td>512 notes (4,096 tokens)</td>
+</tr>
+<tr>
+<td>Batch per optimizer step</td>
+<td>64 windows (32 × 2 accumulation)</td>
+<td>64 (32 × 2)</td>
+<td>32 (2 × 16)</td>
+</tr>
+<tr>
+<td>Optimizer</td>
+<td>AdamW, lr 1e-4, weight decay 0.01, clip 1.0</td>
+<td>same</td>
+<td>same</td>
+</tr>
+<tr>
+<td>Schedule</td>
+<td>500 warmup, cosine to 10%</td>
+<td>500 warmup, cosine to 10%</td>
+<td>200 warmup, cosine to 10%</td>
+</tr>
+<tr>
+<td>Max steps</td>
+<td>30,000</td>
+<td>5,000</td>
+<td>8,000</td>
+</tr>
+<tr>
+<td>Validation every</td>
+<td>1,000 steps</td>
+<td>500</td>
+<td>500</td>
+</tr>
+<tr>
+<td>Early stop</td>
+<td>5 evaluations without a 0.1% relative improvement</td>
+<td>same</td>
+<td>same</td>
+</tr>
+<tr>
+<td>Precision</td>
+<td>bf16 autocast</td>
+<td>bf16</td>
+<td>bf16</td>
+</tr>
+<tr>
+<td>Seed</td>
+<td>20260928</td>
+<td>20260928</td>
+<td>20260928</td>
+</tr>
+<tr>
+<td>Model kept</td>
+<td><code>best.pt</code> (lowest validation loss; can be step 0)</td>
+<td>same</td>
+<td>same</td>
+</tr>
+</tbody>
+</table>
+<p>The flat renditions for F (README (c)):
+- timing follows the score at the item's own conditioning tempo;
+- velocity equals the conditioning velocity;
+- durations are U(0.85, 1.0) × nominal;
+- onset noise has s.d. U(0, 10 ms) and velocity noise s.d. U(0, 4);
+- there is no pedal.</p>
+<p>This family is deliberately narrower than the test battery.</p>
+<p>How the early-stopping counter works (<code>job/trainlib.py</code>):
+- an evaluation counts as "improved" only if it beats the best loss so far by at least 0.1%;
+- <code>best.pt</code> is saved on any improvement, however small;
+- the counter resets only on an improvement of at least 0.1%.</p>
+<hr />
+<h2 id="3-what-was-done-in-order">3. What was done, in order</h2>
+<p>The job was written for a Linux GPU box reached over SSH (<code>job/README.md</code>). It was actually run natively on Windows 11 on Henry's RTX 5080 machine, from Git Bash, with no WSL. The machine details are in the README run record:
+- driver 616.56, 24 CPU threads, torch 2.7.1+cu128 in both venvs;
+- the GPU was shared with the desktop, which used about 7 GB of VRAM.</p>
+<p>Times are UTC, taken from <code>run.sh</code> stamps in the logs under <code>C:\Users\Vuduc\r07\logs\</code> and <code>job/outputs/logs/</code>. Local time is UTC−5.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>When (UTC)</th>
+<th>Step</th>
+<th>What happened</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>before 20:39</td>
+<td><code>job/*.sh</code></td>
+<td>Git (<code>core.autocrlf=true</code>) checked the shell scripts out with CRLF endings, and the first text patches to them silently failed to match.</td>
+<td>Converted to LF. Git still warns "LF will be replaced by CRLF" for these files.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>before 20:39</td>
+<td>venv paths</td>
+<td>The scripts called <code>$V/bin/python</code>. On Windows a uv venv keeps python in <code>Scripts\python.exe</code> (the first <code>setup.sh</code> run failed with "No virtual environment ... found for path <code>.../venv-symupe/bin/python</code>"), and Python needs native Windows paths.</td>
+<td>Added helpers <code>vpy</code> (bin/ or Scripts/) and <code>wpwd</code> (<code>pwd -W</code>) to <code>setup.sh</code>, <code>run.sh</code> and <code>eval.sh</code> (<code>git diff</code>). <code>setup.sh</code> also now checks for the venv directory, not <code>bin/python</code>, and reinstalls pianolens every run (<code>--reinstall-package pianolens</code>).</td>
+</tr>
+<tr>
+<td>3</td>
+<td>~20:39-20:40</td>
+<td><code>setup.sh</code>, <code>setup.sh pt</code></td>
+<td>Both venvs built. Both report "cuda 12.8 available True", capability (12, 0), bf16 matmul ok.</td>
+<td>- (<code>setup_symupe.log</code>, <code>setup_pt.log</code>)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>to ~20:50</td>
+<td><code>fetch_data.sh</code></td>
+<td>PianoCoRe metadata and refined zip downloaded, checksums OK; (n)ASAP at <code>4097b45</code> (<code>fetch.log</code>: 3.6 GB pianocore, 2.0 GB asap on disk).</td>
+<td>-</td>
+</tr>
+<tr>
+<td>5</td>
+<td>~20:52</td>
+<td>R-06 items</td>
+<td>The P / V / A evaluation items existed only on the Mac (gitignored R-06 artifacts).</td>
+<td>Rebuilt here with the unchanged R-06 <code>prepare.py</code> from PercePiano e672299, Vienna 4x22 1033ade and (n)ASAP 4097b45 (<code>r06_prepare.log</code>). The counts match the R-06 README (line 168-170): P 981 renditions in 86 passages (1 excluded for matched share), 103 external deadpans, A 80, V 88.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>to ~20:57</td>
+<td>first <code>prep</code> + <code>tokenize</code> (<strong>discarded</strong>)</td>
+<td>(i) <code>pianocore.py</code> <code>_midi_from_bytes</code> wrote each MIDI to a <code>NamedTemporaryFile</code> and reopened it by name while it was still open. Windows does not allow that, so every PianoCoRe load failed: prep recorded <strong>47,732 <code>load_error</code></strong> rows, and only the 609 + 32 (n)ASAP items survived (<code>job/outputs/logs_failed_run1/prep.log</code>). (ii) Tokenize then crashed with <code>BrokenProcessPool</code>, because symupe imports the Unix-only <code>resource</code> module (<code>ModuleNotFoundError: No module named 'resource'</code>, <code>logs_failed_run1/tokenize.log</code>).</td>
+<td>(i) The temp file is now closed before loading (<code>delete=False</code>) and deleted in a <code>finally</code> (<code>git diff src/pianolens/data/pianocore.py</code>). (ii) On Windows only, <code>setup.sh</code> installs a no-op <code>resource.py</code> stub into the SyMuPe venv. symupe uses it only to cap memory in its parangonar aligner, which this job never calls. The failed outputs were discarded and the logs kept.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>to 21:14</td>
+<td>second <code>prep</code> + <code>tokenize</code></td>
+<td>prep: 784 s, 12 workers, leakage check OK. tokenize: 636 / 9 items skipped by the order guard (section 2).</td>
+<td>-</td>
+</tr>
+<tr>
+<td>8</td>
+<td>(prep)</td>
+<td>split hash</td>
+<td><code>prep_data.py</code> recorded the split sha256 as <code>d7ec539c...</code> (<code>job/outputs/data/leakage_report.json</code>), not the pre-registered <code>3341bfa5...86</code>. Cause: git checked <code>split/pieces.csv</code> out with CRLF endings.</td>
+<td>None needed. The lead re-hashed it: with CR stripped it hashes to <code>3341bfa5...86</code>, the same as <code>git show HEAD:.../split/pieces.csv</code>. Same split, different line endings.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>21:15</td>
+<td><code>calibrate</code></td>
+<td>0.150 s per step, peak 2.77 GB, projected 1.25 h for 30,000 steps. No cloud GPU needed.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>10</td>
+<td>21:15-21:47</td>
+<td>train E</td>
+<td>No interruptions. Early stop at step 11,000; best at step 9,000 (section 4).</td>
+<td>-</td>
+</tr>
+<tr>
+<td>11</td>
+<td>21:15-21:21</td>
+<td><code>tokenize_pt</code></td>
+<td>0 failures.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>12</td>
+<td>from 21:21</td>
+<td>eval: frozen, pt_frozen</td>
+<td>Started while E trained. These arms do not depend on E, and the rules were fixed beforehand (run record).</td>
+<td>-</td>
+</tr>
+<tr>
+<td>13</td>
+<td>~21:49-22:06</td>
+<td><code>tokenize_flat</code>, train F</td>
+<td>Same 636 / 9 skipped items as E. Ran to the 5,000-step cap.</td>
+<td>-</td>
+</tr>
+<tr>
+<td>14</td>
+<td>22:07</td>
+<td><code>calibrate_pt</code></td>
+<td>3.14 s per step, peak 8.32 GB, projected 6.98 h for 8,000 steps. Measured while the frozen evaluation shared the GPU, so it is an upper bound (run record).</td>
+<td>-</td>
+</tr>
+<tr>
+<td>15</td>
+<td>from 22:08</td>
+<td>train pt_E; eval E, F</td>
+<td>Running when this was written.</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>The run record confirms that the changes are platform fixes only: the recipe, split, selection and decision rules did not change. The diff hash at launch is <code>c71b7d83be77...</code>. <code>git diff --stat</code> shows exactly these files: <code>job/eval.sh</code>, <code>job/run.sh</code>, <code>job/setup.sh</code>, <code>src/pianolens/data/pianocore.py</code>, and the README run record. <code>job/fetch_data.sh</code> appears as modified in <code>git status</code>, but only its line endings differ.</p>
+<hr />
+<h2 id="4-results-so-far-training-only-no-evaluation-results-yet">4. Results so far (training only; no evaluation results yet)</h2>
+<h3 id="data-job-outputs-data-prep-meta-json-leakage-report-json">Data (<code>job/outputs/data/prep_meta.json</code>, <code>leakage_report.json</code>)</h3>
+<p>Prep read 48,373 rows and produced <strong>45,670 items</strong>. It excluded 2,703 for a matched share below 0.8.</p>
+<table>
+<thead>
+<tr>
+<th>Split</th>
+<th>Source</th>
+<th>Items</th>
+<th>Pieces</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>train</td>
+<td>PianoCoRe</td>
+<td>36,686</td>
+<td>1,280</td>
+<td>65,439,611</td>
+</tr>
+<tr>
+<td>train</td>
+<td>(n)ASAP</td>
+<td>609</td>
+<td>118</td>
+<td>1,692,281</td>
+</tr>
+<tr>
+<td>val</td>
+<td>PianoCoRe</td>
+<td>2,318</td>
+<td>78</td>
+<td>4,245,371</td>
+</tr>
+<tr>
+<td>val</td>
+<td>(n)ASAP</td>
+<td>32</td>
+<td>11</td>
+<td>68,621</td>
+</tr>
+<tr>
+<td>test (R10u + R10s)</td>
+<td>PianoCoRe</td>
+<td>6,025</td>
+<td>139</td>
+<td>10,612,725</td>
+</tr>
+</tbody>
+</table>
+<p>Leakage report:
+- <code>ok: true</code>; 37,295 training rows used on 1,285 training pieces;
+- no unknown piece ids, no held-out pieces or works in train, no performance in two splits.</p>
+<p>The tokenizers re-ran the same check (<code>tokenize_meta*.json</code>, <code>leakage.ok = true</code>).</p>
+<p>Tokenization:</p>
+<table>
+<thead>
+<tr>
+<th>Token set</th>
+<th>Train items</th>
+<th>Train failures</th>
+<th>Val items</th>
+<th>Val failures</th>
+<th>Shards (train / val)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E (<code>tokens/tokenize_meta.json</code>)</td>
+<td>37,295</td>
+<td>636</td>
+<td>2,350</td>
+<td>9</td>
+<td>146 / 10</td>
+</tr>
+<tr>
+<td>F (<code>tokens_flat/tokenize_meta_flat.json</code>)</td>
+<td>37,295</td>
+<td>636</td>
+<td>2,350</td>
+<td>9</td>
+<td>146 / 10</td>
+</tr>
+<tr>
+<td>PT (<code>tokens_pt/tokenize_meta.json</code>)</td>
+<td>37,295</td>
+<td>0</td>
+<td>2,350</td>
+<td>0</td>
+<td>146 / 10</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cost-question-d">Cost (question (d))</h3>
+<table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Source</th>
+<th>s / step (median)</th>
+<th>Windows / step</th>
+<th>Peak GPU memory</th>
+<th>Projected at max steps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SyMuPe (E, F)</td>
+<td><code>job/outputs/calibrate/calibrate.json</code></td>
+<td>0.150 (25 timed)</td>
+<td>64 × 256 notes</td>
+<td>2.77 GB</td>
+<td>1.25 h for 30,000</td>
+</tr>
+<tr>
+<td>Pianist Transformer</td>
+<td><code>job/outputs/calibrate_pt/calibrate.json</code></td>
+<td>3.14</td>
+<td>32 × 4,096 tokens</td>
+<td>8.32 GB</td>
+<td>6.98 h for 8,000</td>
+</tr>
+</tbody>
+</table>
+<p>Actual wall time:
+- <strong>E</strong> ran 21:15-21:47 UTC, about 32 min for 11,000 steps.
+- <strong>F</strong> ran 21:49-22:06 UTC, about 17 min for 5,000 steps.</p>
+<p>Summing the logged <code>sec_per_step</code> gives about 1,923 s for E and 988 s for F. Logged peak memory was 2.79 GB for both (<code>train_log.jsonl</code>, <code>max_mem_gb</code>). Both fit easily in 16 GB without the fallbacks, and no cloud GPU was needed.</p>
+<h3 id="training-curves">Training curves</h3>
+<p><img alt="Training and validation loss for E and F" src="figures/train_curves_E_F.png" /></p>
+<p><code>figures/train_curves_E_F.png</code>. The grey line is the training loss logged every 50 steps, on 64 random windows from <em>training</em> pieces. The blue line is the validation loss on 2,048 fixed windows of the validation pieces. The dashed line marks the best checkpoint.</p>
+<p><strong>E: validation loss by evaluation</strong> (<code>job/outputs/symupe_E/train_log.jsonl</code>, <code>"event": "val"</code> lines). Losses are cross-entropy in nats; the total is the mean of the four fields.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Val loss</th>
+<th>Velocity</th>
+<th>TimeShift</th>
+<th>TimeDuration</th>
+<th>TimeDurationSustain</th>
+<th>best so far</th>
+<th>bad evals</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 (pretrained)</td>
+<td>3.2450</td>
+<td>3.1676</td>
+<td>2.6837</td>
+<td>3.5938</td>
+<td>3.5347</td>
+<td>3.2450</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1,000</td>
+<td>2.4675</td>
+<td>1.8216</td>
+<td>1.9572</td>
+<td>3.0559</td>
+<td>3.0353</td>
+<td>2.4675</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2,000</td>
+<td>2.4544</td>
+<td>1.8146</td>
+<td>1.9485</td>
+<td>3.0367</td>
+<td>3.0178</td>
+<td>2.4544</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3,000</td>
+<td>2.4512</td>
+<td>1.8112</td>
+<td>1.9442</td>
+<td>3.0340</td>
+<td>3.0154</td>
+<td>2.4512</td>
+<td>0</td>
+</tr>
+<tr>
+<td>4,000</td>
+<td>2.4462</td>
+<td>1.8069</td>
+<td>1.9413</td>
+<td>3.0277</td>
+<td>3.0091</td>
+<td>2.4462</td>
+<td>0</td>
+</tr>
+<tr>
+<td>5,000</td>
+<td>2.4445</td>
+<td>1.8060</td>
+<td>1.9372</td>
+<td>3.0259</td>
+<td>3.0088</td>
+<td>2.4445</td>
+<td>1</td>
+</tr>
+<tr>
+<td>6,000</td>
+<td>2.4419</td>
+<td>1.8047</td>
+<td>1.9336</td>
+<td>3.0233</td>
+<td>3.0060</td>
+<td>2.4419</td>
+<td>0</td>
+</tr>
+<tr>
+<td>7,000</td>
+<td>2.4418</td>
+<td>1.8044</td>
+<td>1.9328</td>
+<td>3.0236</td>
+<td>3.0063</td>
+<td>2.4418</td>
+<td>1</td>
+</tr>
+<tr>
+<td>8,000</td>
+<td>2.4400</td>
+<td>1.8043</td>
+<td>1.9310</td>
+<td>3.0209</td>
+<td>3.0039</td>
+<td>2.4400</td>
+<td>2</td>
+</tr>
+<tr>
+<td><strong>9,000</strong></td>
+<td><strong>2.4395</strong></td>
+<td>1.8024</td>
+<td>1.9299</td>
+<td>3.0212</td>
+<td>3.0045</td>
+<td><strong>2.4395</strong></td>
+<td>3</td>
+</tr>
+<tr>
+<td>10,000</td>
+<td>2.4407</td>
+<td>1.8042</td>
+<td>1.9313</td>
+<td>3.0222</td>
+<td>3.0049</td>
+<td>2.4395</td>
+<td>4</td>
+</tr>
+<tr>
+<td>11,000</td>
+<td>2.4396</td>
+<td>1.8035</td>
+<td>1.9297</td>
+<td>3.0214</td>
+<td>3.0038</td>
+<td>2.4395</td>
+<td>5 → stop</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Final state (<code>job/outputs/logs/train.log</code>): step 11,000, <code>stopped_early: true</code>, best 2.43952. <code>best.pt</code> holds the <strong>step-9,000</strong> weights.</li>
+<li>Almost all of the gain comes in the first 1,000 steps: 3.2450 → 2.4675. Steps 1,000 to 9,000 add only 0.028. By field, the largest drop from step 0 is in Velocity (3.168 → 1.802). Why has not been investigated, and this report draws no conclusion from it.</li>
+<li>The training loss (about 2.1-2.4 after warmup) stays below the validation loss throughout. The two use different window sampling (random starts vs windows from the start of each item) and different pieces, so the gap is not a clean measure of overfitting.</li>
+<li><strong>"Minimum for use downstream", validation-loss half:</strong> the best validation loss (2.4395) is below step 0 (3.2450), so this condition <strong>holds</strong> (the run record says the same). The other half, the reading of (a) on P, is still pending.</li>
+<li>Data exposure, derived from the numbers above: 11,000 steps × 64 windows × at most 256 notes is at most about 180 M note positions, about 2.7 passes over the 67.1 M training notes. The pre-registered cap allowed about 7 passes. This is an upper bound, because windows on short items hold fewer than 256 notes.</li>
+</ul>
+<p><strong>F: validation loss by evaluation</strong> (<code>job/outputs/symupe_F/train_log.jsonl</code>). The validation data are flat renditions of the validation items.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Val loss</th>
+<th>Velocity</th>
+<th>TimeShift</th>
+<th>TimeDuration</th>
+<th>TimeDurationSustain</th>
+<th>bad evals</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 (pretrained)</td>
+<td>2.0242</td>
+<td>2.4371</td>
+<td>2.0250</td>
+<td>1.8258</td>
+<td>1.8088</td>
+<td>0</td>
+</tr>
+<tr>
+<td>500</td>
+<td>1.0176</td>
+<td>2.0071</td>
+<td>1.7890</td>
+<td>0.1419</td>
+<td>0.1324</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1,000</td>
+<td>0.9830</td>
+<td>2.0083</td>
+<td>1.7500</td>
+<td>0.0915</td>
+<td>0.0824</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1,500</td>
+<td>0.9706</td>
+<td>1.9966</td>
+<td>1.7390</td>
+<td>0.0773</td>
+<td>0.0693</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2,000</td>
+<td>0.9563</td>
+<td>1.9814</td>
+<td>1.7119</td>
+<td>0.0688</td>
+<td>0.0632</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2,500</td>
+<td>0.9485</td>
+<td>1.9783</td>
+<td>1.7040</td>
+<td>0.0584</td>
+<td>0.0533</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3,000</td>
+<td>0.9423</td>
+<td>1.9761</td>
+<td>1.6918</td>
+<td>0.0528</td>
+<td>0.0485</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3,500</td>
+<td>0.9380</td>
+<td>1.9731</td>
+<td>1.6855</td>
+<td>0.0489</td>
+<td>0.0447</td>
+<td>0</td>
+</tr>
+<tr>
+<td>4,000</td>
+<td>0.9365</td>
+<td>1.9729</td>
+<td>1.6807</td>
+<td>0.0483</td>
+<td>0.0440</td>
+<td>0</td>
+</tr>
+<tr>
+<td>4,500</td>
+<td>0.9336</td>
+<td>1.9714</td>
+<td>1.6762</td>
+<td>0.0453</td>
+<td>0.0413</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>5,000</strong></td>
+<td><strong>0.9327</strong></td>
+<td>1.9712</td>
+<td>1.6748</td>
+<td>0.0443</td>
+<td>0.0406</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Final state (<code>job/outputs/logs/train_flat.log</code>): step 5,000 (the cap), <code>stopped_early: false</code>, so <code>best.pt</code> is step 5,000.</li>
+<li>F learns the flat durations almost exactly: the TimeDuration loss is about 0.04. Velocity and TimeShift stay around 1.97 and 1.67, which fits the injected velocity and onset noise. This is only a description; F's job is to supply ℓ_F for S-LR.</li>
+<li>F's and E's losses are on different validation data (flat vs real), so they cannot be compared with each other.</li>
+</ul>
+<p><strong>pt_E</strong> (<code>job/outputs/pt_E/train_log.jsonl</code>, <code>C:\Users\Vuduc\r07\logs\train_pt.log</code>): started 22:08:28 UTC. The step-0 (released SFT weights) validation loss is <strong>1.6420</strong> on 512 windows. Only step 1 had been logged when this report was written. That loss covers all 8 tokens per note (see section 2), so it is not comparable with SyMuPe's.</p>
+<hr />
+<h2 id="4b-first-evaluation-results-set-p-provisional-not-audited">4b. First evaluation results: set P (provisional, not audited)</h2>
+<p>Added 2026-09-30, about 01:10 UTC, from <code>job/outputs/results/P/summary.json</code>, <code>pass_fail.json</code> and
+<code>auc.csv</code>. The arms in this summary are frozen, E, F and pt_frozen (pt_E is not trained yet). These
+numbers are read with the pre-registered rules only, and <strong>nothing here is Confirmed until
+<code>eval-auditor</code> signs it off</strong>.</p>
+<h3 id="reproduction-gate-missed-by-0-001">Reproduction gate: missed by 0.001</h3>
+<table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>P composite, this run [95% CI]</th>
+<th>R-06</th>
+<th>Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frozen SyMuPe</td>
+<td>0.3987 [0.3647, 0.4314]</td>
+<td>0.388</td>
+<td>+0.011 (the gate is 0.01)</td>
+</tr>
+<tr>
+<td>frozen Pianist Transformer</td>
+<td>0.3948 [0.3637, 0.4264]</td>
+<td>0.393</td>
+<td>+0.002</td>
+</tr>
+</tbody>
+</table>
+<p>The frozen SyMuPe re-run misses the gate by 0.001. Under the pre-registered rule this is the first
+finding, and (a) uses the re-run frozen numbers, with R-06's shown alongside. Known differences
+from R-06: GPU instead of CPU sampling, and evaluation items rebuilt on this machine (same counts).
+The Pianist Transformer re-run reproduces within the gate.</p>
+<h3 id="a-per-note-prediction-on-p-harms">(a) Per-note prediction on P: <strong>harms</strong></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Composite [bootstrap 95% CI]</th>
+<th>Velocity</th>
+<th>log IOI</th>
+<th>log articulation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frozen</td>
+<td>0.3987 [0.3647, 0.4314]</td>
+<td>0.515</td>
+<td>0.330</td>
+<td>0.351</td>
+</tr>
+<tr>
+<td>E (fine-tuned)</td>
+<td>0.3478 [0.3113, 0.3845]</td>
+<td>0.541</td>
+<td>0.267</td>
+<td>0.235</td>
+</tr>
+<tr>
+<td><strong>E − frozen</strong></td>
+<td><strong>−0.0509 [−0.0720, −0.0287]</strong></td>
+<td>+0.027 [−0.001, 0.056]</td>
+<td>−0.063 [−0.102, −0.026]</td>
+<td>−0.116 [−0.152, −0.082]</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>The whole bootstrap CI of the paired composite difference is below 0, so the pre-registered
+  reading is <strong>harms</strong>. The t-interval over the 3 works, [−0.178, 0.076], is reported alongside as
+  the rules require; the reading uses the bootstrap CI.</li>
+<li>Per work (E − frozen): Beethoven WoO 80 −0.045, Schubert D960 mv2 −0.105, D960 mv3 −0.003.</li>
+<li>By target: velocity shows no detectable change; timing (log IOI) and articulation both get worse.</li>
+<li><strong>Consequence (pre-registered): E is not used downstream. R-10 uses the frozen model.</strong> The
+  validation-loss half of the condition held, but the P half fails.</li>
+<li>Secondary, pt_frozen − frozen: −0.004 [−0.028, 0.018] (the R-06 tie, reproduced).</li>
+</ul>
+<h3 id="c-typicality-scores-e-on-p">(c) Typicality scores, E on P</h3>
+<p>Paired AUC = the share of real renditions scoring above their own variant (from <code>auc.csv</code>, all works).</p>
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>Deadpan battery (R1), AUC range</th>
+<th>Noise (R2): jitT20 / jitT40 / jitV8 / jitV16</th>
+<th>R1</th>
+<th>R2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S-RAW (reference)</td>
+<td>0.013-0.213</td>
+<td>1.00 / 1.00 / 1.00 / 1.00</td>
+<td>fail</td>
+<td>pass</td>
+</tr>
+<tr>
+<td><strong>S-LR</strong></td>
+<td><strong>1.000 on all 7</strong></td>
+<td>0.946 / 0.949 / 0.927 / 0.916</td>
+<td><strong>pass</strong></td>
+<td><strong>pass</strong></td>
+</tr>
+<tr>
+<td>S-TYP</td>
+<td>0.236 (half_flat_velocity) to 0.956</td>
+<td>0.994 / 1.00 / 0.998 / 1.00</td>
+<td>fail</td>
+<td>pass</td>
+</tr>
+<tr>
+<td>S-DEV</td>
+<td>0.852-0.990</td>
+<td>0.660 / 0.678 / 0.910 / 0.961</td>
+<td>pass</td>
+<td>fail (timing-jitter AUC below 0.75)</td>
+</tr>
+<tr>
+<td>B-amount (baseline)</td>
+<td>1.000 on all 7</td>
+<td>0.118 / 0.046 / 0.003 / 0.000</td>
+<td>pass</td>
+<td>fail</td>
+</tr>
+<tr>
+<td>B-smooth (baseline)</td>
+<td>-</td>
+<td>-</td>
+<td>fail</td>
+<td>pass</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>S-LR</strong> meets R1 and R2 on P. The pass verdict also needs R3 (point AUC at least 0.75 for every
+  R1 variant on Vienna, set V), which is still running. Until then S-LR is "R1 and R2 met on P".</li>
+<li><strong>Flag for the audit:</strong> S-LR separates every deadpan variant perfectly (AUC 1.000, CI [1.0, 1.0]).
+  F was trained only on flat renditions, so a very high ℓ_F on anything flat is expected by design,
+  but a perfect score on every variant, including the half-flat ones outside F's training family,
+  needs checking before it is trusted (for example, how far apart the score distributions are, and
+  whether one field dominates).</li>
+<li><strong>S-DEV</strong> separates deadpans but misses timing jitter, the same pattern as the trivial B-amount
+  baseline. If R3 holds it would be a "flatness detector only".</li>
+<li><strong>S-TYP</strong> fails R1 (half_flat_velocity AUC 0.236). <strong>S-RAW</strong> fails R1 again, as in R-06.</li>
+<li>F−frozen shows NaN in (a) because F is scored but not sampled (by design: F exists only for S-LR).</li>
+</ul>
+<h3 id="set-v-vienna-4x22-added-about-02-00-utc-job-outputs-results-v">Set V (Vienna 4x22), added about 02:00 UTC (<code>job/outputs/results/V/</code>)</h3>
+<p><strong>R3 (replication on V: point AUC at least 0.75 for every R1 variant), E:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>deadpan</th>
+<th>vel+12</th>
+<th>vel−12</th>
+<th>slow15</th>
+<th>noise10_4</th>
+<th>half_flat_timing</th>
+<th>half_flat_velocity</th>
+<th>R3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S-LR</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>met</td>
+</tr>
+<tr>
+<td>S-DEV</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>1.000</td>
+<td>met</td>
+</tr>
+<tr>
+<td>S-TYP</td>
+<td>0.977</td>
+<td>0.943</td>
+<td>0.977</td>
+<td>0.977</td>
+<td>0.989</td>
+<td>1.000</td>
+<td>0.239</td>
+<td>not met</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Typicality readings, pre-registered (R1 and R2 on P, R3 on V), provisional:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>R1 (P)</th>
+<th>R2 (P)</th>
+<th>R3 (V)</th>
+<th>Reading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>S-LR</strong></td>
+<td>met</td>
+<td>met</td>
+<td>met</td>
+<td><strong>pass</strong></td>
+</tr>
+<tr>
+<td>S-DEV</td>
+<td>met</td>
+<td>not met</td>
+<td>met</td>
+<td><strong>flatness detector only</strong> (may feed only the F-06 "too flat" flag)</td>
+</tr>
+<tr>
+<td>S-TYP</td>
+<td>not met</td>
+<td>met</td>
+<td>not met</td>
+<td><strong>fail</strong> (used nowhere)</td>
+</tr>
+<tr>
+<td>S-RAW (reference)</td>
+<td>not met</td>
+<td>met</td>
+<td>not met</td>
+<td>fail, as in R-06</td>
+</tr>
+</tbody>
+</table>
+<p>The audit flag on S-LR stands and grows: it separates every deadpan variant perfectly on both P and
+V. That is what a working likelihood-ratio score should do against flat playing, but perfection on
+every variant (including ones outside F's training family) must be checked before S-LR is used.</p>
+<p><strong>(a) on V (secondary, not deciding):</strong> frozen 0.644, E 0.546, E − frozen <strong>−0.098 [−0.135,
+−0.063]</strong> (whole CI below 0; every one of the 4 excerpts lower: −0.154, −0.113, −0.050, −0.076).
+pt_frozen − frozen −0.088 [−0.174, −0.002]. So E also predicts worse than the frozen model on
+Vienna, consistent with P.</p>
+<h3 id="set-a-n-asap-80-renditions-16-works-added-about-03-00-utc-job-outputs-results-a">Set A ((n)ASAP, 80 renditions, 16 works), added about 03:00 UTC (<code>job/outputs/results/A/</code>)</h3>
+<p>Secondary, not deciding. (a): frozen 0.591, E 0.497, <strong>E − frozen −0.094 [−0.145, −0.053]</strong>
+(whole CI below 0, the same direction as P and V); pt_frozen 0.429, pt_frozen − frozen −0.162
+[−0.229, −0.100]. S-LR (E) again scores AUC 1.000 against every R1 deadpan variant.</p>
+<h3 id="secondary-arm-fine-tuned-pianist-transformer-pt-e-added-about-12-30-utc-2026-10-01">Secondary arm: fine-tuned Pianist Transformer (pt_E), added about 12:30 UTC 2026-10-01</h3>
+<p>Training ran to the 8,000-step cap (best validation loss 0.9762 at step 8,000, from 1.6420 at step
+0). Evaluated on P, V and A; the summaries in <code>results/{P,V,A}/</code> now include all five arms.</p>
+<p>The pre-registered secondary comparison is pt_E against pt_frozen. <code>summarize_eval.py</code> computes
+differences only against the frozen SyMuPe arm, so pt_E − pt_frozen was computed afterwards with
+the script's own <code>boot_ci</code> (two-way passage x performer bootstrap, 2,000 resamples, seed 0) and
+<code>t_interval</code>, from the same <code>a_per_rendition.csv</code> (<code>results/pt_E_vs_pt_frozen.json</code>). No other
+statistic was added.</p>
+<table>
+<thead>
+<tr>
+<th>Set</th>
+<th>pt_frozen</th>
+<th>pt_E</th>
+<th><strong>pt_E − pt_frozen [95% CI]</strong></th>
+<th>Reading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P</td>
+<td>0.3948</td>
+<td>0.4076</td>
+<td><strong>+0.013 [−0.013, +0.039]</strong> (t-interval [−0.086, +0.111])</td>
+<td>no detectable change</td>
+</tr>
+<tr>
+<td>V</td>
+<td>0.5562</td>
+<td>0.4843</td>
+<td>−0.072 [−0.240, +0.095]</td>
+<td>no detectable change</td>
+</tr>
+<tr>
+<td>A</td>
+<td>0.429</td>
+<td>0.460</td>
+<td>+0.031 [+0.001, +0.064]</td>
+<td>improves (CI just above 0)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>P per work: Beethoven WoO 80 −0.003, D960 mv2 −0.016, D960 mv3 +0.058.</li>
+<li>V per excerpt: Chopin Op. 10/3 +0.100, Op. 38 +0.088, Mozart K. 331 −0.383, Schubert D783 −0.092.
+  The wide CI comes from the Mozart drop.</li>
+<li>So fine-tuning Pianist Transformer does not show the clear loss that fine-tuning SyMuPe shows
+  (E − frozen: "harms" on P). The only set with a detectable change is A, Pianist Transformer's
+  own shipped test folders, and that CI only just clears 0. P and V are not decided.</li>
+<li>For reference, against frozen SyMuPe on P: pt_E 0.4076 vs frozen 0.3987.</li>
+</ul>
+<h3 id="set-r10u-b-h1b-preview-and-secondary-a-added-2026-10-04-00-20-utc-results-r10u">Set R10u: (b) H1b preview and secondary (a), added 2026-10-04 00:20 UTC (<code>results/R10u/</code>)</h3>
+<p>R10u = PianoCoRe pieces unseen by pretraining and fine-tuning (transcribed MIDI). Arms in this
+summary: frozen, E, F, pt_frozen. <strong>pt_E is missing:</strong> all 91 of its generation items failed with
+"CUDA error: out of memory" while a game held about 5 GB of VRAM (<code>eval/pt_E/R10u/gen/_log_gen.json</code>).
+Failed items are not written, so a rerun retries exactly those 91.</p>
+<p><strong>(b) H1b preview (pre-registered thresholds: captured share ≥ 0.50 "consistent with H1b",
+≤ 0.20 "at the H1b falsification level", otherwise inconclusive; same thresholds for R²c):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Median captured share (k shared components)</th>
+<th>Random 15-dim subspace (mean / 95th pct)</th>
+<th>Mean-curve R²c velocity</th>
+<th>R²c log IOI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>E</strong></td>
+<td><strong>0.098</strong></td>
+<td>0.012 / 0.015</td>
+<td>0.413</td>
+<td>0.065</td>
+</tr>
+<tr>
+<td>frozen</td>
+<td>0.118</td>
+<td>0.012 / 0.015</td>
+<td>0.325</td>
+<td>0.142</td>
+</tr>
+<tr>
+<td>pt_frozen</td>
+<td>0.101</td>
+<td>0.012 / 0.015</td>
+<td>0.251</td>
+<td>−0.024</td>
+</tr>
+</tbody>
+</table>
+<p>Median k = 6 shared components; split-half reliability 0.98 for both targets.</p>
+<ul>
+<li><strong>Reading for E (pre-registered): captured share 0.098 ≤ 0.20 → "at the H1b falsification
+  level".</strong> R²c velocity 0.413 → inconclusive; R²c log IOI 0.065 → at the falsification level.</li>
+<li>The spread of E's 16 samples covers about 10% of the variance experts share, well above a random
+  subspace (about 8×) but far below the 0.50 bar. The frozen model reads the same; fine-tuning did
+  not change it.</li>
+<li>This is a preview. R-10 owns the H1b verdict.</li>
+</ul>
+<p><strong>(a) on R10u (secondary, not deciding):</strong> E − frozen <strong>+0.041 [+0.028, +0.051]</strong> = "improves"
+(the opposite of P, V and A, where E harms). R10u is transcribed PianoCoRe MIDI, the same kind of
+data E was fine-tuned on, while P, V and A are sensor/Disklavier recordings. One possible reading
+(not tested here): fine-tuning adapted the model to transcription characteristics rather than to
+expert expression. pt_frozen − frozen −0.048 [−0.062, −0.039].</p>
+<p><strong>R10u update, 2026-10-05 08:29 UTC: pt_E added.</strong> The 91 failed generation items were retried
+with the GPU free: 91 of 91 succeeded, 0 errors. The R10u summary now has all five arms. The E
+and frozen numbers above are unchanged.</p>
+<table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Captured share</th>
+<th>R²c velocity</th>
+<th>R²c log IOI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pt_E</td>
+<td>0.124</td>
+<td>0.492</td>
+<td>0.260</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>pt_E's captured share, 0.124, is also at the falsification level (≤ 0.20). Both R²c values are
+  inconclusive (between 0.20 and 0.50; velocity just under 0.50).</li>
+<li>(a) pt_E − pt_frozen on R10u: <strong>+0.100 [+0.089, +0.114]</strong>, improves (velocity +0.048, timing
+  +0.109, articulation +0.145; <code>results/pt_E_vs_pt_frozen_R10u.json</code>). pt_E − frozen SyMuPe
+  +0.052 [+0.037, +0.064].</li>
+</ul>
+<h3 id="set-r10s-added-2026-10-05-04-25-utc-results-r10s-all-five-arms">Set R10s, added 2026-10-05 04:25 UTC (<code>results/R10s/</code>, all five arms)</h3>
+<p>R10s = held out here but <strong>seen paired in SyMuPe's pretraining</strong> (24 works, 1,812 renditions).
+It is the pre-registered exposure contrast for R-10, not a decision set.</p>
+<p><strong>H1b-style measures on R10s</strong> (same method as R10u; median k = 6; random 15-dim subspace
+0.008 / p95 0.010):</p>
+<table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Captured share</th>
+<th>R²c velocity</th>
+<th>R²c log IOI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E</td>
+<td>0.086</td>
+<td>0.523</td>
+<td>−0.094</td>
+</tr>
+<tr>
+<td>frozen</td>
+<td>0.110</td>
+<td>0.477</td>
+<td>0.223</td>
+</tr>
+<tr>
+<td>pt_frozen</td>
+<td>0.103</td>
+<td>0.325</td>
+<td>−0.237</td>
+</tr>
+<tr>
+<td>pt_E</td>
+<td>0.107</td>
+<td>0.472</td>
+<td>0.181</td>
+</tr>
+</tbody>
+</table>
+<p>The captured share is about 0.09-0.11 for every arm, the same level as on R10u (0.098-0.118).
+Exposure in pretraining does not lift it. E's velocity mean-curve R²c reaches 0.52 here
+(0.41 on R10u), while its timing R²c stays near zero.</p>
+<p><strong>(a) on R10s (secondary):</strong>
+- E − frozen <strong>+0.002 [−0.016, +0.015]</strong>: no detectable change (R10u +0.041; P, V and A harmful).
+- pt_frozen − frozen −0.102 [−0.123, −0.077].
+- pt_E − pt_frozen <strong>+0.059 [+0.037, +0.083]</strong>: improves (timing +0.067, articulation +0.115,
+  velocity −0.004). Computed with the summariser's own <code>boot_ci</code>, as for P / V / A
+  (<code>results/pt_E_vs_pt_frozen_R10s.json</code>).</p>
+<hr />
+<h2 id="5-what-is-still-running-and-what-each-result-will-decide">5. What is still running, and what each result will decide</h2>
+<h3 id="running-at-the-time-of-writing">Running at the time of writing</h3>
+<ul>
+<li><strong>Pianist Transformer fine-tune (pt_E).</strong></li>
+<li>Up to 8,000 steps. Calibration projects about 7.0 h, an upper bound because it was measured while the GPU was shared; early stopping may end it sooner.</li>
+<li>Validation every 500 steps; checkpoints every 250 steps in <code>job/outputs/pt_E/ckpt/</code>.</li>
+<li>A rerun of <code>STAGES=train_pt bash run.sh</code> resumes from the last checkpoint (for example after an out-of-memory crash, if another program takes the GPU memory).</li>
+<li><strong>Evaluation (<code>job/eval.sh</code>).</strong> The run record says frozen and pt_frozen started at 21:21 UTC and E and F at 22:08 UTC. On disk at 22:10 UTC:</li>
+<li><code>eval_sets/P</code> is built: 16,780 items, i.e. 981 renditions × (real + 16 variants) + 103 external deadpans (<code>eval_sets/P/make_meta.json</code>);</li>
+<li><code>eval/frozen/P/</code> has <code>score</code>, <code>gen</code> and <code>typset</code> folders;</li>
+<li><code>eval/E/P/</code> has <code>score</code>;</li>
+<li><code>eval_frozen_P.log</code> reports 16,780 scored items and 86 generation items.</li>
+</ul>
+<p>There is no <code>eval/pt_frozen/</code> folder yet. That is expected: <code>eval.sh</code> runs the arms one after another within each set, and pt_frozen comes after frozen. There are also no V, A, R10u or R10s sets yet, and <code>results/</code> is empty. eval.sh builds each set, runs every arm with a checkpoint, and then summarises into <code>results/&lt;set&gt;/</code>: P, then V, A, R10u, R10s.</p>
+<h3 id="arms-and-sets-that-remain">Arms and sets that remain</h3>
+<table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Checkpoint</th>
+<th>Jobs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frozen</td>
+<td>released EncDec-base</td>
+<td>score, gen (K = 8 for P / V / A, K = 16 for R10u / R10s), typset (K = 16, P and V only)</td>
+</tr>
+<tr>
+<td>E</td>
+<td><code>symupe_E/ckpt/best.pt</code> (step 9,000)</td>
+<td>same as frozen</td>
+</tr>
+<tr>
+<td>F</td>
+<td><code>symupe_F/ckpt/best.pt</code> (step 5,000)</td>
+<td>score only (for S-LR)</td>
+</tr>
+<tr>
+<td>pt_frozen</td>
+<td>released PT SFT</td>
+<td>score, gen</td>
+</tr>
+<tr>
+<td>pt_E</td>
+<td><code>pt_E/ckpt/best.pt</code> (pending)</td>
+<td>score, gen</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-each-pending-result-decides-the-pre-registered-readings-no-other-reading-applies">What each pending result decides (the pre-registered readings; no other reading applies)</h3>
+<ul>
+<li><strong>Reproduction gate (frozen on P).</strong> If the re-run P composite is within 0.01 of 0.388, the pipeline reproduces R-06. If not, that is reported first, and E is compared with the re-run.</li>
+<li><strong>(a) E vs frozen on P.</strong></li>
+<li>The paired composite difference and its two-way bootstrap CI decide between <strong>improves / harms / no detectable change</strong>.</li>
+<li>Per-work and per-target tables and the 3-work t-interval are always reported next to it.</li>
+<li>Together with the validation-loss condition, which already holds, this decides whether R-10 uses E or the frozen model: E is used only if (a) is "improves" or "no detectable change".</li>
+<li>R10u, R10s, V and A are reported with the same statistic, but they do not decide anything.</li>
+<li><strong>(b) H1b preview on R10u.</strong> The median captured share (and the mean-curve R²c per target) against 0.50 / 0.20 gives "consistent with H1b", "at the falsification level" or inconclusive. This is a preview only; R-10 owns H1b.</li>
+<li><strong>(c) Typicality.</strong> For each of S-LR, S-TYP and S-DEV: <strong>pass</strong>, <strong>flatness detector only</strong> (may feed only the F-06 "too flat" flag), or <strong>fail</strong> (used nowhere), by R1 / R2 / R3. S-RAW, B-smooth and B-amount are references. S-TYP is computed on P and V only.</li>
+<li><strong>Secondary arm.</strong> pt_E vs pt_frozen, the same (a) and (b), not deciding the primary question.</li>
+</ul>
+<p>After the evaluation, the verdict stays <strong>Provisional</strong> until <code>eval-auditor</code> signs it off.</p>
+<hr />
+<h2 id="gaps-and-things-not-verified">Gaps and things not verified</h2>
+<ul>
+<li><strong>No evaluation numbers exist yet.</strong> The results folder was empty when this was written, so nothing on questions (a) to (c) is reported here.</li>
+<li><strong><code>TimeShift</code> / <code>TimeDuration</code> units</strong> in the SyMuPe tokenizer were not checked. The encoder's exact field composition is taken from the config and the job code, not traced through symupe's source.</li>
+<li><strong>Frozen typset.</strong> <code>eval/frozen/P/typset</code> exists, but it was not checked for completeness.</li>
+<li><strong>E and F step times</strong> were measured while the frozen evaluation shared the GPU, so they are not clean cost figures.</li>
+</ul></main></div>
+<script>
+(function(){var r=document.documentElement,b=document.querySelector('.theme');
+try{var s=localStorage.getItem('rl-theme');if(s)r.dataset.theme=s;}catch(e){}
+b.addEventListener('click',function(){var d=r.dataset.theme||
+(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+r.dataset.theme=d==='dark'?'light':'dark';try{localStorage.setItem('rl-theme',r.dataset.theme);}catch(e){}});})();
+</script></body></html>

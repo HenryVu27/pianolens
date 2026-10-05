@@ -2,11 +2,15 @@
 
 Usage: uv run --with markdown python scripts/build_research_log.py [--open]
 Output: docs/research-log.html (no external requests; light and dark themes).
+
+Any other markdown file renders the same way (images stay relative to the output file):
+    uv run --with markdown python scripts/build_research_log.py SRC.md OUT.html "Title" [--open]
 """
 
 from __future__ import annotations
 
 import html
+import os
 import re
 import subprocess
 import sys
@@ -79,8 +83,8 @@ def slug(text: str) -> str:
     return s or "section"
 
 
-def build() -> Path:
-    md = SRC.read_text(encoding="utf-8")
+def build(src: Path = SRC, out: Path = OUT, title: str = "PianoLens research log") -> Path:
+    md = src.read_text(encoding="utf-8")
     body = markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"])
 
     toc: list[tuple[int, str, str]] = []
@@ -104,19 +108,24 @@ def build() -> Path:
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PianoLens research log</title>
+<title>{html.escape(title)}</title>
 <style>{CSS}</style></head>
 <body><button class="theme" type="button">Light / dark</button>
 <div class="wrap"><nav class="toc"><div class="title">Contents</div>{toc_html}</nav>
 <main>{body}</main></div>
 <script>{JS}</script></body></html>
 """
-    OUT.write_text(page, encoding="utf-8")
-    return OUT
+    out.write_text(page, encoding="utf-8")
+    return out
 
 
 if __name__ == "__main__":
-    out = build()
+    args = [a for a in sys.argv[1:] if a != "--open"]
+    out = build(*(Path(a) for a in args[:2]), *args[2:3])
     print(out)
     if "--open" in sys.argv:
-        subprocess.run(["open", str(out)], check=False)
+        if sys.platform == "win32":
+            os.startfile(out)
+        else:
+            opener = "open" if sys.platform == "darwin" else "xdg-open"
+            subprocess.run([opener, str(out)], check=False)

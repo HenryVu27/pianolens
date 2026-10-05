@@ -12,9 +12,12 @@
 #   TORCH_INDEX  torch wheel index                default: https://download.pytorch.org/whl/cu128
 #                (the Mac dry run sets TORCH_INDEX=pypi: CPU wheels from PyPI)
 set -euo pipefail
+# Windows (Git Bash) support: native Windows paths for Python, and uv venvs keep python in Scripts/.
+wpwd() { pwd -W 2>/dev/null || pwd; }
+vpy() { if [ -x "$1/bin/python" ]; then echo "$1/bin/python"; else echo "$1/Scripts/python.exe"; fi; }
 ARM=${1:-symupe}
-HERE=$(cd "$(dirname "$0")" && pwd)
-REPO=${REPO:-$(cd "$HERE/../../.." && pwd)}
+HERE=$(cd "$(dirname "$0")" && wpwd)
+REPO=${REPO:-$(cd "$HERE/../../.." && wpwd)}
 R07_HOME=${R07_HOME:-$HOME/r07}
 TORCH_INDEX=${TORCH_INDEX:-https://download.pytorch.org/whl/cu128}
 TORCH_VERSION=2.7.1          # cu128 wheel verified by the Pianist Transformer authors
@@ -50,17 +53,30 @@ PY
 
 if [ "$ARM" = symupe ]; then
   V="$R07_HOME/venv-symupe"
-  [ -x "$V/bin/python" ] || uv venv --python 3.12 "$V"
-  PY="$V/bin/python"
+  [ -d "$V" ] || uv venv --python 3.12 "$V"
+  PY=$(vpy "$V")
   torch_install "$PY"
   clone_at https://github.com/ilya16/SyMuPe.git "$R07_HOME/src/SyMuPe" "$SYMUPE_COMMIT"
   # symupe 1.1.0 imports numba without declaring it (R-06)
-  uv pip install --python "$PY" -e "$R07_HOME/src/SyMuPe" numba "$REPO"
+  uv pip install --python "$PY" --reinstall-package pianolens -e "$R07_HOME/src/SyMuPe" numba "$REPO"
   hf_snapshot "$PY" SyMuPe/EncDec-base "$SYMUPE_MODEL_REV" "$R07_HOME/models/EncDec-base"
+  # Windows: symupe imports the Unix-only `resource` module (only to cap memory in its parangonar
+  # aligner, which this job never calls). Install a no-op stub instead of patching symupe.
+  case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*)
+    "$PY" - <<'PY'
+import pathlib, sysconfig
+p = pathlib.Path(sysconfig.get_paths()["purelib"]) / "resource.py"
+p.write_text('"""No-op stub of the Unix `resource` module (R-07 setup.sh, Windows only)."""\n'
+             "RLIMIT_AS = 9\nRLIM_INFINITY = -1\n\n\n"
+             "def getrlimit(_):\n    return (RLIM_INFINITY, RLIM_INFINITY)\n\n\n"
+             "def setrlimit(_, __):\n    pass\n")
+print("resource stub ->", p)
+PY
+  ;; esac
 elif [ "$ARM" = pt ]; then
   V="$R07_HOME/venv-pt"
-  [ -x "$V/bin/python" ] || uv venv --python 3.12 "$V"
-  PY="$V/bin/python"
+  [ -d "$V" ] || uv venv --python 3.12 "$V"
+  PY=$(vpy "$V")
   torch_install "$PY"
   clone_at https://github.com/yhj137/PianistTransformer.git "$R07_HOME/src/PianistTransformer" "$PT_COMMIT"
   uv pip install --python "$PY" "transformers==4.54.0" "miditoolkit==1.0.1" "accelerate==1.10.1" \

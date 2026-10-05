@@ -1,0 +1,350 @@
+{
+ "E:B-amount": {
+  "required_ci": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "noise_ci": {
+   "jitT20": false,
+   "jitT40": false,
+   "jitV8": false,
+   "jitV16": false
+  },
+  "required_point": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "R1_pass": true,
+  "R2_pass": false,
+  "R3_point_pass": true
+ },
+ "E:B-smooth": {
+  "required_ci": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "R1_pass": false,
+  "R2_pass": true,
+  "R3_point_pass": false
+ },
+ "E:S-DEV": {
+  "required_ci": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "noise_ci": {
+   "jitT20": false,
+   "jitT40": false,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "R1_pass": true,
+  "R2_pass": false,
+  "R3_point_pass": true
+ },
+ "E:S-LR": {
+  "required_ci": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "R1_pass": true,
+  "R2_pass": true,
+  "R3_point_pass": true
+ },
+ "E:S-RAW": {
+  "required_ci": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "R1_pass": false,
+  "R2_pass": true,
+  "R3_point_pass": false
+ },
+ "F:S-RAW": {
+  "required_ci": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "noise_ci": {
+   "jitT20": false,
+   "jitT40": false,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "R1_pass": false,
+  "R2_pass": false,
+  "R3_point_pass": false
+ },
+ "frozen:S-DEV": {
+  "required_ci": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "R1_pass": true,
+  "R2_pass": true,
+  "R3_point_pass": true
+ },
+ "frozen:S-RAW": {
+  "required_ci": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "R1_pass": false,
+  "R2_pass": true,
+  "R3_point_pass": false
+ },
+ "pt_E:S-DEV": {
+  "required_ci": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "R1_pass": true,
+  "R2_pass": true,
+  "R3_point_pass": true
+ },
+ "pt_E:S-RAW": {
+  "required_ci": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "R1_pass": false,
+  "R2_pass": true,
+  "R3_point_pass": false
+ },
+ "pt_frozen:S-DEV": {
+  "required_ci": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": true,
+   "deadpan_vel+12": true,
+   "deadpan_vel-12": true,
+   "deadpan_slow15": true,
+   "deadpan_noise10_4": true,
+   "half_flat_timing": true,
+   "half_flat_velocity": true
+  },
+  "R1_pass": true,
+  "R2_pass": true,
+  "R3_point_pass": true
+ },
+ "pt_frozen:S-RAW": {
+  "required_ci": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "noise_ci": {
+   "jitT20": true,
+   "jitT40": true,
+   "jitV8": true,
+   "jitV16": true
+  },
+  "required_point": {
+   "deadpan": false,
+   "deadpan_vel+12": false,
+   "deadpan_vel-12": false,
+   "deadpan_slow15": false,
+   "deadpan_noise10_4": false,
+   "half_flat_timing": false,
+   "half_flat_velocity": false
+  },
+  "R1_pass": false,
+  "R2_pass": true,
+  "R3_point_pass": false
+ }
+}

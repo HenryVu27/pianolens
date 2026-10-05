@@ -1,0 +1,673 @@
+{
+ "set": "C:\\Personal\\pianolens\\experiments\\2026-09-28-R-07-symupe-finetune\\job\\outputs\\eval_sets\\A",
+ "arms": {
+  "frozen": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/frozen/A",
+  "E": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/E/A",
+  "F": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/F/A",
+  "pt_frozen": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/pt_frozen/A",
+  "pt_E": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/pt_E/A"
+ },
+ "n_real": 80,
+ "n_passages": 16,
+ "n_works": 16,
+ "a": {
+  "E": {
+   "velocity": [
+    0.6496834738770279,
+    0.5913347994974851,
+    0.7238712212210423
+   ],
+   "log_ioi": [
+    0.3631232166685924,
+    0.3025445269623897,
+    0.4152615197885541
+   ],
+   "log_art": [
+    0.47842763849583675,
+    0.3776594151433262,
+    0.5805508058370731
+   ],
+   "composite": [
+    0.4970781096804856,
+    0.4441935573894168,
+    0.5554247567026858
+   ],
+   "per_work_composite": {
+    "asap:Bach/Italian_concerto": 0.5580091997438354,
+    "asap:Haydn/Keyboard_Sonatas_48-2": 0.49416777127941647,
+    "bach_bwv854_fugue": 0.478389582014788,
+    "bach_bwv864_fugue": 0.3170978896480718,
+    "bach_bwv885_prelude": 0.1200482486378549,
+    "beethoven_op10_no1_mv1": 0.5595528697083928,
+    "beethoven_op10_no3_mv1": 0.6125289010090967,
+    "beethoven_op2_no1_mv1": 0.6164804861546158,
+    "beethoven_op2_no2_mv1": 0.6256967011280927,
+    "beethoven_op7_mv1": 0.5586799121978104,
+    "chopin_op25_no4": 0.3623516004041772,
+    "chopin_op25_no8": 0.4101775377163382,
+    "chopin_op58_mv4": 0.5477893921345448,
+    "liszt_s139_no10": 0.5039529413416567,
+    "mozart_k310_mv1": 0.5696807588466795,
+    "mozart_k332_mv2": 0.6186459629223987
+   }
+  },
+  "frozen": {
+   "velocity": [
+    0.6780536759120113,
+    0.6164831882475217,
+    0.7562506731605948
+   ],
+   "log_ioi": [
+    0.47028434080536824,
+    0.42808542330461125,
+    0.5232686822320819
+   ],
+   "log_art": [
+    0.6247348549646367,
+    0.5648765116550267,
+    0.7017127826121419
+   ],
+   "composite": [
+    0.5910242905606721,
+    0.5477309780430909,
+    0.6457225346206821
+   ],
+   "per_work_composite": {
+    "asap:Bach/Italian_concerto": 0.7305565866638023,
+    "asap:Haydn/Keyboard_Sonatas_48-2": 0.4283641494913564,
+    "bach_bwv854_fugue": 0.46332483482551473,
+    "bach_bwv864_fugue": 0.3222895144407732,
+    "bach_bwv885_prelude": 0.5140832542554736,
+    "beethoven_op10_no1_mv1": 0.6123982143372233,
+    "beethoven_op10_no3_mv1": 0.6949222257483186,
+    "beethoven_op2_no1_mv1": 0.6741182284416363,
+    "beethoven_op2_no2_mv1": 0.6741893198633254,
+    "beethoven_op7_mv1": 0.648353336234906,
+    "chopin_op25_no4": 0.4967283515822595,
+    "chopin_op25_no8": 0.572184094598908,
+    "chopin_op58_mv4": 0.717971069087881,
+    "liszt_s139_no10": 0.6532760242976781,
+    "mozart_k310_mv1": 0.572239946114824,
+    "mozart_k332_mv2": 0.6813894989868727
+   }
+  },
+  "pt_E": {
+   "velocity": [
+    0.6158383274516667,
+    0.5632033813810347,
+    0.6857100302080166
+   ],
+   "log_ioi": [
+    0.32486397731601513,
+    0.23445032798533952,
+    0.4069005526083298
+   ],
+   "log_art": [
+    0.44024639330791027,
+    0.3494142498338122,
+    0.5496000322978452
+   ],
+   "composite": [
+    0.460316232691864,
+    0.3959456220906855,
+    0.5346585734393268
+   ],
+   "per_work_composite": {
+    "asap:Bach/Italian_concerto": 0.572641145469977,
+    "asap:Haydn/Keyboard_Sonatas_48-2": 0.5119810274171808,
+    "bach_bwv854_fugue": 0.6287474544474068,
+    "bach_bwv864_fugue": 0.3034147957001664,
+    "bach_bwv885_prelude": 0.13840150653724725,
+    "beethoven_op10_no1_mv1": 0.4807776498357017,
+    "beethoven_op10_no3_mv1": 0.47102643724516075,
+    "beethoven_op2_no1_mv1": 0.5425872706023706,
+    "beethoven_op2_no2_mv1": 0.5078258985159978,
+    "beethoven_op7_mv1": 0.4403877257071787,
+    "chopin_op25_no4": 0.05634427529467591,
+    "chopin_op25_no8": 0.5108823281727459,
+    "chopin_op58_mv4": 0.5316038563368082,
+    "liszt_s139_no10": 0.4882090515575559,
+    "mozart_k310_mv1": 0.5588380092232696,
+    "mozart_k332_mv2": 0.6213912910063811
+   }
+  },
+  "pt_frozen": {
+   "velocity": [
+    0.5931117548144406,
+    0.5447717219873014,
+    0.6531632204152102
+   ],
+   "log_ioi": [
+    0.25230086616177316,
+    0.15724834309754732,
+    0.3665992725536064
+   ],
+   "log_art": [
+    0.4416707368407289,
+    0.347318922363938,
+    0.5370787086442241
+   ],
+   "composite": [
+    0.42902778593898094,
+    0.36391834068154444,
+    0.5064423109196344
+   ],
+   "per_work_composite": {
+    "asap:Bach/Italian_concerto": 0.5620272902702955,
+    "asap:Haydn/Keyboard_Sonatas_48-2": 0.46330652671232286,
+    "bach_bwv854_fugue": 0.532524194533101,
+    "bach_bwv864_fugue": 0.2477585711222697,
+    "bach_bwv885_prelude": -0.05780149482513051,
+    "beethoven_op10_no1_mv1": 0.47753613446655957,
+    "beethoven_op10_no3_mv1": 0.4871504629319159,
+    "beethoven_op2_no1_mv1": 0.5260367000494375,
+    "beethoven_op2_no2_mv1": 0.402403836384216,
+    "beethoven_op7_mv1": 0.4081396048056459,
+    "chopin_op25_no4": 0.17984255290164766,
+    "chopin_op25_no8": 0.4836084339997939,
+    "chopin_op58_mv4": 0.5789249837991177,
+    "liszt_s139_no10": 0.4270125722778501,
+    "mozart_k310_mv1": 0.5909707492555213,
+    "mozart_k332_mv2": 0.5550034563391304
+   }
+  },
+  "E-frozen": {
+   "velocity": [
+    -0.028370202034983437,
+    -0.05106680067036778,
+    -0.004682480966293766
+   ],
+   "log_ioi": [
+    -0.10716112413677585,
+    -0.17778986363698665,
+    -0.04668212749011687
+   ],
+   "log_art": [
+    -0.14630721646879996,
+    -0.23267368811846242,
+    -0.08031109050906317
+   ],
+   "composite": [
+    -0.09394618088018643,
+    -0.14540507866589955,
+    -0.05251830380833898
+   ],
+   "per_work_composite": {
+    "asap:Bach/Italian_concerto": -0.1725473869199667,
+    "asap:Haydn/Keyboard_Sonatas_48-2": 0.06580362178806007,
+    "bach_bwv854_fugue": 0.015064747189273165,
+    "bach_bwv864_fugue": -0.00519162479270141,
+    "bach_bwv885_prelude": -0.3940350056176187,
+    "beethoven_op10_no1_mv1": -0.052845344628830504,
+    "beethoven_op10_no3_mv1": -0.08239332473922192,
+    "beethoven_op2_no1_mv1": -0.057637742287020455,
+    "beethoven_op2_no2_mv1": -0.04849261873523273,
+    "beethoven_op7_mv1": -0.08967342403709558,
+    "chopin_op25_no4": -0.13437675117808226,
+    "chopin_op25_no8": -0.16200655688256976,
+    "chopin_op58_mv4": -0.17018167695333608,
+    "liszt_s139_no10": -0.1493230829560214,
+    "mozart_k310_mv1": -0.002559187268144569,
+    "mozart_k332_mv2": -0.06274353606447403
+   }
+  },
+  "F-frozen": {
+   "velocity": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "log_ioi": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "log_art": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "composite": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "per_work_composite": {},
+   "t_interval_composite": [
+    NaN,
+    NaN,
+    NaN
+   ]
+  },
+  "pt_frozen-frozen": {
+   "velocity": [
+    -0.08494192109757065,
+    -0.13745215956717075,
+    -0.036188998787613794
+   ],
+   "log_ioi": [
+    -0.21798347464359508,
+    -0.3210375859324395,
+    -0.10093599832562108
+   ],
+   "log_art": [
+    -0.18306411812390777,
+    -0.2968008538183301,
+    -0.09303620612715317
+   ],
+   "composite": [
+    -0.16199650462169116,
+    -0.22888713039250844,
+    -0.0996837880232641
+   ],
+   "per_work_composite": {
+    "asap:Bach/Italian_concerto": -0.16852929639350664,
+    "asap:Haydn/Keyboard_Sonatas_48-2": 0.034942377220966436,
+    "bach_bwv854_fugue": 0.06919935970758616,
+    "bach_bwv864_fugue": -0.07453094331850349,
+    "bach_bwv885_prelude": -0.5718847490806042,
+    "beethoven_op10_no1_mv1": -0.13486207987066373,
+    "beethoven_op10_no3_mv1": -0.20777176281640275,
+    "beethoven_op2_no1_mv1": -0.1480815283921988,
+    "beethoven_op2_no2_mv1": -0.2717854834791094,
+    "beethoven_op7_mv1": -0.24021373142926017,
+    "chopin_op25_no4": -0.3168857986806118,
+    "chopin_op25_no8": -0.08857566059911404,
+    "chopin_op58_mv4": -0.13904608528876325,
+    "liszt_s139_no10": -0.22626345201982798,
+    "mozart_k310_mv1": 0.018730803140697295,
+    "mozart_k332_mv2": -0.1263860426477424
+   }
+  },
+  "pt_E-frozen": {
+   "velocity": [
+    -0.06221534846034456,
+    -0.10888847511499024,
+    -0.018886366220948476
+   ],
+   "log_ioi": [
+    -0.14542036348935314,
+    -0.24098040112188207,
+    -0.06062665405025566
+   ],
+   "log_art": [
+    -0.18448846165672642,
+    -0.2830321635543458,
+    -0.09602734759976665
+   ],
+   "composite": [
+    -0.13070805786880804,
+    -0.19981805101214625,
+    -0.07001370060705489
+   ],
+   "per_work_composite": {
+    "asap:Bach/Italian_concerto": -0.15791544119382508,
+    "asap:Haydn/Keyboard_Sonatas_48-2": 0.08361687792582428,
+    "bach_bwv854_fugue": 0.16542261962189203,
+    "bach_bwv864_fugue": -0.01887471874060681,
+    "bach_bwv885_prelude": -0.3756817477182264,
+    "beethoven_op10_no1_mv1": -0.1316205645015216,
+    "beethoven_op10_no3_mv1": -0.22389578850315792,
+    "beethoven_op2_no1_mv1": -0.13153095783926572,
+    "beethoven_op2_no2_mv1": -0.16636342134732768,
+    "beethoven_op7_mv1": -0.20796561052772727,
+    "chopin_op25_no4": -0.4403840762875836,
+    "chopin_op25_no8": -0.061301766426162016,
+    "chopin_op58_mv4": -0.18636721275107274,
+    "liszt_s139_no10": -0.16506697274012225,
+    "mozart_k310_mv1": -0.013401936891554422,
+    "mozart_k332_mv2": -0.0599982079804916
+   }
+  }
+ },
+ "pass_fail": {
+  "E:B-amount": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": false,
+    "jitV16": false
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "E:B-smooth": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "E:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": true,
+   "R3_point_pass": true
+  },
+  "E:S-LR": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": true,
+   "R3_point_pass": true
+  },
+  "E:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "F:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "frozen:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": true,
+   "R3_point_pass": true
+  },
+  "frozen:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "pt_E:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": false,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": false,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "pt_E:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "pt_frozen:S-DEV": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": false,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "pt_frozen:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  }
+ }
+}

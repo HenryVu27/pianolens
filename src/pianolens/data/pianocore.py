@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import io
 import logging
+import os
 import re
 import tempfile
 import warnings
@@ -234,12 +235,15 @@ class PianoCoReStats:
 
 
 def _midi_from_bytes(data: bytes, loader):
-    with tempfile.NamedTemporaryFile(suffix=".mid") as f:
+    # Closed before loading: Windows cannot reopen a NamedTemporaryFile that is still open.
+    with tempfile.NamedTemporaryFile(suffix=".mid", delete=False) as f:
         f.write(data)
-        f.flush()
+    try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             return loader(f.name)
+    finally:
+        os.unlink(f.name)
 
 
 def _midi_note_keys(data: bytes) -> list[tuple[int, int]]:

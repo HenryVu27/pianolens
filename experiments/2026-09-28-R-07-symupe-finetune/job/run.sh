@@ -9,13 +9,16 @@
 #                                    # resume to 6 -> F 4 steps -> PT 2 steps
 # Env: R07_HOME ($HOME/r07), R07_DATA ($R07_HOME/data), OUT (job/outputs), WORKERS (8)
 set -euo pipefail
-HERE=$(cd "$(dirname "$0")" && pwd)
+# Windows (Git Bash) support: native Windows paths for Python, and uv venvs keep python in Scripts/.
+wpwd() { pwd -W 2>/dev/null || pwd; }
+vpy() { if [ -x "$1/bin/python" ]; then echo "$1/bin/python"; else echo "$1/Scripts/python.exe"; fi; }
+HERE=$(cd "$(dirname "$0")" && wpwd)
 R07_HOME=${R07_HOME:-$HOME/r07}
 R07_DATA=${R07_DATA:-$R07_HOME/data}
 OUT=${OUT:-$HERE/outputs}
 WORKERS=${WORKERS:-8}
-PY=${PY:-$R07_HOME/venv-symupe/bin/python}
-PYPT=${PYPT:-$R07_HOME/venv-pt/bin/python}
+PY=${PY:-$(vpy "$R07_HOME/venv-symupe")}
+PYPT=${PYPT:-$(vpy "$R07_HOME/venv-pt")}
 export R07_SYMUPE_MODEL=${R07_SYMUPE_MODEL:-$R07_HOME/models/EncDec-base}
 export R07_PT_MODEL=${R07_PT_MODEL:-$R07_HOME/models/pianist-transformer-rendering}
 export R07_PT_REPO=${R07_PT_REPO:-$R07_HOME/src/PianistTransformer}

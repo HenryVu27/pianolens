@@ -96,7 +96,8 @@ study/        listening-study web app and protocol (Phase 3-4)
    - Record each license in `DATASETS.md`.
 5. **Never invent data or numbers.** If a figure is not measured in this repo or cited from a
    source in the landscape doc, do not write it.
-6. **Stage and commit nothing unless Henry asks.** Stage explicit paths only. Never push.
+6. **Stage, commit and push nothing unless Henry asks.** Stage explicit paths only. Push only
+   when Henry asks for that push.
 7. **Agents do not spend money or touch credentials.** GPU rental, API keys and recruiting
    listeners are OWNER tickets.
 

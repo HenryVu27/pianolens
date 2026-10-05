@@ -1,0 +1,675 @@
+{
+ "set": "C:\\Personal\\pianolens\\experiments\\2026-09-28-R-07-symupe-finetune\\job\\outputs\\eval_sets\\P",
+ "arms": {
+  "frozen": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/frozen/P",
+  "E": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/E/P",
+  "F": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/F/P",
+  "pt_frozen": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/pt_frozen/P",
+  "pt_E": "C:/Personal/pianolens/experiments/2026-09-28-R-07-symupe-finetune/job/outputs/eval/pt_E/P"
+ },
+ "n_real": 981,
+ "n_passages": 86,
+ "n_works": 3,
+ "a": {
+  "E": {
+   "velocity": [
+    0.5414543306582451,
+    0.497657103189108,
+    0.5832927707830988
+   ],
+   "log_ioi": [
+    0.2674634020073924,
+    0.21099001727373728,
+    0.3245744739484582
+   ],
+   "log_art": [
+    0.23457413271234628,
+    0.17081396115126302,
+    0.29619522879896915
+   ],
+   "composite": [
+    0.3478306217926613,
+    0.3113432358598487,
+    0.38453624791864555
+   ],
+   "per_work_composite": {
+    "beethoven_woo80": 0.3912736562673087,
+    "schubert_d960_mv2": 0.3191148734279956,
+    "schubert_d960_mv3": 0.3331033356826795
+   },
+   "t_interval_composite": [
+    0.3478306217926613,
+    0.25276918551374067,
+    0.4428920580715819
+   ]
+  },
+  "frozen": {
+   "velocity": [
+    0.5148800667554562,
+    0.4630263472916436,
+    0.5627271902109537
+   ],
+   "log_ioi": [
+    0.3304499772162895,
+    0.28233459068876193,
+    0.38033503022512055
+   ],
+   "log_art": [
+    0.3508842383596236,
+    0.29701497690473594,
+    0.40248274569573583
+   ],
+   "composite": [
+    0.3987380941104564,
+    0.36469289562137946,
+    0.43140326006921814
+   ],
+   "per_work_composite": {
+    "beethoven_woo80": 0.43637487988139867,
+    "schubert_d960_mv2": 0.4238596971782006,
+    "schubert_d960_mv3": 0.3359797052717701
+   },
+   "t_interval_composite": [
+    0.3987380941104564,
+    0.26283239838729894,
+    0.5346437898336138
+   ]
+  },
+  "pt_E": {
+   "velocity": [
+    0.5569658921490758,
+    0.5167735884079304,
+    0.5941265401399102
+   ],
+   "log_ioi": [
+    0.3060769118117781,
+    0.24785003454158838,
+    0.36573884953849684
+   ],
+   "log_art": [
+    0.35971506561034855,
+    0.29568503636151566,
+    0.4167929957144423
+   ],
+   "composite": [
+    0.4075859565237341,
+    0.37636707468472663,
+    0.4399663026317725
+   ],
+   "per_work_composite": {
+    "beethoven_woo80": 0.42644026788942746,
+    "schubert_d960_mv2": 0.3836599937861627,
+    "schubert_d960_mv3": 0.4126576078956122
+   },
+   "t_interval_composite": [
+    0.4075859565237341,
+    0.35334128436460865,
+    0.4618306286828595
+   ]
+  },
+  "pt_frozen": {
+   "velocity": [
+    0.5406202428363406,
+    0.5032647585591773,
+    0.5787984616087719
+   ],
+   "log_ioi": [
+    0.2679708623675721,
+    0.2086544536331825,
+    0.32696793494842946
+   ],
+   "log_art": [
+    0.37573905524711365,
+    0.3175000109546709,
+    0.4279795314957894
+   ],
+   "composite": [
+    0.3947767201503421,
+    0.3636892421604177,
+    0.4263994698915508
+   ],
+   "per_work_composite": {
+    "beethoven_woo80": 0.4294584406142574,
+    "schubert_d960_mv2": 0.40010005486922745,
+    "schubert_d960_mv3": 0.3547716649675415
+   },
+   "t_interval_composite": [
+    0.3947767201503421,
+    0.3013063707128841,
+    0.4882470695878001
+   ]
+  },
+  "E-frozen": {
+   "velocity": [
+    0.026574263902788896,
+    -0.001009256422456276,
+    0.05628150388555048
+   ],
+   "log_ioi": [
+    -0.06298657520889707,
+    -0.10178919505859907,
+    -0.026141706873578998
+   ],
+   "log_art": [
+    -0.11631010564727741,
+    -0.15222209983732782,
+    -0.08178304711766918
+   ],
+   "composite": [
+    -0.05090747231779521,
+    -0.071979114237174,
+    -0.028707551399138217
+   ],
+   "per_work_composite": {
+    "beethoven_woo80": -0.045101223614090004,
+    "schubert_d960_mv2": -0.10474482375020501,
+    "schubert_d960_mv3": -0.002876369589090595
+   },
+   "t_interval_composite": [
+    -0.05090747231779521,
+    -0.17805019023944937,
+    0.07623524560385894
+   ]
+  },
+  "F-frozen": {
+   "velocity": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "log_ioi": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "log_art": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "composite": [
+    NaN,
+    NaN,
+    NaN
+   ],
+   "per_work_composite": {},
+   "t_interval_composite": [
+    NaN,
+    NaN,
+    NaN
+   ]
+  },
+  "pt_frozen-frozen": {
+   "velocity": [
+    0.025740176080884237,
+    -0.004507853895601905,
+    0.0591931292841362
+   ],
+   "log_ioi": [
+    -0.062479114848717356,
+    -0.10720953783619802,
+    -0.016471417849981525
+   ],
+   "log_art": [
+    0.024854816887490045,
+    -0.012553318331045605,
+    0.06069344889766194
+   ],
+   "composite": [
+    -0.003961373960114357,
+    -0.027626510882483305,
+    0.018155723400074077
+   ],
+   "per_work_composite": {
+    "beethoven_woo80": -0.006916439267141272,
+    "schubert_d960_mv2": -0.023759642308973157,
+    "schubert_d960_mv3": 0.018791959695771354
+   },
+   "t_interval_composite": [
+    -0.003961373960114358,
+    -0.05719436529909405,
+    0.04927161737886533
+   ]
+  },
+  "pt_E-frozen": {
+   "velocity": [
+    0.04208582539361946,
+    0.01379022012417931,
+    0.07066249977948583
+   ],
+   "log_ioi": [
+    -0.024373065404511406,
+    -0.07628100206736027,
+    0.026103609646409873
+   ],
+   "log_art": [
+    0.008830827250724843,
+    -0.038195468937549056,
+    0.054995531918398115
+   ],
+   "composite": [
+    0.008847862413277627,
+    -0.015290416280611467,
+    0.03401360248644934
+   ],
+   "per_work_composite": {
+    "beethoven_woo80": -0.009934611991971234,
+    "schubert_d960_mv2": -0.040199703392037905,
+    "schubert_d960_mv3": 0.07667790262384203
+   },
+   "t_interval_composite": [
+    0.008847862413277627,
+    -0.14184083428096847,
+    0.1595365591075237
+   ]
+  }
+ },
+ "pass_fail": {
+  "E:B-amount": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": false,
+    "jitV16": false
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "E:B-smooth": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "E:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "E:S-LR": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": true,
+   "R3_point_pass": true
+  },
+  "E:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "E:S-TYP": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "F:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "frozen:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "frozen:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "frozen:S-TYP": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": true,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": true,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "pt_E:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "pt_E:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  },
+  "pt_frozen:S-DEV": {
+   "required_ci": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "noise_ci": {
+    "jitT20": false,
+    "jitT40": false,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": true,
+    "deadpan_vel+12": true,
+    "deadpan_vel-12": true,
+    "deadpan_slow15": true,
+    "deadpan_noise10_4": true,
+    "half_flat_timing": true,
+    "half_flat_velocity": true
+   },
+   "R1_pass": true,
+   "R2_pass": false,
+   "R3_point_pass": true
+  },
+  "pt_frozen:S-RAW": {
+   "required_ci": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "noise_ci": {
+    "jitT20": true,
+    "jitT40": true,
+    "jitV8": true,
+    "jitV16": true
+   },
+   "required_point": {
+    "deadpan": false,
+    "deadpan_vel+12": false,
+    "deadpan_vel-12": false,
+    "deadpan_slow15": false,
+    "deadpan_noise10_4": false,
+    "half_flat_timing": false,
+    "half_flat_velocity": false
+   },
+   "R1_pass": false,
+   "R2_pass": true,
+   "R3_point_pass": false
+  }
+ }
+}
