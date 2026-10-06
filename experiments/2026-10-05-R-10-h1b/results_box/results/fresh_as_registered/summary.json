@@ -1,0 +1,1069 @@
+{
+ "pieces": {
+  "total": 65,
+  "primary_n_ge_min": 59,
+  "works_primary": 57,
+  "oracle_eligible": 15,
+  "axes_eligible": 12
+ },
+ "experts": {
+  "reliability_velocity": [
+   0.9601875726946594,
+   0.9448242136065886,
+   0.968110313871765,
+   59
+  ],
+  "oracle_analytic_velocity": [
+   0.8781862783360482,
+   0.8470564531459898,
+   0.901643455469576,
+   59
+  ],
+  "reliability_log_ioi": [
+   0.9627002309434489,
+   0.9524415975418904,
+   0.9723334114829738,
+   59
+  ],
+  "oracle_analytic_log_ioi": [
+   0.8824713911400208,
+   0.8587525040009061,
+   0.910970606791474,
+   59
+  ],
+  "k": [
+   4.0,
+   3.0,
+   4.0,
+   59
+  ],
+  "var_shared": [
+   0.3685695588504988,
+   0.3204330647007267,
+   0.41039966725839727,
+   59
+  ],
+  "expert_cond_r2_zero": [
+   0.0,
+   0.0,
+   0.0,
+   54
+  ],
+  "expert_cond_r2_perf_mean": [
+   -0.07381123139288748,
+   -0.08799406406314925,
+   -0.059548990989048214,
+   54
+  ],
+  "expert_cond_r2_expert_basis": [
+   0.04279146402836137,
+   0.026850055053972643,
+   0.06615495799954985,
+   54
+  ],
+  "oracle_emp_velocity": [
+   0.8828394009433135,
+   0.8239035277741387,
+   0.9219760250626571,
+   15
+  ],
+  "oracle_emp_r2_velocity": [
+   0.8945565117278619,
+   0.8405094593586371,
+   0.9286111474401961,
+   15
+  ],
+  "oracle_emp_b_velocity": [
+   1.0158271762315951,
+   1.0064119131362266,
+   1.0295042455079464,
+   15
+  ],
+  "oracle_emp_log_ioi": [
+   0.855642494826645,
+   0.8083819366426518,
+   0.9265597291882113,
+   15
+  ],
+  "oracle_emp_r2_log_ioi": [
+   0.8753097709760663,
+   0.8384393808991261,
+   0.9319672220255363,
+   15
+  ],
+  "oracle_emp_b_log_ioi": [
+   1.0149464186951036,
+   1.0057850433895776,
+   1.0357313616344415,
+   15
+  ],
+  "cap_oracle": [
+   0.19632910056165676,
+   0.15815694919018747,
+   0.2792072963434919,
+   12
+  ],
+  "cap_random": [
+   0.01139008548638223,
+   0.008432832251384843,
+   0.022732259650608218,
+   12
+  ]
+ },
+ "arms": {
+  "frozen_p100": {
+   "r2c_velocity": [
+    0.11263037236402762,
+    0.04332962668977114,
+    0.23581076519127464,
+    59
+   ],
+   "r_velocity": [
+    0.6487419711257324,
+    0.5428367902061174,
+    0.6863422346123245,
+    59
+   ],
+   "r2_velocity": [
+    0.4208661451001006,
+    0.2946717808012803,
+    0.471065663012639,
+    59
+   ],
+   "b_velocity": [
+    1.0918265331642942,
+    1.0357551906610065,
+    1.1716599167215047,
+    59
+   ],
+   "r2c_r07_velocity": [
+    0.11262632238906245,
+    0.0433281770975924,
+    0.23579983270546145,
+    59
+   ],
+   "ratio_analytic_velocity": [
+    0.1407736485522535,
+    0.05698890327093,
+    0.24690098094831767,
+    59
+   ],
+   "r2c_true_velocity": [
+    0.1207829969117763,
+    0.04820657949685636,
+    0.23883762822467636,
+    59
+   ],
+   "r2c_log_ioi": [
+    -0.13901771707685584,
+    -0.259954791682399,
+    0.015141825112918395,
+    59
+   ],
+   "r_log_ioi": [
+    0.5084015760885149,
+    0.45107896374601447,
+    0.5627874231143568,
+    59
+   ],
+   "r2_log_ioi": [
+    0.258472162569286,
+    0.20347223153417823,
+    0.3167296836156981,
+    59
+   ],
+   "b_log_ioi": [
+    1.1897570440415306,
+    1.022613994380453,
+    1.262345996362269,
+    59
+   ],
+   "r2c_r07_log_ioi": [
+    -0.1974653289142636,
+    -0.3885210345103429,
+    -0.06335607878851957,
+    59
+   ],
+   "ratio_analytic_log_ioi": [
+    -0.15221848028570384,
+    -0.3000024547495505,
+    0.01717146284137911,
+    59
+   ],
+   "r2c_true_log_ioi": [
+    -0.14189716165597477,
+    -0.2671218653204115,
+    0.015778124206881516,
+    59
+   ],
+   "ioi_offset": [
+    -0.029787236877964002,
+    -0.03825483629771743,
+    -0.024754060137787984,
+    59
+   ],
+   "cond_r2_zero": [
+    0.0,
+    0.0,
+    0.0,
+    54
+   ],
+   "cond_r2_perf_mean": [
+    -0.07381123139288748,
+    -0.08799406406314925,
+    -0.059548990989048214,
+    54
+   ],
+   "cond_r2_expert_basis": [
+    0.04279146402836137,
+    0.026850055053972643,
+    0.06615495799954985,
+    54
+   ],
+   "cond_r2_model_basis": [
+    -0.04539666675782017,
+    -0.05441926793928897,
+    -0.02921668241962383,
+    54
+   ],
+   "r2c_vs_rest_velocity": [
+    0.23530392670154562,
+    -0.03350859935820818,
+    0.3641300518352523,
+    15
+   ],
+   "ratio_emp_velocity": [
+    0.24865663528368112,
+    -0.03711313732448815,
+    0.41158018239932914,
+    15
+   ],
+   "r2c_vs_rest_log_ioi": [
+    0.010793127517183521,
+    -0.2673193172071636,
+    0.0577029488955181,
+    15
+   ],
+   "ratio_emp_log_ioi": [
+    0.011234685453941155,
+    -0.3018654296902968,
+    0.06144206105977897,
+    15
+   ],
+   "cap_model": [
+    0.07772187420947319,
+    0.06590520821577311,
+    0.11933508791996353,
+    12
+   ],
+   "axes_ratio": [
+    0.4357710683325631,
+    0.38334360984252003,
+    0.512865173920376,
+    12
+   ],
+   "reading_velocity": "falsified",
+   "ratio_of_medians_analytic_velocity": 0.12825339582558165,
+   "ratio_of_medians_emp_velocity": 0.2665308395276915,
+   "reading_log_ioi": "falsified",
+   "ratio_of_medians_analytic_log_ioi": -0.15753226503724474,
+   "ratio_of_medians_emp_log_ioi": 0.012614062043950063,
+   "reading_H1b_consensus": "falsified",
+   "reading_H1b_axes": "inconclusive",
+   "r2c_velocity_composer_cluster_ci": [
+    0.11263037236402762,
+    0.009206597563806818,
+    0.27266685310470196,
+    59
+   ],
+   "sibling_split_r2c_velocity": {
+    "False": [
+     0.24893941540725756,
+     0.11537179430482797,
+     0.4085487010787125,
+     28
+    ],
+    "True": [
+     -0.03511341650601829,
+     -0.2610423371385666,
+     0.11263037236402762,
+     31
+    ]
+   },
+   "r2c_log_ioi_composer_cluster_ci": [
+    -0.13901771707685584,
+    -0.3485038123587479,
+    0.010680257476323063,
+    59
+   ],
+   "sibling_split_r2c_log_ioi": {
+    "False": [
+     -0.23017466725733104,
+     -0.6769314714002783,
+     0.015141825112918395,
+     28
+    ],
+    "True": [
+     -0.03823634723696645,
+     -0.22143665555188963,
+     0.052184791016554044,
+     31
+    ]
+   },
+   "axes_ratio_per_piece": {
+    "bach_bwv852_prelude": 0.5724,
+    "bach_bwv861_prelude": 0.7655,
+    "bach_bwv912": 0.4412,
+    "liszt_s207": 0.6375,
+    "lyadov_op11_no1": 0.4533,
+    "mendelssohn_op53_no2": 0.4303,
+    "merikanto_op33": 0.2673,
+    "pianocore:Bach,_Johann_Sebastian/Notebook_for_Anna_Magdalena_Bach,_Book_2,_BWV_Anh.113-132/10._Polonaise_in_G_minor,_BWV_Anh.119": 0.3772,
+    "pianocore:Glinka,_Mikhail/Nocturne_in_E_flat_major": 0.4049,
+    "prokofiev_op22_no8": 0.4444,
+    "scarlatti_k213": 0.2525,
+    "scarlatti_k87": 0.3895
+   },
+   "per_composer_median_r2c_velocity": {
+    "Bach,_Carl_Philipp_Emanuel": -0.6788,
+    "Bach,_Johann_Sebastian": -0.069,
+    "Bart\u00f3k,_B\u00e9la": 0.3815,
+    "Boulanger,_Lili": 0.3013,
+    "Chopin,_Fr\u00e9d\u00e9ric": -0.3654,
+    "Clementi,_Muzio": 0.4319,
+    "Debussy,_Claude": 0.2665,
+    "Duvernoy,_Jean-Baptiste": 0.2788,
+    "Field,_John": 0.5236,
+    "Glinka,_Mikhail": 0.3736,
+    "Gossec,_Fran\u00e7ois_Joseph": -0.345,
+    "Grieg,_Edvard": -0.3277,
+    "Handel,_George_Frideric": 0.288,
+    "Haydn,_Joseph": 0.3693,
+    "Kuhlau,_Friedrich": 0.1943,
+    "Liszt,_Franz": 0.1938,
+    "Lyadov,_Anatoly": 0.7232,
+    "Mendelssohn,_Felix": 0.4847,
+    "Merikanto,_Oskar": 0.0732,
+    "Mozart,_Wolfgang_Amadeus": -0.0742,
+    "Prokofiev,_Sergey": -0.086,
+    "Rameau,_Jean-Philippe": -0.5999,
+    "Scarlatti,_Domenico": 0.4085,
+    "Schumann,_Robert": 0.2149,
+    "Turina,_Joaqu\u00edn": 0.0599
+   },
+   "loco_range_r2c_velocity": [
+    0.06958262603236975,
+    0.19395915605985214
+   ],
+   "per_composer_median_r2c_log_ioi": {
+    "Bach,_Carl_Philipp_Emanuel": -1.6303,
+    "Bach,_Johann_Sebastian": 0.0057,
+    "Bart\u00f3k,_B\u00e9la": 0.2381,
+    "Boulanger,_Lili": -0.0432,
+    "Chopin,_Fr\u00e9d\u00e9ric": -0.9844,
+    "Clementi,_Muzio": -0.1787,
+    "Debussy,_Claude": 0.2312,
+    "Duvernoy,_Jean-Baptiste": -0.6896,
+    "Field,_John": -0.5892,
+    "Glinka,_Mikhail": 0.4149,
+    "Gossec,_Fran\u00e7ois_Joseph": -0.6769,
+    "Grieg,_Edvard": 0.2197,
+    "Handel,_George_Frideric": -0.811,
+    "Haydn,_Joseph": -0.7831,
+    "Kuhlau,_Friedrich": -0.139,
+    "Liszt,_Franz": 0.0502,
+    "Lyadov,_Anatoly": 0.3492,
+    "Mendelssohn,_Felix": -0.1776,
+    "Merikanto,_Oskar": 0.0766,
+    "Mozart,_Wolfgang_Amadeus": -0.0531,
+    "Prokofiev,_Sergey": 0.0107,
+    "Rameau,_Jean-Philippe": -1.5459,
+    "Scarlatti,_Domenico": -0.1236,
+    "Schumann,_Robert": -0.1405,
+    "Turina,_Joaqu\u00edn": -1.0259
+   },
+   "loco_range_r2c_log_ioi": [
+    -0.17759008899087037,
+    -0.10199028623182227
+   ]
+  },
+  "frozen_p95": {
+   "r2c_velocity": [
+    0.17339792796539433,
+    0.05434377223985143,
+    0.29268673447344573,
+    59
+   ],
+   "r_velocity": [
+    0.6754599332622075,
+    0.5674064960691694,
+    0.7110683132405846,
+    59
+   ],
+   "r2_velocity": [
+    0.45624612144258586,
+    0.32195013178149234,
+    0.5056206461661741,
+    59
+   ],
+   "b_velocity": [
+    1.0954046275018021,
+    0.9994119765737723,
+    1.1850499370767766,
+    59
+   ],
+   "r2c_r07_velocity": [
+    0.17338910504294647,
+    0.05433972226488648,
+    0.29268488279999977,
+    59
+   ],
+   "ratio_analytic_velocity": [
+    0.19014931860649906,
+    0.06792280744283412,
+    0.3419997869863618,
+    59
+   ],
+   "r2c_true_velocity": [
+    0.17916626931141388,
+    0.058277385902673506,
+    0.3041036944947905,
+    59
+   ],
+   "r2c_log_ioi": [
+    0.07236769359598472,
+    0.03152206227009202,
+    0.15742053187933247,
+    59
+   ],
+   "r_log_ioi": [
+    0.5452318419333618,
+    0.5057699669669115,
+    0.5886084034021348,
+    59
+   ],
+   "r2_log_ioi": [
+    0.29727776145804646,
+    0.25583720058747017,
+    0.3464598525556103,
+    59
+   ],
+   "b_log_ioi": [
+    0.8940254944325113,
+    0.7503098010670967,
+    1.0221966916997662,
+    59
+   ],
+   "r2c_r07_log_ioi": [
+    0.050012006650867025,
+    -0.04279863300578923,
+    0.14040447622306163,
+    59
+   ],
+   "ratio_analytic_log_ioi": [
+    0.08012334582426589,
+    0.03331881324854595,
+    0.17460395103644982,
+    59
+   ],
+   "r2c_true_log_ioi": [
+    0.07678297518432542,
+    0.032247725757981516,
+    0.16142717207771384,
+    59
+   ],
+   "ioi_offset": [
+    -0.0009355314532147781,
+    -0.008021785237187298,
+    0.008089018214839993,
+    59
+   ],
+   "cond_r2_zero": [
+    0.0,
+    0.0,
+    0.0,
+    54
+   ],
+   "cond_r2_perf_mean": [
+    -0.07381123139288748,
+    -0.08799406406314925,
+    -0.059548990989048214,
+    54
+   ],
+   "cond_r2_expert_basis": [
+    0.04279146402836137,
+    0.026850055053972643,
+    0.06615495799954985,
+    54
+   ],
+   "cond_r2_model_basis": [
+    -0.04083183393419754,
+    -0.049625891057608285,
+    -0.01617909881854307,
+    54
+   ],
+   "r2c_vs_rest_velocity": [
+    0.27071120914373886,
+    0.12698761399822822,
+    0.45605117379798604,
+    15
+   ],
+   "ratio_emp_velocity": [
+    0.31362660444837437,
+    0.1458396817248294,
+    0.5047312789425239,
+    15
+   ],
+   "r2c_vs_rest_log_ioi": [
+    0.19152529490365958,
+    0.05488981695749508,
+    0.4100205898463285,
+    15
+   ],
+   "ratio_emp_log_ioi": [
+    0.20393600481788976,
+    0.07474521413775795,
+    0.4630082211376907,
+    15
+   ],
+   "cap_model": [
+    0.08862635846611433,
+    0.08031312060484617,
+    0.13693912507172762,
+    12
+   ],
+   "axes_ratio": [
+    0.5100943035652157,
+    0.4615180106236002,
+    0.6465822334679231,
+    12
+   ],
+   "reading_velocity": "falsified",
+   "ratio_of_medians_analytic_velocity": 0.1974500538700533,
+   "ratio_of_medians_emp_velocity": 0.3066369816010523,
+   "reading_log_ioi": "falsified",
+   "ratio_of_medians_analytic_log_ioi": 0.08200571069221461,
+   "ratio_of_medians_emp_log_ioi": 0.2238379884842711,
+   "reading_H1b_consensus": "falsified",
+   "reading_H1b_axes": "inconclusive",
+   "r2c_velocity_composer_cluster_ci": [
+    0.17339792796539433,
+    0.030501123828308163,
+    0.31125862850068486,
+    59
+   ],
+   "sibling_split_r2c_velocity": {
+    "False": [
+     0.2688295997687088,
+     0.11832796936723672,
+     0.38464136210932565,
+     28
+    ],
+    "True": [
+     0.05434377223985143,
+     -0.20554535061536372,
+     0.2021249149822587,
+     31
+    ]
+   },
+   "r2c_log_ioi_composer_cluster_ci": [
+    0.07236769359598472,
+    0.04803956854666458,
+    0.15742053187933247,
+    59
+   ],
+   "sibling_split_r2c_log_ioi": {
+    "False": [
+     0.06462140258528837,
+     -0.037498706490634026,
+     0.2052049791277918,
+     28
+    ],
+    "True": [
+     0.07296455368758115,
+     -0.03360006514406488,
+     0.24702254711126526,
+     31
+    ]
+   },
+   "axes_ratio_per_piece": {
+    "bach_bwv852_prelude": 0.7695,
+    "bach_bwv861_prelude": 0.8334,
+    "bach_bwv912": 0.4969,
+    "liszt_s207": 0.7448,
+    "lyadov_op11_no1": 0.5053,
+    "mendelssohn_op53_no2": 0.5401,
+    "merikanto_op33": 0.2787,
+    "pianocore:Bach,_Johann_Sebastian/Notebook_for_Anna_Magdalena_Bach,_Book_2,_BWV_Anh.113-132/10._Polonaise_in_G_minor,_BWV_Anh.119": 0.486,
+    "pianocore:Glinka,_Mikhail/Nocturne_in_E_flat_major": 0.5484,
+    "prokofiev_op22_no8": 0.5149,
+    "scarlatti_k213": 0.3408,
+    "scarlatti_k87": 0.437
+   },
+   "per_composer_median_r2c_velocity": {
+    "Bach,_Carl_Philipp_Emanuel": -0.71,
+    "Bach,_Johann_Sebastian": -0.106,
+    "Bart\u00f3k,_B\u00e9la": 0.483,
+    "Boulanger,_Lili": 0.3058,
+    "Chopin,_Fr\u00e9d\u00e9ric": -0.3801,
+    "Clementi,_Muzio": 0.4678,
+    "Debussy,_Claude": 0.4371,
+    "Duvernoy,_Jean-Baptiste": 0.3142,
+    "Field,_John": 0.4694,
+    "Glinka,_Mikhail": 0.3583,
+    "Gossec,_Fran\u00e7ois_Joseph": -0.4818,
+    "Grieg,_Edvard": -0.2803,
+    "Handel,_George_Frideric": 0.2544,
+    "Haydn,_Joseph": 0.2567,
+    "Kuhlau,_Friedrich": 0.411,
+    "Liszt,_Franz": 0.2132,
+    "Lyadov,_Anatoly": 0.735,
+    "Mendelssohn,_Felix": 0.5334,
+    "Merikanto,_Oskar": 0.3113,
+    "Mozart,_Wolfgang_Amadeus": -0.1688,
+    "Prokofiev,_Sergey": 0.2021,
+    "Rameau,_Jean-Philippe": -0.5451,
+    "Scarlatti,_Domenico": 0.2927,
+    "Schumann,_Robert": 0.1958,
+    "Turina,_Joaqu\u00edn": 0.0305
+   },
+   "loco_range_r2c_velocity": [
+    0.15329744808210832,
+    0.21015767568962185
+   ],
+   "per_composer_median_r2c_log_ioi": {
+    "Bach,_Carl_Philipp_Emanuel": -0.3742,
+    "Bach,_Johann_Sebastian": 0.0547,
+    "Bart\u00f3k,_B\u00e9la": 0.1574,
+    "Boulanger,_Lili": 0.1855,
+    "Chopin,_Fr\u00e9d\u00e9ric": -0.4988,
+    "Clementi,_Muzio": 0.1685,
+    "Debussy,_Claude": 0.5073,
+    "Duvernoy,_Jean-Baptiste": -0.0493,
+    "Field,_John": -0.1355,
+    "Glinka,_Mikhail": 0.4832,
+    "Gossec,_Fran\u00e7ois_Joseph": -0.4976,
+    "Grieg,_Edvard": 0.4823,
+    "Handel,_George_Frideric": -0.2978,
+    "Haydn,_Joseph": 0.0437,
+    "Kuhlau,_Friedrich": 0.0776,
+    "Liszt,_Franz": 0.1555,
+    "Lyadov,_Anatoly": 0.4903,
+    "Mendelssohn,_Felix": 0.0569,
+    "Merikanto,_Oskar": 0.2071,
+    "Mozart,_Wolfgang_Amadeus": 0.0072,
+    "Prokofiev,_Sergey": 0.3198,
+    "Rameau,_Jean-Philippe": -0.1194,
+    "Scarlatti,_Domenico": 0.2327,
+    "Schumann,_Robert": 0.0526,
+    "Turina,_Joaqu\u00edn": -0.0257
+   },
+   "loco_range_r2c_log_ioi": [
+    0.05687511157459202,
+    0.07362245332186867
+   ]
+  },
+  "ridge": {
+   "r2c_velocity": [
+    0.23332731357501768,
+    0.17724999030553512,
+    0.29856450299813786,
+    59
+   ],
+   "r_velocity": [
+    0.5500839320543782,
+    0.46751576507127796,
+    0.5856398123335227,
+    59
+   ],
+   "r2_velocity": [
+    0.3025923323044058,
+    0.21857099059018237,
+    0.3429739897900437,
+    59
+   ],
+   "b_velocity": [
+    0.436567703512469,
+    0.3847379804925507,
+    0.4842200244421775,
+    59
+   ],
+   "r2c_r07_velocity": [
+    0.23331902081412426,
+    0.17724239800375285,
+    0.2985597581064409,
+    59
+   ],
+   "ratio_analytic_velocity": [
+    0.2705311143750815,
+    0.1954797186689432,
+    0.34080447595811836,
+    59
+   ],
+   "r2c_true_velocity": [
+    0.24080913786237168,
+    0.18218090204513993,
+    0.3126320134073598,
+    59
+   ],
+   "r2c_log_ioi": [
+    0.05167905738948453,
+    0.02346377665825483,
+    0.10551503884241148,
+    59
+   ],
+   "r_log_ioi": [
+    0.27696806592159384,
+    0.20930563266552807,
+    0.3418051137492664,
+    59
+   ],
+   "r2_log_ioi": [
+    0.07671130954034835,
+    0.043877961759118046,
+    0.11683073578514895,
+    59
+   ],
+   "b_log_ioi": [
+    0.27678915608639104,
+    0.214413451154798,
+    0.32788622923994126,
+    59
+   ],
+   "r2c_r07_log_ioi": [
+    0.027224240302035962,
+    -0.020135268114813698,
+    0.06077870520552642,
+    59
+   ],
+   "ratio_analytic_log_ioi": [
+    0.05801575555975397,
+    0.029995615688071273,
+    0.13223432314190492,
+    59
+   ],
+   "r2c_true_log_ioi": [
+    0.053637499611952744,
+    0.02591319603492792,
+    0.11392176124290021,
+    59
+   ],
+   "ioi_offset": [
+    -0.01483086679317653,
+    -0.02662542564130259,
+    0.0019474586439264148,
+    59
+   ],
+   "r2c_vs_rest_velocity": [
+    0.2875281974325177,
+    0.21763160849070076,
+    0.32153511990823197,
+    15
+   ],
+   "ratio_emp_velocity": [
+    0.3199216519846134,
+    0.22978328561242328,
+    0.4205554796947697,
+    15
+   ],
+   "r2c_vs_rest_log_ioi": [
+    0.11419835505974336,
+    0.022062142524302053,
+    0.14042528701417262,
+    15
+   ],
+   "ratio_emp_log_ioi": [
+    0.13424651949613461,
+    0.026262331316734326,
+    0.1794562260448896,
+    15
+   ],
+   "reading_velocity": "inconclusive",
+   "ratio_of_medians_analytic_velocity": 0.2656922788831509,
+   "ratio_of_medians_emp_velocity": 0.3256857330170062,
+   "reading_log_ioi": "falsified",
+   "ratio_of_medians_analytic_log_ioi": 0.05856173685440718,
+   "ratio_of_medians_emp_log_ioi": 0.13346503446264693,
+   "reading_H1b_consensus": "mixed (velocity inconclusive, log IOI falsified)",
+   "r2c_velocity_composer_cluster_ci": [
+    0.23332731357501768,
+    0.17724999030553512,
+    0.3044017246881145,
+    59
+   ],
+   "sibling_split_r2c_velocity": {
+    "False": [
+     0.275391910366708,
+     0.21717964177730092,
+     0.3238706269414922,
+     28
+    ],
+    "True": [
+     0.20629899942235264,
+     0.1274928965463319,
+     0.29858806115882097,
+     31
+    ]
+   },
+   "r2c_log_ioi_composer_cluster_ci": [
+    0.05167905738948453,
+    0.027074908332936794,
+    0.10313821746469709,
+    59
+   ],
+   "sibling_split_r2c_log_ioi": {
+    "False": [
+     0.04858913320685493,
+     0.02745337726783348,
+     0.13100859531737552,
+     28
+    ],
+    "True": [
+     0.056102099881061074,
+     0.01029841699505718,
+     0.1338204410116453,
+     31
+    ]
+   },
+   "axes_ratio_per_piece": {},
+   "per_composer_median_r2c_velocity": {
+    "Bach,_Carl_Philipp_Emanuel": 0.3386,
+    "Bach,_Johann_Sebastian": 0.1185,
+    "Bart\u00f3k,_B\u00e9la": 0.4753,
+    "Boulanger,_Lili": 0.2593,
+    "Chopin,_Fr\u00e9d\u00e9ric": 0.2188,
+    "Clementi,_Muzio": 0.2843,
+    "Debussy,_Claude": 0.1358,
+    "Duvernoy,_Jean-Baptiste": 0.1978,
+    "Field,_John": 0.2333,
+    "Glinka,_Mikhail": 0.2874,
+    "Gossec,_Fran\u00e7ois_Joseph": 0.3258,
+    "Grieg,_Edvard": -0.1908,
+    "Handel,_George_Frideric": 0.4564,
+    "Haydn,_Joseph": 0.3413,
+    "Kuhlau,_Friedrich": 0.3519,
+    "Liszt,_Franz": 0.426,
+    "Lyadov,_Anatoly": 0.3247,
+    "Mendelssohn,_Felix": 0.1647,
+    "Merikanto,_Oskar": 0.2985,
+    "Mozart,_Wolfgang_Amadeus": 0.3092,
+    "Prokofiev,_Sergey": 0.1721,
+    "Rameau,_Jean-Philippe": 0.3323,
+    "Scarlatti,_Domenico": 0.2804,
+    "Schumann,_Robert": 0.2656,
+    "Turina,_Joaqu\u00edn": -0.0019
+   },
+   "loco_range_r2c_velocity": [
+    0.2194136622888453,
+    0.26089163509913027
+   ],
+   "per_composer_median_r2c_log_ioi": {
+    "Bach,_Carl_Philipp_Emanuel": -0.1617,
+    "Bach,_Johann_Sebastian": 0.1079,
+    "Bart\u00f3k,_B\u00e9la": 0.0831,
+    "Boulanger,_Lili": 0.1289,
+    "Chopin,_Fr\u00e9d\u00e9ric": 0.0024,
+    "Clementi,_Muzio": -0.0,
+    "Debussy,_Claude": 0.0111,
+    "Duvernoy,_Jean-Baptiste": 0.0235,
+    "Field,_John": 0.1371,
+    "Glinka,_Mikhail": 0.0851,
+    "Gossec,_Fran\u00e7ois_Joseph": -0.0021,
+    "Grieg,_Edvard": 0.0561,
+    "Handel,_George_Frideric": 0.1742,
+    "Haydn,_Joseph": 0.1119,
+    "Kuhlau,_Friedrich": 0.0398,
+    "Liszt,_Franz": 0.0517,
+    "Lyadov,_Anatoly": 0.1249,
+    "Mendelssohn,_Felix": 0.0373,
+    "Merikanto,_Oskar": 0.0714,
+    "Mozart,_Wolfgang_Amadeus": -0.0539,
+    "Prokofiev,_Sergey": 0.1573,
+    "Rameau,_Jean-Philippe": 0.2966,
+    "Scarlatti,_Domenico": 0.0824,
+    "Schumann,_Robert": 0.2194,
+    "Turina,_Joaqu\u00edn": 0.1031
+   },
+   "loco_range_r2c_log_ioi": [
+    0.04478027966721887,
+    0.05690803811308176
+   ]
+  }
+ },
+ "headline": "H1b-consensus (frozen_p95, registered): velocity falsified, log IOI falsified. H1b-axes (frozen_p100, registered): inconclusive",
+ "paired_median_differences": {
+  "frozen_p100-ridge:velocity": [
+   -0.0978588780029197,
+   -0.2081442491556172,
+   0.006627011923817427,
+   59
+  ],
+  "frozen_p100-ridge:log_ioi": [
+   -0.214914700770945,
+   -0.46961148554991305,
+   -0.009210959680778896,
+   59
+  ],
+  "frozen_p95-frozen_p100:velocity": [
+   0.015592269016760918,
+   -0.01974422252265251,
+   0.040372155822839484,
+   59
+  ],
+  "frozen_p95-frozen_p100:log_ioi": [
+   0.2200291645836301,
+   0.13568388558407637,
+   0.38279506811866215,
+   59
+  ],
+  "frozen_p95-ridge:velocity": [
+   -0.05676996354887176,
+   -0.182754760300034,
+   0.03244969678417772,
+   59
+  ],
+  "frozen_p95-ridge:log_ioi": [
+   0.03781807713853169,
+   -0.06848863378223792,
+   0.08090938811764647,
+   59
+  ]
+ },
+ "set": "C:\\Personal\\pianolens\\experiments\\2026-10-05-R-10-h1b\\job\\outputs\\sets\\fresh",
+ "arm_dirs": {
+  "frozen_p95": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/gen/frozen_p95/fresh",
+  "frozen_p100": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/gen/frozen_p100/fresh"
+ },
+ "exclusions": {
+  "pieces_file": null,
+  "renditions_file": null,
+  "pieces_dropped": 0,
+  "renditions_dropped": 0
+ },
+ "ridge": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/ridge/ridge.npz",
+ "experts_only": false,
+ "thresholds": {
+  "consensus": {
+   "consistent": 0.5,
+   "falsified": 0.2
+  },
+  "axes": {
+   "consistent": 0.8,
+   "floor": 0.4
+  }
+ },
+ "per_source_piece_level": {
+  "frozen_p100:Aria-AMT": {
+   "pieces": 59,
+   "r2c_velocity": [
+    0.10565450895804795,
+    0.051429201916701084,
+    0.23752594273216998
+   ],
+   "r2c_log_ioi": [
+    -0.13601524607293802,
+    -0.2617855104907403,
+    0.018616901408429087
+   ],
+   "oracle_analytic_velocity": [
+    0.8713578641888652,
+    0.8470564531459898,
+    0.8986854246463725
+   ],
+   "oracle_analytic_log_ioi": [
+    0.8821964078217787,
+    0.8508171047742725,
+    0.9073565400079261
+   ]
+  },
+  "frozen_p95:Aria-AMT": {
+   "pieces": 59,
+   "r2c_velocity": [
+    0.16107112464471318,
+    0.036660533754277136,
+    0.2865196853894549
+   ],
+   "r2c_log_ioi": [
+    0.07296455368758115,
+    0.03152206227009202,
+    0.19274126689544746
+   ],
+   "oracle_analytic_velocity": [
+    0.8713578641888652,
+    0.8470564531459898,
+    0.8986854246463725
+   ],
+   "oracle_analytic_log_ioi": [
+    0.8821964078217787,
+    0.8508171047742725,
+    0.9073565400079261
+   ]
+  }
+ },
+ "per_source_rendition_level": {
+  "frozen_p100:ATEPP": {
+   "renditions": 49,
+   "pieces": 17,
+   "median_r_model_velocity": 0.28720123954627746,
+   "median_r_loo_velocity": 0.6232277556708847,
+   "median_r_model_log_ioi": 0.37612571527971506,
+   "median_r_loo_log_ioi": 0.74768619520184
+  },
+  "frozen_p100:Aria-AMT": {
+   "renditions": 1647,
+   "pieces": 59,
+   "median_r_model_velocity": 0.4293497669624277,
+   "median_r_loo_velocity": 0.6710632315461996,
+   "median_r_model_log_ioi": 0.3680217811616382,
+   "median_r_loo_log_ioi": 0.7079636829913747
+  },
+  "frozen_p100:ByteDance": {
+   "renditions": 12,
+   "pieces": 11,
+   "median_r_model_velocity": 0.526442843515541,
+   "median_r_loo_velocity": 0.7136188415561298,
+   "median_r_model_log_ioi": 0.3772227489541129,
+   "median_r_loo_log_ioi": 0.7337874974315113
+  },
+  "frozen_p100:Transkun V2": {
+   "renditions": 80,
+   "pieces": 23,
+   "median_r_model_velocity": 0.42900334574800164,
+   "median_r_loo_velocity": 0.7381372551542904,
+   "median_r_model_log_ioi": 0.36582873080176337,
+   "median_r_loo_log_ioi": 0.7091434313376256
+  },
+  "frozen_p95:ATEPP": {
+   "renditions": 49,
+   "pieces": 17,
+   "median_r_model_velocity": 0.33224723668668255,
+   "median_r_loo_velocity": 0.6232277556708847,
+   "median_r_model_log_ioi": 0.43258242656183316,
+   "median_r_loo_log_ioi": 0.74768619520184
+  },
+  "frozen_p95:Aria-AMT": {
+   "renditions": 1647,
+   "pieces": 59,
+   "median_r_model_velocity": 0.43448683024997936,
+   "median_r_loo_velocity": 0.6710632315461996,
+   "median_r_model_log_ioi": 0.38789901054107845,
+   "median_r_loo_log_ioi": 0.7079636829913747
+  },
+  "frozen_p95:ByteDance": {
+   "renditions": 12,
+   "pieces": 11,
+   "median_r_model_velocity": 0.5316828086710268,
+   "median_r_loo_velocity": 0.7136188415561298,
+   "median_r_model_log_ioi": 0.40884541112773803,
+   "median_r_loo_log_ioi": 0.7337874974315113
+  },
+  "frozen_p95:Transkun V2": {
+   "renditions": 80,
+   "pieces": 23,
+   "median_r_model_velocity": 0.4504584331267856,
+   "median_r_loo_velocity": 0.7381372551542904,
+   "median_r_model_log_ioi": 0.37728201713115644,
+   "median_r_loo_log_ioi": 0.7091434313376256
+  }
+ }
+}

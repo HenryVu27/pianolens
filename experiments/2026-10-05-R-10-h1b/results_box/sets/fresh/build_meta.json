@@ -1,0 +1,43 @@
+{
+ "args": {
+  "pieces": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/pieces/fresh_pieces.csv",
+  "pianocore": "C:/Users/Vuduc/r07/data/pianocore",
+  "out": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/sets/fresh",
+  "cap": 50,
+  "min_match": 0.8,
+  "max_notes": 3000,
+  "workers": 8,
+  "limit": 0,
+  "work_col": "work",
+  "r07_cap_rule": false
+ },
+ "seconds": 54.0,
+ "pieces_listed": 65,
+ "pieces_with_items": 65,
+ "rows_selected": 1975,
+ "renditions": 1895,
+ "renditions_per_piece": {
+  "min": 14,
+  "median": 28.0,
+  "max": 49
+ },
+ "excluded": {
+  "match_share": 80
+ },
+ "by_capture_model": {
+  "Aria-AMT": 1745,
+  "Transkun V2": 86,
+  "ATEPP": 51,
+  "ByteDance": 13
+ },
+ "digest": {
+  "items": {
+   "n": 1895,
+   "sha256": "890e3528023d97cfa5b0d59b4ac312a4a1a5ee36d7db6dc0b292da4c21450478"
+  },
+  "gen_items": {
+   "n": 65,
+   "sha256": "69e0f678f4997f3488ed1a43424a70b8c9b19f2a59618a8e37c7bcfd7db0b117"
+  }
+ }
+}

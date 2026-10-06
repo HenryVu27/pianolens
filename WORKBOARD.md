@@ -442,8 +442,9 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   `src/pianolens/models/expression_data.py`, `tests/models/`.
 - **R-10 H1b: score-conditioned predictability of expert expression** (L). blocked_by: R-06, R-02 audit, R-07 (all done).
   owner: ml-researcher. status: pre-registered 2026-10-05, job prepared and dry-run on the Mac;
-  RUNNING on the RTX 5080 box since 2026-10-06 (lead session on the box; default stages, then gen_pt
-  and dev_gen); the box pushes results when done. Was: waiting for the RTX 5080 run (`experiments/2026-10-05-R-10-h1b/job/`). Model: frozen SyMuPe;
+  RUNNING on the RTX 5080 box since 2026-10-06. Default stages DONE 02:32 UTC (provisional, not
+  audited: H1b-consensus falsified on velocity and log IOI; H1b-axes inconclusive; results in
+  `results_box/`). gen_pt and dev_gen still running; the box pushes again when done. Next: eval-auditor. Was: waiting for the RTX 5080 run (`experiments/2026-10-05-R-10-h1b/job/`). Model: frozen SyMuPe;
   metric and fresh-piece design fixed in DECISIONS 2026-10-05 (R-07 after audit).
   paths: `experiments/2026-10-05-R-10-h1b/`.
   - Pre-register.

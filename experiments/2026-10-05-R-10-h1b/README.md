@@ -413,6 +413,34 @@ Work: 74,262 score notes in the 65 fresh generation items; 131,674 in the R10u d
   `d679394f6622275218d5a5f9a219d519d75ea5ca633603a5420d7e2f25d75f09`
   (`artifacts/prereg_sha256.txt`, copy in `artifacts/prereg_README.md`).
 - Not run yet. Entries below are added by the run.
+- **2026-10-06, RTX 5080 box (Windows), lead session: default run complete.** Checkout at
+  `28c5a01` (contains the pianocore Windows fix 881f9f9); `run_meta.json` records HEAD, diff hash,
+  torch 2.7.1+cu128, CUDA, RTX 5080. Driver started 01:51:49 UTC; `setup.sh` and `fetch_data.sh`
+  (PianoCoRe checksums OK) passed; default `run.sh` finished 02:32:06 UTC with exit 0 (meta, sets,
+  ridge, gen_frozen_p95, gen_frozen_p100, dev_r07, dev_r07_no_overlap, summarize,
+  summarize_as_registered). Pre-registration hash re-checked: unchanged.
+  - **Digest checks (01:56 UTC):** fresh set digest MATCHES the Mac pre-registration copy; R4:
+    r10u_dev and r10s_dev digests MATCH the Mac references.
+  - Generation: frozen_p95 65 / 65 and frozen_p100 65 / 65 fresh items; no errors in the logs.
+  - Pieces: 62 total, 56 primary (54 works) after the pre-run amendment A1 / A2 exclusions
+    (3 pieces for content overlap, 25 duplicate renditions); 15 oracle-eligible, 12 axes-eligible.
+  - **Headline (`results/fresh/summary.json`), provisional, not audited:** "H1b-consensus
+    (frozen_p95, registered): velocity falsified, log IOI falsified. H1b-axes (frozen_p100,
+    registered): inconclusive".
+    - H1b-consensus, frozen SyMuPe top-p 0.95, median per-piece R²c over 56 pieces:
+      velocity **0.150 [0.022, 0.283]**, log IOI **0.073 [0.032, 0.180]**: both "falsified"
+      (median ≤ 0.20 and CI upper < 0.50). Composer-cluster CIs: velocity [−0.006, 0.283],
+      log IOI [0.032, 0.137]. Ratio of medians to the analytic oracle: 0.171 / 0.082.
+    - H1b-axes, frozen top-p 1.0, 12 pieces: 0.437 [0.383, 0.610] → inconclusive (thresholds
+      0.8 / 0.4).
+    - vs the score-feature ridge (secondary): frozen_p95 − ridge velocity −0.059 [−0.203,
+      0.022], log IOI +0.037 [−0.081, 0.082]: no detectable difference on either target.
+    - `fresh_as_registered` (no exclusions, sensitivity): same headline.
+  - Small outputs copied to `results_box/` (results for fresh, fresh_as_registered, r10u_r07,
+    r10u_r07_no_overlap; run_meta.json; logs; ridge.json; *.json / *.csv of the sets). Not copied:
+    generated samples (`gen/*.npz`) and ridge weights (`ridge.npz`), which stay on the box.
+  - Still running on the box: `gen_pt` (Pianist Transformer, secondary), then `dev_gen`. The box
+    pushes again when those finish.
 
 ## Pre-run amendments (2026-10-05, after the eval-auditor pre-run review, PRERUN_REVIEW.md)
 
