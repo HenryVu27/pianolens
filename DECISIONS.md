@@ -577,3 +577,15 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - R-07 correction (after the merge): 5 of R-07's 74 "unseen" R10u pieces contain paired
     content; dev medians without them are 0.330 / 0.142 (velocity / log IOI) instead of 0.328 /
     0.127. Noted in the R-07 AUDIT lead addendum.
+- **2026-10-06, lead (RTX box): duplicate R-10 design withdrawn; official R-10 running on the box.**
+  - The box session pre-registered its own "R-10" (null-adjusted captured share ρ, 42 R10u
+    pieces) without seeing the Mac's R-10 in origin/main. On Henry's decision it is withdrawn as a
+    candidate: renamed `experiments/2026-10-05-R-10b-h1b-captured-share/`, exploratory and
+    non-deciding (`SUPERSEDED.md`), its run stopped before any analysis. Its unpushed DECISIONS
+    entry is dropped. **H1b is decided only by `experiments/2026-10-05-R-10-h1b/`**, as
+    pre-registered with its pre-run amendments.
+  - Kept as a methods note: on R-02 curves the span captured share has an envelope-null floor of
+    about 0.58 at K = 32.
+  - The official R-10 job runs on the box from this commit: default stages, then `gen_pt` and
+    `dev_gen`. The box pushes the results and run record when it finishes.
+

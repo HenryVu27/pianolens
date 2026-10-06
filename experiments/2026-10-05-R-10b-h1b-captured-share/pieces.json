@@ -1,0 +1,13 @@
+{
+ "k": 32,
+ "unseen_r10u": 76,
+ "decision": 42,
+ "decision_works": 42,
+ "decision_score_notes": 98316,
+ "calibration": 40,
+ "calibration_candidates": 361,
+ "dryrun": [
+  "debussy_l117_no6",
+  "chopin_op28_no9"
+ ]
+}
