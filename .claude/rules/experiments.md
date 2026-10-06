@@ -309,3 +309,27 @@ paths:
 
   An autoregressive flat model detects constancy, so offset and tempo variants are in-family for
   it.
+
+## Lessons from the R-10 audit (2026-10-06)
+
+- **When a no-refit R² falls between development and test, split it into shape (r) and
+  amplitude (b) before explaining it.** In R-10, velocity R²c fell from 0.33 to 0.15 with r
+  unchanged (0.665 vs 0.672). The test consensus was flatter (target s.d. 7.3 vs 9.3) and the
+  model's amplitude did not follow (b 0.94 -> 1.10).
+- **Report three numbers next to a no-refit R²c:**
+  - R²c at b = 1, the amplitude of a perfect sampler;
+  - r², the best-scale ceiling;
+  - R²c under one scale chosen on development data.
+
+  If the reading changes across them, the verdict is about calibration, not about shape. Word it
+  that way.
+- **A captured-share or subspace floor needs a structure-free sampler, not only a random
+  subspace.** Build it from envelope surrogates of the held-out real curves (per-row phase
+  randomisation, per-position s.d. restored). In R-10 the floor was 0.36 of the 16-expert oracle,
+  while the random subspace gave 0.064. The registered "floor" bar of 0.40 sat just above it.
+- **Read the leave-one-group-out readings, not only the range of medians.** One composer (J. S.
+  Bach, 21% of pieces) flipped R-10's velocity reading. The range [0.126, 0.205] hid that 0.205
+  crosses the bar.
+- **Hash an appended block by anchor, not by line numbers.** Run records inserted above it move
+  the lines. Example:
+  `awk '/^## Pre-run amendments/{f=1} f&&n<101{print;n++}' README.md | shasum -a 256`.

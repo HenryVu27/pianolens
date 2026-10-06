@@ -441,6 +441,9 @@ Work: 74,262 score notes in the 65 fresh generation items; 131,674 in the R10u d
     generated samples (`gen/*.npz`) and ridge weights (`ridge.npz`), which stay on the box.
   - Still running on the box: `gen_pt` (Pianist Transformer, secondary), then `dev_gen`. The box
     pushes again when those finish.
+  - Post-audit (2026-10-06): the headline above, the `results_box/` logs line and the amendment
+    hash command are corrected in `## Post-audit corrections (2026-10-06)` at the end of this
+    file. The lines above are left as written.
 
 ## Pre-run amendments (2026-10-05, after the eval-auditor pre-run review, PRERUN_REVIEW.md)
 
@@ -546,3 +549,413 @@ Implementation (lead decisions 2026-10-05; author, before the box run):
 
 - Pre-run amendment hash (2026-10-05): `sed -n '417,517p' README.md` sha256
   `6215a0577f79d72fae1d6fb45d8324683388bf6bb94f95f8fb6bbd8b22dc4089` (`artifacts/prereg_amendment_sha256.txt`, with the hashes of the committed lists).
+  Superseded command (the run record moved the block): use the anchor form in
+  `## Post-audit corrections (2026-10-06)`; the hash is unchanged.
+
+## Audit (2026-10-06, eval-auditor)
+
+**Verdict: Confirmed with caveats (scoped).** The registered reading follows the rule exactly:
+**H1b-consensus is falsified on both targets** for the sampled mean curve of frozen SyMuPe
+EncDec-base at top-p 0.95. Top-p 1.0 gives the same reading. Order, blindness, data and code
+integrity check out, and every headline number reproduces from the committed CSVs.
+
+The caveats concern what "falsified" means, not whether the rule was applied:
+- Shape agreement is unchanged from development to fresh pieces. The velocity drop from 0.33 to
+  0.15 is amplitude: the expert consensus is flatter on the fresh pieces and the model does not
+  flatten with it.
+- One amplitude scale chosen on the development pieces moves both targets to **inconclusive**.
+- No scaling reaches 0.50.
+- H1b-axes "inconclusive" sits only slightly above a structure-free sampler.
+
+Everything below the verdict line is post hoc and non-deciding unless it says "registered".
+Script: `audit_checks.py` (Mac, about 2 min; output reproduced below).
+
+### 1. Order and blindness
+
+- **Pre-registration.** `head -n 409 README.md` = d679394f...5f09, and the 101-line block from
+  `## Pre-run amendments` (now lines 445-545) = 6215a057...4089. Both are identical in 4047183
+  (committed 2026-10-05 18:25 UTC, where the block was at 417-517) and in the current file.
+  `artifacts/prereg_amendment_sha256.txt` still names `sed -n '417,517p'`. The run record was
+  inserted above the block, so that command now hashes the wrong lines (fix 2).
+- **Checkout.** 28c5a01 was committed at 01:51:25 UTC on 2026-10-06; the driver started at
+  01:51:49.
+  - `run_meta.json` (01:53:07): HEAD 28c5a01; `git_diff_sha256` e3b0c442... is the hash of
+    empty input, i.e. a clean tree.
+  - All 11 `job_files_sha256` equal the 28c5a01 files and the current Mac files.
+  - All 13 `pieces_sha256` equal the committed lists. For `r10u_dev_content_overlap_exclude.csv`
+    this is the LF hash noted in `prereg_amendment_sha256.txt`.
+- **Changes between the prereg commit and the run.** The R-10 folder is unchanged from 4047183
+  to 28c5a01. The only code change between them is the Windows tempfile fix in
+  `src/pianolens/data/pianocore.py`, which does not touch the data. The box digests of fresh,
+  r10u_dev and r10s_dev equal the Mac references, and `ridge.json` equals `dev_reference.json`
+  (alpha 1000 / 1, CV r 0.516 / 0.167, 138 pieces, 97 works).
+- **Nothing from the fresh pieces was seen before the run.** The Mac `artifacts/` holds no model
+  or ridge output on any fresh piece. Its only sample files are the dry-run outputs on 2 R10u
+  pieces; `sets/fresh/gen_items` are score-side inputs. The ridge training pieces (170 R10u +
+  R10s ids) share no piece or work with the fresh set.
+- **R-10b (withdrawn duplicate) did not touch the fresh pieces and could not have shaped R-10.**
+  - All 82 of its pieces are R-02 pieces: 42 R10u decision, 40 calibration from R-07 train/val,
+    and 2 dry-run pieces. They share no piece id and no work with the 65 fresh pieces (step 5 of
+    the selection excludes R-02 and R10u).
+  - Its `prep.py` and `run.sh` read only that list.
+  - R-10's thresholds and amendments were committed about 7.5 h before R-10b entered the shared
+    history (28c5a01), and are unchanged.
+  - What R-10b produced (frozen and E samples on R10u pieces, a simulation on expert data) is
+    development-type data. Its one transferable result, a structure-free floor for
+    captured-share statistics, is used in section 8 below as an audit caveat, not as a reading.
+  - I could not inspect its `job/outputs/` (box only).
+- **Run record.** It says logs were copied to `results_box/`; no log file is there (fix 3).
+
+### 2. The statistic and the reproduction
+
+- `summarize_h1b.r2c` is the R-06 formula with both curves centered over the onsets where both
+  are finite.
+- The model arms and the ridge go through the same `mean_curves` (velocity centered per
+  rendition or sample) and `r2c` against the full n-expert mean.
+- The empirical oracle and `r2c_vs_rest` use the same n - 16 reference means in the same draws.
+- The analytic oracle is the registered expectation formula.
+- Per piece, R²c = 2rb - b² holds to 2e-15, and the r² column equals r².
+- Every arm median and CI in `summary.json` (r2c, r, r², b; both targets; three arms) reproduces
+  exactly with the summariser's `cluster_boot_median`, and so does each reading.
+- The A1/A2 primary set is 56 pieces, 54 works, 1,691 renditions, median 28.
+
+| Arm (56 pieces) | velocity R²c | log IOI R²c | reading (registered rule) |
+|---|---|---|---|
+| frozen_p95 (**registered**) | 0.150 [0.022, 0.283] | 0.073 [0.032, 0.180] | falsified / falsified |
+| frozen_p100 (sensitivity) | 0.098 [0.009, 0.215] | -0.178 [-0.384, 0.007] | falsified / falsified |
+| score-feature ridge | 0.246 [0.198, 0.299] | 0.054 [0.027, 0.122] | **inconclusive** / falsified |
+| fresh_as_registered, p95 (59 pieces) | 0.173 [0.054, 0.293] | 0.072 [0.032, 0.157] | falsified / falsified |
+
+- The top-p 1.0 reading equals the registered one, so the A3 headline rule adds nothing, and the
+  headline is correct.
+- Composer-cluster CIs reproduce: velocity [-0.006, 0.283], log IOI [0.032, 0.137].
+- Disattenuated R²c is 0.163 / 0.077, so target noise does not explain the result.
+- Matched empirical ratio (15 pieces): 0.314 [0.151, 0.505] / 0.204 [0.075, 0.463].
+
+### 3. Shape or amplitude (R1)
+
+Medians with work-cluster CIs. "R²c at b = 1" is what a sampler with the experts' own amplitude
+would score (the 16-expert oracle has b = 1.016 / 1.014). r² is the ceiling under the best
+per-piece scale, which uses the target and is not a prediction.
+
+| | r | b | R²c | R²c at b = 1 | r² (best scale) |
+|---|---|---|---|---|---|
+| velocity, fresh p95 | 0.672 [0.567, 0.709] | 1.100 [0.999, 1.196] | 0.150 | 0.344 [0.135, 0.419] | 0.452 [0.322, 0.503] |
+| log IOI, fresh p95 | 0.553 [0.512, 0.607] | 0.926 [0.750, 1.057] | 0.073 | 0.106 [0.023, 0.215] | 0.306 [0.262, 0.369] |
+| velocity, fresh p100 | 0.652 | 1.089 | 0.098 | 0.303 | 0.425 |
+| log IOI, fresh p100 | 0.520 | 1.214 [1.045, 1.298] | -0.178 | 0.041 | 0.271 |
+| velocity, 16-expert oracle (15 pieces) | r² 0.895 | 1.016 | 0.883 | | |
+| log IOI, 16-expert oracle (15 pieces) | r² 0.875 | 1.014 | 0.856 | | |
+
+- **Log IOI is a shape failure.** With r = 0.55, even a sampler at the experts' amplitude would
+  score 0.11, and the best possible scaling reaches only 0.31.
+- **Velocity is both.**
+  - The shape is moderate (r² 0.45, against 0.89 for 16 experts).
+  - The registered "falsified" also needs the overshoot. At b = 1 the reading would be
+    inconclusive (0.344).
+  - Overshoot is largest where the expert consensus is flattest: Spearman ρ(target s.d., b) =
+    -0.54. Composer medians of b are CPE Bach 1.68 and Rameau 1.69, against a target s.d. of
+    3.8-6.1 velocity units.
+- At top-p 1.0, log IOI overshoots too (b 1.21). This is why that arm is negative.
+- 36% of pieces have negative R²c on each target (p95).
+
+### 4. Development vs fresh pieces; B2
+
+Development set: R10u "unseen" (74 pieces), R-07's own samples (top-p 0.95), rescored with this
+code.
+
+| | fresh (56) | R10u unseen (74) | difference (Mann-Whitney p) |
+|---|---|---|---|
+| velocity r | 0.672 | 0.665 | p 0.67 |
+| velocity b | 1.100 | 0.943 | p 0.002 |
+| velocity R²c | 0.150 | 0.329 | p 0.015 |
+| velocity target s.d. (expert mean curve, per onset) | 7.34 | 9.32 | p 4e-5 |
+| velocity model s.d. | 7.92 | 8.95 | p 0.049 |
+| log IOI r / b / R²c | 0.553 / 0.926 / 0.073 | 0.516 / 0.824 / 0.144 | p 0.72 / 0.36 / 0.36 |
+| log IOI target s.d. / model s.d. | 0.187 / 0.150 | 0.254 / 0.202 | p 7e-4 / 6e-4 |
+| renditions per piece / reliability / analytic oracle | 28 / 0.958 / 0.877 | 48 / 0.981 / 0.922 | |
+| Aria-AMT share of renditions | 92.1% | 93.1% | |
+
+- **The fresh set is not harder in shape.** The model's correlation with the consensus is the
+  same on both sets.
+- **It is flatter.** Its expert consensus has about 20-25% less amplitude in both targets. Fewer
+  performers would add noise and inflate the target s.d., not shrink it, so the flatness is real.
+  Pedagogical and baroque pieces dominate the fresh set.
+- **The model only partly adapts.** Its velocity amplitude drops 12% while the target's drops
+  21%. That produces b > 1 and halves R²c.
+- **What does not explain the drop:**
+  - The source mix is the same on both sets.
+  - Reliability tracks R²c (ρ = 0.55) but not r (ρ = 0.22, p 0.10), so it acts through
+    amplitude.
+- **Log IOI** does not differ significantly between the sets.
+- **B2 (R-07 audit).** On the 74 unseen dev pieces:
+  - log IOI R²c is 0.144 [0.098, 0.226] with the R-06 formula, against 0.127 [0.050, 0.221]
+    with R-07's uncentered formula;
+  - on all 85 R10u primary pieces it is 0.146 against 0.142;
+  - velocity is identical by construction (0.329).
+
+  The centering bug cost about 0.02. At the corrected dev value, the reachability table already
+  expected "falsified" for log IOI. Velocity was expected inconclusive (about 0.96) and came out
+  falsified, because of the amplitude shift above.
+- **Spread.** The observed fresh IQR of velocity R²c is [-0.224, 0.413], 1.4x the development
+  IQR used in the reachability check. That is within the registered 1.5x stress case, so the
+  CIs were as informative as planned.
+
+### 5. Frozen SyMuPe vs the score-feature ridge
+
+Registered secondary: no detectable difference (velocity -0.059 [-0.203, 0.022], log IOI +0.037
+[-0.081, 0.082]). It reproduces. On shape, though, the 25M-parameter model clearly beats the
+ridge (paired, work-cluster):
+- r: velocity +0.129 [0.083, 0.164]; log IOI +0.245 [0.139, 0.296];
+- the model's r is higher on 80% / 86% of pieces.
+
+The ridge ties on R²c only because a regression shrinks its predictions (b = 0.44 / 0.29), which
+is the least-squares choice when r is moderate. The sampler instead reproduces full expressive
+amplitude.
+
+With the development-chosen scale (section 6), the model beats the ridge on both targets:
++0.152 [0.076, 0.203] and +0.186 [0.127, 0.240].
+
+So the model does learn score-to-expression structure that a linear score-feature model lacks,
+especially in timing. The registered statistic does not show it.
+
+Note also that the ridge's own velocity reading is inconclusive (0.246), not falsified. The
+registered scope sentence ("the best available score-conditioned model does not reach the H1b
+level") must not be read as "no score-conditioned predictor clears 0.20".
+
+### 6. One amplitude scale chosen on development data (post hoc)
+
+A single multiplier s was fitted to maximise the median R²c on the 74 R10u unseen pieces and
+applied unchanged to the fresh pieces. It is exact through R²c(s) = 2rbs - (bs)² and uses no
+fresh-piece information.
+
+| | s (dev) | dev median | fresh median | reading by the registered rule |
+|---|---|---|---|---|
+| velocity | 0.627 | 0.414 | 0.362 [0.260, 0.456] | inconclusive |
+| log IOI | 0.638 | 0.235 | 0.271 [0.233, 0.321] | inconclusive |
+
+This is exploratory, chosen after the results, and it does not change the registered verdict.
+It shows that "falsified" is a property of the raw sampled mean curve, not of SyMuPe's
+score-to-expression mapping. Under any scaling, including the in-sample best per piece (r² 0.45
+/ 0.31), neither target reaches "consistent".
+
+### 7. Robustness
+
+- **Leave one composer out.** The velocity reading stays falsified for 22 of 23 composers.
+  Dropping J. S. Bach (12 of 56 pieces, velocity r 0.44) gives 0.205 [0.093, 0.314], which is
+  inconclusive. The log IOI reading stays falsified for all 23 (range 0.065-0.074).
+- **A4 sibling split (exploratory).**
+  - Velocity R²c is 0.268 [0.123, 0.385] for the 28 unflagged pieces and -0.109 [-0.280, 0.173]
+    for the 28 flagged ones. Log IOI is 0.065 against 0.089.
+  - The flagged pieces score lower, the opposite of what leakage would do. The cause is shape
+    (r 0.565 vs 0.705), not amplitude (b 1.10 vs 1.10), and the flag is confounded with
+    repertoire: all J. S. Bach WTC and toccata pieces and all 7 Prokofiev Op. 22 pieces are
+    flagged.
+  - There is no sign that paired siblings leaked into SyMuPe's predictions.
+- **Per source (rendition level).** The model's correlation with each rendition, minus the
+  leave-one-out expert curve's correlation, does not differ from Aria-AMT within pieces for any
+  source:
+  - Transkun V2: -0.004 [-0.031, 0.047] velocity, +0.024 [-0.022, 0.034] log IOI (22 pieces);
+  - ATEPP: +0.004 / -0.018 (16 pieces);
+  - ByteDance: +0.054 / -0.004 (10 pieces).
+
+  The Transkun V2 renditions come from the PERiScoPe corpus, unpaired. They show no extra model
+  agreement, so there is no sign that their performances were seen. The Aria-AMT-only piece
+  level (56 pieces) gives the same medians (0.152 / 0.073).
+- **Conditional prediction (exploratory).**
+  - Expert basis: 0.039 [0.014, 0.062].
+  - Model-sample basis: -0.041 [-0.050, -0.014], i.e. worse than predicting the consensus.
+  - Performer mean: -0.075.
+
+### 8. H1b-axes and a structure-free floor (post hoc)
+
+The registered reading is right: frozen_p100 gives 0.437 [0.383, 0.610] (inconclusive; at p95,
+0.528 [0.469, 0.700]). The registered floor, however, was a random 15-dimensional subspace
+(ratio 0.064), which is the weak-null trap from the R-02 audit.
+
+I scored a structure-free sampler with the registered code: 16 envelope surrogates of the
+held-out experts' own deviations (per-row phase randomisation, per-onset s.d. restored), 5 per
+draw, on the 12 axes pieces. The Mac rebuild reproduces k and cap_oracle exactly (max |diff| 2e-16).
+- Envelope-surrogate ratio to the 16-expert oracle: **0.363 [0.277, 0.461]**.
+- Model, null-adjusted (cap - cap_env) / (cap_oracle - cap_env):
+  - p100: 0.156 [0.007, 0.330];
+  - p95: 0.299 [0.094, 0.454].
+- On 3 of 12 pieces the p100 samples capture no more than the surrogates.
+
+So the "at the floor" threshold of 0.40 was barely above a structure-free sampler. The model's
+samples span the experts' shared axes only a little better than curves with the right per-onset
+spread and no cross-performer structure. The registered "inconclusive" stands. It should be
+described as "near a structure-free floor", not "as well as about 6-8 experts".
+
+### 9. Does "falsified" follow, and its scope
+
+Yes, word for word:
+- the point is at or below 0.20 and the CI upper bound is below 0.50 for both targets, on the
+  registered arm;
+- the same holds at top-p 1.0, on the as-registered 59 pieces, and with the composer-cluster CI.
+
+The claim is scoped as A4 requires:
+- the model is frozen SyMuPe EncDec-base;
+- the curve is the mean of 16 samples at top-p 0.95 (1.0 as sensitivity), not rescaled;
+- the model is conditioned on the panel's median tempo and loudness;
+- the pieces are 56 less-played PianoCoRe pieces unseen in PERiScoPe v1.0 pairs;
+- the consensus is of mostly Aria-AMT transcriptions of YouTube recordings (median 28 per piece).
+
+The statistic is the mean-curve consensus (DECISIONS 2026-10-05). It is not the plan's "shared
+components" literally; that is the H1b-axes line.
+
+**Required fixes (text only; the verdict stands):**
+1. The headline and EXPERIMENTS must state, next to "falsified":
+   - shape vs amplitude: velocity r 0.67 (r² 0.45), log IOI r 0.55 (r² 0.31), against oracle r²
+     0.89 / 0.88;
+   - that a development-chosen amplitude scale gives inconclusive on both targets (0.36 / 0.27);
+   - that no scaling reaches 0.50.
+
+   Without this, "falsified" reads as "no shape", which is wrong for velocity.
+2. `artifacts/prereg_amendment_sha256.txt` and the README hash line must name the current lines
+   (445-545) or an anchor-based command, for example
+   `awk '/^## Pre-run amendments/{f=1} f&&n<101{print;n++}' README.md | shasum -a 256`.
+3. The run record must correct "logs copied to `results_box/`" (none are there), or copy the
+   logs.
+4. H1b-axes must be reported with the envelope floor (section 8), and the "6-12 experts" scale
+   must not be used to describe 0.44.
+5. The scope sentence in the verdict must say that the score-feature ridge reads inconclusive
+   on velocity (0.246), so "falsified" applies to the registered model statistic, not to
+   score-only prediction in general.
+6. When `gen_pt` and `dev_gen` arrive, report them with the same r / b / R²c-at-b = 1 columns.
+   They do not decide.
+
+### 10. Checks that need the box
+
+1. **Sampling noise in b.** Split each piece's 16 samples into 8 + 8 and estimate how much of b
+   > 1 is K = 16 sample noise and how much is systematic amplitude. Then extrapolate R²c and b to
+   the K -> infinity mean curve. This needs `gen/*.npz`.
+2. **Calibrated predictors.** Fit model + ridge stacking, and a per-piece scale predicted from
+   score features (both fitted on R10u/R10s only), then score them on the fresh pieces. This
+   needs the curves; the global scale in section 6 is exact from r and b and needs no box.
+3. **Run-order evidence.**
+   - mtimes of every file under `job/outputs/gen/` and `job/outputs/results/`, to show that all
+     are after 01:51:49 UTC on 2026-10-06;
+   - that no other R-10 output folder exists;
+   - the per-item generation logs (0 errors, ms per note).
+4. **R-10b outputs.** List `experiments/2026-10-05-R-10b-h1b-captured-share/job/outputs/gen/*`
+   to confirm that only its 42 decision pieces were generated, and that no `analyze` output
+   exists.
+5. **Determinism.** Regenerate 2 fresh items at top-p 0.95 and 1.0 (seed 0) and compare them
+   with the stored samples, since GPU sampling may not be bit-stable.
+6. **Velocity overshoot vs conditioning.** Does b depend on the conditioning velocity or on
+   tempo? This needs `gen_items` plus the samples.
+
+### 11. Proposed EXPERIMENTS.md row (for the lead)
+
+| [2026-10-05-R-10-h1b](experiments/2026-10-05-R-10-h1b/README.md) | 2026-10-05 | R-10 | H1b | Run 2026-10-06 on the RTX 5080 from 28c5a01 (clean tree; digests and ridge match the Mac). Frozen SyMuPe EncDec-base, K = 16, on 56 fresh PianoCoRe pieces (54 works, 1,691 renditions, 92% Aria-AMT) unseen by its pretraining. **H1b-consensus (registered, top-p 0.95): median mean-curve R²c velocity 0.150 [0.022, 0.283], log IOI 0.073 [0.032, 0.180] = falsified on both**; top-p 1.0 0.098 / -0.178 (same reading); as-registered 59 pieces the same. Analytic 16-expert oracle 0.877 / 0.881 (ratio 0.17 / 0.08). Shape vs amplitude: r 0.67 / 0.55 (r² 0.45 / 0.31, oracle 0.89 / 0.88), b 1.10 / 0.93. Score-feature ridge 0.246 / 0.054 (velocity inconclusive); frozen - ridge no detectable R²c difference, but the model's r is higher by 0.13 / 0.25. H1b-axes (top-p 1.0, 12 pieces) 0.437 [0.383, 0.610], inconclusive. R10u dev (74 unseen, R-06 formula) 0.329 / 0.144 (R-07 formula log IOI 0.127). | Confirmed with caveats (scoped): the registered reading follows exactly and reproduces from the committed CSVs; order, blindness and the R-10b separation verified. Caveats (auditor, post hoc): shape is the same as on dev (velocity r 0.672 vs 0.665); the velocity drop is amplitude on a flatter consensus (target s.d. 7.3 vs 9.3, b 1.10 vs 0.94). A single dev-chosen scale gives 0.362 [0.260, 0.456] / 0.271 [0.233, 0.321], inconclusive on both, so 'falsified' is a property of the raw sampled mean curve; no scaling reaches 0.50 (best per-piece r² 0.45 / 0.31). Velocity falsified flips to inconclusive without J. S. Bach (0.205). H1b-axes is near a structure-free envelope sampler (0.363 of the oracle; null-adjusted 0.16 [0.01, 0.33]). No sign of leakage (sibling split runs the other way; Transkun V2 renditions no closer). | eval-auditor 2026-10-06 |
+
+### 12. Proposed DECISIONS text (for the lead)
+
+- **2026-10-06, lead: R-10 after audit (eval-auditor, Confirmed with caveats, scoped).**
+  - **H1b, as operationalised on 2026-10-05, is falsified for frozen SyMuPe EncDec-base.** The
+    raw mean of 16 samples (top-p 0.95, conditioned on the panel's median tempo and loudness)
+    explains 0.15 of the velocity and 0.07 of the log IOI consensus variance on 56 unseen,
+    less-played PianoCoRe pieces. Sixteen experts reach about 0.88.
+  - Recorded with it:
+    - The score alone gets the shape of the consensus partly right: r 0.67 / 0.55.
+    - Even a perfectly calibrated amplitude would explain at most 0.45 / 0.31, below the plan's
+      0.50.
+    - A development-chosen amplitude scale gives 0.36 / 0.27, which is between the bars.
+  - The plan's H1b row is marked "falsified (R-10, scoped); score-predictable share of the
+    expert consensus about 0.3-0.45 of variance at best". The wording of the hypothesis is
+    unchanged.
+  - **H1b-axes**: inconclusive as registered, and near a structure-free floor (post hoc). It is
+    not evidence that a model's samples span the expert axes.
+  - **For the scorer:**
+    - Interpretation stays anchored to expert performances of the same piece: the R-02 basis
+      and the expert band.
+    - No model-predicted consensus replaces expert references where they exist.
+    - For pieces without references, a model-predicted curve may serve at most as a
+      low-confidence prior, shrunk by about 0.63 (the development scale), and is labelled as
+      such. It is not a scoring reference.
+  - **For the research bet** (CLAUDE.md: "piano performance quality is a low-dimensional
+    function of a low-dimensional, score-conditioned expressive space"):
+    - R-10 tests predictability from the score, not dimensionality. R-01 (quality is
+      low-dimensional) and R-02 (3-5 shared components per piece) are untouched.
+    - What fails is the strong reading that the score determines the shared expressive
+      consensus. A 25M-parameter score-to-performance model recovers at most about half of it.
+    - "Score-conditioned" should therefore mean "conditioned on the piece through expert
+      performances of it", not "predicted from the score alone".
+    - Proposed CLAUDE.md edit, for Henry: "... a low-dimensional, piece-conditioned expressive
+      space (anchored by expert performances of the piece; R-10: the score alone predicts only
+      part of the expert consensus)".
+  - **Pianist Transformer (`gen_pt`) and `dev_gen`** are reported when they arrive, with the
+    same decomposition. They cannot change the reading, and giving either a deciding role needs
+    a new pre-registration.
+  - **No R-10 follow-up chasing the 0.50 bar** on the same statistic. The fresh pool is used up
+    (all 65 qualifying pieces), and the best-scale ceiling is below 0.50.
+    - If calibrated predictors (dev-chosen shrinkage, model + ridge stacking) matter for the
+      product, they are a new pre-registered ticket on new pieces: another corpus or a
+      leave-composer-out design.
+    - Any captured-share statistic must report an envelope-surrogate sampler floor.
+
+Reproduce (Mac): `uv run python experiments/2026-10-05-R-10-h1b/audit_checks.py`. It needs
+`artifacts/sets/fresh`, the expert items rebuilt on the Mac, for section 8; pass
+`--skip-envnull` without them.
+
+## Post-audit corrections (2026-10-06)
+
+Text fixes 1-5 from `## Audit (2026-10-06, eval-auditor)`, section 9 (author, ml-researcher). The
+hashed header, the amendment block and the Audit section are unchanged; the registered verdict
+stands. Every number below was re-run on the Mac with `audit_checks.py` (with the envelope null)
+from the committed `results_box/` CSVs and matches the Audit. All are post hoc and non-deciding
+except the registered readings.
+
+**1. Headline (replaces the provisional headline in the run record).** H1b-consensus, registered
+(frozen SyMuPe EncDec-base, mean of 16 samples at top-p 0.95, 56 pieces): **falsified on both
+targets**, velocity R²c 0.150 [0.022, 0.283], log IOI 0.073 [0.032, 0.180]; top-p 1.0 gives the
+same reading (0.098 / -0.178). Read it as a calibration-and-shape result, not as "no shape":
+
+| Target | r (shape) | b (amplitude) | R²c (registered) | R²c at b = 1 | best per-piece scale (r²) | one dev-chosen scale | 16-expert oracle |
+|---|---|---|---|---|---|---|---|
+| velocity | 0.672 [0.567, 0.709] | 1.100 [0.999, 1.196] | 0.150 | 0.344 [0.135, 0.419] | 0.452 [0.322, 0.503] | 0.362 [0.260, 0.456], inconclusive | r² 0.895, b 1.016, R²c 0.883 |
+| log IOI | 0.553 [0.512, 0.607] | 0.926 [0.750, 1.057] | 0.073 | 0.106 [0.023, 0.215] | 0.306 [0.262, 0.369] | 0.271 [0.233, 0.321], inconclusive | r² 0.875, b 1.014, R²c 0.856 |
+
+- The model gets part of the consensus shape (r 0.67 / 0.55, r² 0.45 / 0.31 against about 0.89 /
+  0.88 for 16 experts). Velocity "falsified" also needs the amplitude overshoot (b 1.10): at b = 1
+  it would read inconclusive (0.344).
+- One amplitude scale fitted on the R10u development pieces (s 0.627 / 0.638) and applied
+  unchanged gives 0.362 / 0.271: **inconclusive on both targets**.
+- **No scaling reaches 0.50**: even the in-sample best scale per piece gives 0.452 / 0.306.
+- So "falsified" is a property of the raw sampled mean curve; the score-predictable share of the
+  expert consensus is about 0.3-0.45 of its variance at best.
+
+**2. Amendment hash command.** The run record was inserted above the amendment block, so
+`sed -n '417,517p'` now hashes the wrong lines. The anchor form, which does not depend on line
+numbers, is:
+`awk '/^## Pre-run amendments/{f=1} f&&n<101{print;n++}' README.md | shasum -a 256`
+= `6215a0577f79d72fae1d6fb45d8324683388bf6bb94f95f8fb6bbd8b22dc4089` (re-checked 2026-10-06; the
+block is now lines 448-548, after the run record and its post-audit pointer, and unchanged). Appended to `artifacts/prereg_amendment_sha256.txt`.
+
+**3. Box logs.** The run record says the logs were copied to `results_box/`. None are there:
+`results_box/` holds `run_meta.json`, `ridge/ridge.json`, `results/` (fresh,
+fresh_as_registered, r10u_r07, r10u_r07_no_overlap) and the sets' json / csv files, and no `*.log`
+file. The logs (and the per-item generation logs) are still on the box; the box can push them
+with the `gen_pt` / `dev_gen` outputs.
+
+**4. H1b-axes against a structure-free floor.** Registered reading: inconclusive (frozen_p100
+ratio 0.437 [0.383, 0.610], 12 pieces; top-p 0.95: 0.528 [0.469, 0.700]). The registered floor
+was a random 15-dimensional subspace (0.064 of the oracle), which is a weak null. A
+structure-free sampler (16 envelope surrogates of the held-out experts' own deviations: per-row
+phase randomisation, per-onset s.d. restored) scores **0.363 [0.277, 0.461]** of the 16-expert
+oracle. Null-adjusted, (cap - cap_env) / (cap_oracle - cap_env): top-p 1.0 **0.16 [0.01, 0.33]**,
+top-p 0.95 0.30 [0.09, 0.45]; on 3 of 12 pieces the top-p 1.0 samples capture no more than the
+surrogates. The model's samples are near a structure-free floor; the "6-12 experts" scale in the
+pre-registration does not describe 0.44 and is withdrawn as a description of the result.
+
+**5. Scope.** "Falsified" applies to the registered model statistic (the raw mean curve of frozen
+SyMuPe EncDec-base's samples, conditioned on the panel's median tempo and loudness, on 56
+less-played PianoCoRe pieces unseen in PERiScoPe v1.0 pairs, against a consensus of mostly
+Aria-AMT transcriptions, median 28 per piece). It is not a statement about score-only prediction
+in general: the score-feature ridge's own velocity reading is **inconclusive (0.246 [0.198,
+0.299])** (log IOI 0.054, falsified), because a regression shrinks its predictions (b 0.44 /
+0.29). On shape the model beats the ridge (r +0.129 [0.083, 0.164] / +0.245 [0.139, 0.296]).
+
+**6. Pending.** `gen_pt` (Pianist Transformer) and `dev_gen` are reported with the same r / b /
+R²c-at-b = 1 columns when the box pushes them. They do not decide.

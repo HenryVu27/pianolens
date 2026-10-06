@@ -87,7 +87,7 @@ count as proof it was wrong. The table gives their current status; Part 3 explai
 | Id | The bet, in plain words | Status |
 |---|---|---|
 | H1 | The ways experts vary their tempo and loudness in a piece come down to a few basic shapes. | Not supported as stated. The shared part is small, but individual freedom is large. |
-| H1b | Given the score, a model can predict the part of expression that experts share. | Waiting on the GPU run. |
+| H1b | Given the score, a model can predict the part of expression that experts share. | Falsified for the frozen SyMuPe model (R-10, scoped): it explains 0.15 of the experts' average loudness curve and 0.07 of their timing, where 16 experts reach about 0.88. The shape is partly right. |
 | H2 | The 19 scales experts use to rate playing collapse to 3 to 5 underlying judgements. | Supported. |
 | H3 | Simple, explainable MIDI features match a large audio model at predicting ratings. | Supported: they match, they do not beat it. |
 | H4 | How well a player's expression follows the score's structure rises with skill. | Inconclusive. Skill and recording conditions could not be separated. |
@@ -1919,7 +1919,7 @@ A score passes only if it prefers the real performance to each of seven deadpan 
 - **The likelihood ratio S-LR passed the battery, but the battery was too easy.** Every deadpan variant has one field exactly where the flat model is most confident, so S-LR separates them perfectly almost by construction, and the model-free "amount of expression" baseline does too. S-LR cannot tell a real performance from the same performance with half its expression (AUC 0.491). It is not used anywhere until it survives non-flat wrong expression. S-DEV is a flatness detector only; S-TYP fails. The report's too-flat check stays model-free.
 - **The H1b preview turned out to be uninformative.** The registered statistic asked how much of the experts' shared variation the spread of 16 model samples covers. The models reached about 0.10-0.12. The audit then put 16 real held-out experts in the model's place: they reach only about 0.25. A 0.50 bar was out of reach for real pianists, so the preview cannot falsify H1b. It measures how varied the samples are, not what the model predicts. The better-matched measure, how well the model's average curve matches the experts' average curve (centred R²), has a reachable ceiling of about 0.89. The models reach about 0.30-0.50 for dynamics and close to nothing for timing (a lower bound, because the timing formula dropped one centring step).
 
-**R-10.** H1b now has a fixed definition (DECISIONS 2026-10-05). The primary measure is the mean-curve centred R² per target against a held-out expert oracle, with the plan's 0.50 / 0.20 thresholds. The secondary measure is the sample-spread coverage as a ratio to the expert oracle. It uses the frozen SyMuPe model on a fresh draw of pieces that neither SyMuPe nor R-07 has seen, because R-07 has already shown these numbers on R10u.
+**R-10.** H1b now has a fixed definition (DECISIONS 2026-10-05). It ran on 2026-10-06 and H1b is falsified for frozen SyMuPe (scoped; Part 5). The primary measure is the mean-curve centred R² per target against a held-out expert oracle, with the plan's 0.50 / 0.20 thresholds. The secondary measure is the sample-spread coverage as a ratio to the expert oracle. It uses the frozen SyMuPe model on a fresh draw of pieces that neither SyMuPe nor R-07 has seen, because R-07 has already shown these numbers on R10u.
 
 In the code: `experiments/2026-09-28-R-07-symupe-finetune/` (README, `make_split.py`, `split/pieces.csv`, `job/` with `setup.sh`, `fetch_data.sh`, `run.sh`, `eval.sh`, `symupe_train.py`, `pt_train.py`, `summarize_eval.py`), `src/pianolens/models/expression_split.py`. Tickets: R-07, R-10.
 
@@ -1976,7 +1976,7 @@ Repeated takes:
 
 Expression models:
 
-- R-07 has not run. No fine-tuned model, no corrected typicality score and no H1b result exist yet.
+- R-07 and R-10 have run. Fine-tuning did not help, no typicality score is validated, and H1b is falsified for frozen SyMuPe (scoped; see R-10 above).
 - Pretraining exposure: most PianoCoRe pieces were seen paired by SyMuPe; only PercePiano, the 76 R10u pieces and one Vienna excerpt are unseen by both steps. Unpaired PERiScoPe performances of R10u pieces may exist.
 - The flat model defines what the likelihood ratio measures; a different flat family could change the result.
 - The R-07 H1b preview measures shared components on per-onset velocity and log inter-onset curves, not on R-02's smoothed per-beat curves, so its shared components are not the same object as the "3 to 5" in the H1b wording. R-10 must use the R-02 procedure itself.
@@ -2565,6 +2565,16 @@ expression. The preview of H1b, our bet that the score predicts what experts sha
 that even real pianists could not reach, so it said nothing. The question moves to R-10 with a
 measure whose ceiling is known.
 
+**The score alone does not predict what experts share (R-10).** This was the project's central
+bet: given the score, the part of expression that experts agree on should be predictable. We
+tested it on 56 pieces the model had never seen, against a yardstick that 16 real experts reach
+easily (about 0.88). The model's average performance explains only 0.15 of the experts' average
+loudness curve and 0.07 of their timing. It gets the shape partly right (correlations of about 0.67
+and 0.55), but even with its loudness range corrected it would explain under half. It also does no
+better than a small model on simple score features, by this measure. The consequence is practical:
+judging interpretation needs real expert recordings of the same piece, which is how the report
+already works. A model's prediction can at most be a weak hint for pieces nobody has recorded.
+
 **Audio models can cheat on recording quality (R-05).** We rendered 1,250 performances in four
 simulated recording settings. When the setting was tied to skill, as it is in real datasets, an
 audio skill classifier's score rose from 0.87 to 0.94. Shuffling the settings at test time dropped
@@ -2577,6 +2587,7 @@ it outright. The mechanism is shown; how large the effect is on real recordings 
 | R-04 | Can MIDI features match it? | Yes, on unseen pieces; both far below the ceiling | Confirmed with caveats |
 | R-06 | Which expression model, and can likelihood judge quality? | SyMuPe; no, likelihood prefers flat playing | Confirmed with caveats |
 | R-07 | Does fine-tuning help, and is there a usable typicality score? | No and not yet; H1b preview uninformative | Confirmed with caveats |
+| R-10 | Can the score predict what experts share (H1b)? | No: 0.15 of loudness and 0.07 of timing, where experts reach 0.88 | Confirmed with caveats (H1b falsified, scoped) |
 | R-05 | Do audio models use recording context? | Yes, in simulation | Mechanism shown |
 
 ### Does anything here actually measure skill?
@@ -3564,7 +3575,7 @@ gives each claim in plain words and its status as recorded in `EXPERIMENTS.md`, 
 | ID | Claim | Falsified if | Status |
 |---|---|---|---|
 | H1 | Expert expression across performances of one piece is low-dimensional: 10 or fewer components give 80% of tempo and loudness variation. | More than 20 components on most pieces | Not supported and not falsified (R-02). Median 19 components; 35% of pieces need more than 20. The audit refined it: the part experts share is 3 to 5 components (about 35 to 46% of the variance), the rest is individual. |
-| H1b | Added after R-02. Given the score, a model can predict at least 50% of the held-out variance of the *shared* expert part on unseen pieces. | 20% or less | Untested. Pre-registered through R-07 (fine-tuning) and R-10, waiting for the GPU (O-03). A preview in R-06 put timing (both models) and one model's loudness at the falsification level, and the other model's loudness (0.30) as inconclusive. |
+| H1b | Added after R-02. Given the score, a model can predict at least 50% of the held-out variance of the *shared* expert part on unseen pieces. | 20% or less | **Falsified (R-10, 2026-10-06, scoped to frozen SyMuPe).** On 56 fresh pieces the model's average curve explains 0.15 of the experts' loudness consensus and 0.07 of their timing (16 experts: about 0.88). Even with its loudness amplitude corrected it would explain at most 0.45 / 0.31. The score alone predicts only part of what experts share. |
 | H2 | PercePiano's 19 rating scales collapse to 3 to 5 factors. | Parallel analysis keeps more than 8 | Supported with caveats (R-01). Primary count 4; the range across methods is 3 to 7. |
 | H3 | Interpretable MIDI features match or beat MuQ audio embeddings on unseen works. | Worse by more than 0.05 R², with non-overlapping intervals | Supported as "matches", not "beats" (R-04). Both are at single-rater level, far below the ceiling. |
 | H4 | Structural coherence separates skill levels. | No steady relation with skill | Inconclusive (R-09). "Falsified" was barely reachable, and the top skill levels are confounded with recording context. |
@@ -3992,7 +4003,7 @@ Each chapter in Part 2 ends with its own list. The ones that matter most for a l
 
 | Step | What it unblocks |
 |---|---|
-| Run R-10 on the RTX 5080: does the frozen expression model predict the experts' average curve on 56 fresh pieces? (The fine-tune ran in R-07 and did not help.) | The H1b verdict |
+| Decide what the H1b result means for the project's central bet (proposed: "piece-conditioned, anchored by expert performances" instead of "score-conditioned") | The wording of the research bet in CLAUDE.md (R-10) |
 | Decide whether the report needs note-level channels (voice-separated loudness, per-note timing against the expert band) | Teacher-style feedback on single notes (R-11, BL-32) |
 | Record 2 to 3 takes of a passage in one sitting, MIDI and phone together | A real learner's noise floor and the first fully trustworthy personal report |
 | Listen to the flagged passages of the owner's takes, and check the original phone files | Where the second melody comes from (BL-22) |

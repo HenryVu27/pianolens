@@ -1,6 +1,6 @@
 # PianoLens status
 
-Last updated 2026-10-05 by the lead (R-07 audit, R-10 and R-11 started). Earlier refresh 2026-09-29
+Last updated 2026-10-06 by the lead (R-10 audited: H1b falsified, scoped). Earlier refresh 2026-09-29
 (feature-engineer, DEFECTS DF-08) from `EXPERIMENTS.md`,
 `DECISIONS.md`, the `WORKBOARD.md` log and `docs/RESEARCH_LOG.md` Part 5). Details live in those
 files. This page is the short version.
@@ -22,6 +22,7 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 | R-09 | Does coherence rise with skill (H4)? | Inconclusive. No trend within matched contexts from beginner to advanced student; the top levels are confounded with concert/demo context. |
 | F-07 | Is a pianist's take-consistent timing personal intent (H5)? | No: a cross-pianist control passes too, so the consistent part is shared piece timing. A pianist's own take-to-take variation is mostly unstructured, which justifies treating it as noise. |
 | R-07 | Does fine-tuning SyMuPe on piece-disjoint PianoCoRe help, and is there a usable typicality score? | No: fine-tuning harms per-note prediction on unseen sensor/Disklavier pieces (PercePiano -0.051; Vienna and (n)ASAP agree), slightly helps on transcribed MIDI, so R-10 uses frozen SyMuPe. S-LR passes the deadpan battery but is a flatness detector plus a noise penalty, matched by a model-free amount-of-expression baseline, and blind to halved expression (AUC 0.491): not used. The H1b preview is uninformative (16 held-out real experts reach only 0.25-0.27 of the 0.50 bar); H1b is now measured by mean-curve R²c against an expert oracle (DECISIONS 2026-10-05). Two independent audits agree. |
+| R-10 | Can a score-conditioned model predict what experts share (H1b)? | **No, H1b falsified (scoped to frozen SyMuPe).** On 56 fresh pieces the model's mean curve explains 0.15 of the velocity and 0.07 of the log IOI consensus (16 experts: 0.88). Shape is partly right (r 0.67 / 0.55); a perfect amplitude would still give at most 0.45 / 0.31. No better than a score-feature ridge on R²c. Interpretation stays anchored to expert recordings (DECISIONS 2026-10-06). |
 | R-11 | Do expert performances and the report follow what teachers mark (3 tonebase annotated scores, pilot)? | Encoding is reliable (two blind encoders, category kappa 0.97, bar maps identical). Experts following the marks: inconclusive (0.634 [0.503, 0.750]; 0.598 with the waltz hand fix). The report does not notice a removed marked effect: its per-bar tempo/loudness channels cannot see single-note demands even at 4x (BL-32). About a third of annotations are MIDI-observable. |
 | BL-16 | Can repeated takes estimate a learner's noise floor (Rach3 Hanon)? | Yes, within one sitting. Across days, takes carry structured drift, so timing noise uses same-sitting takes only (O-01 guidance: 2-3 takes in one sitting). A second beginner is still needed. |
 
@@ -82,12 +83,11 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 - **Known untested gaps:** staff is not hand (BL-19), dense passages (BL-20), fast repeated notes in
   phone audio (BL-21), the source of Henry's high extras (BL-22).
 
-## In flight (2026-10-05)
+## In flight (2026-10-06)
 
-- **R-10** (H1b): pre-registered (59 fresh pieces unseen by SyMuPe and by R-06/R-07; expert oracle
-  about 0.88; every verdict reachable). Pre-run review done, amendments A1-A4 / R1-R5 applied
-  (56 pieces in 54 works; amendment hash 6215a057...4089). Ready: OWNER runs
-  `experiments/2026-10-05-R-10-h1b/job/` on the RTX 5080 (about 1-7 h) after commit and push.
+- **R-10** (H1b): audited 2026-10-06 (Confirmed with caveats). Author text fixes in progress;
+  Pianist Transformer (`gen_pt`) and `dev_gen` still running on the RTX 5080 (secondary,
+  non-deciding).
 - **R-11:** audited (Confirmed with caveats); author README text fixes in progress. Follow-ups
   BL-31 (anchor rule), BL-32 (note-level channels, OWNER input), BL-33 (MusicXML hands).
 - **R-07 follow-ups:** author text fixes (AUDIT section 9) after the origin/main merge.
@@ -109,7 +109,7 @@ Done 2026-10-05: O-03. The RTX 5080 box runs the R-07 job natively on Windows (C
 | BL-29 | Check tonebase's terms of use for your export; until then it is personal research use only, nothing committed or published | Any publication that uses the tonebase annotations |
 | O-04 | A cloud GPU budget (if any) | Runs too large for the 5080 |
 | Optional | Email the SKY-Piano authors; Globus access for MAESTRO-E; Zenodo request for CIPI | Better validation data |
-| Push | `.claude/settings.json` still denies `git push`; remove that line, or push yourself (`git push origin main`) | Sharing results with the RTX box |
+| CLAUDE.md research bet | R-10 falsified H1b. Proposed wording: "... a low-dimensional, piece-conditioned expressive space (anchored by expert performances of the piece; R-10: the score alone predicts only part of the expert consensus)" (DECISIONS 2026-10-06) | The project's stated bet matches the evidence |
 | BL-29 tonebase files | Decide whether `src/pianolens/data/tonebase.py`, its test and `scripts/extract_tonebase.py` (code and file-to-piece metadata only) are committed | A complete repo on the box |
 
 O-03 (GPU box) is done: R-07 ran there (2026-09-29 to 2026-10-05).

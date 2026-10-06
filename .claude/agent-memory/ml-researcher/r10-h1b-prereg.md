@@ -51,3 +51,13 @@ pre-registered, not run, waiting for the RTX 5080 box). Related: [[r07-finetune-
 - Final counts: primary 56 pieces / 54 works / 1,691 renditions; oracle 0.877 / 0.881; axes 12.
 - Dev references for the box in pieces/dev_reference.json (ridge: 138 pieces, 97 works, alpha
   1000 / 1, CV r 0.516 / 0.167).
+
+## Result and audit (2026-10-06)
+- Box run: H1b-consensus falsified on both targets (velocity 0.150, log IOI 0.073; 56 pieces);
+  Confirmed with caveats (scoped). Shape r 0.67 / 0.55 unchanged from dev; velocity drop is
+  amplitude (b 1.10 on a flatter consensus); dev-chosen scale -> 0.362 / 0.271 inconclusive; best
+  per-piece scale 0.45 / 0.31 < 0.50. H1b-axes 0.437, but an envelope-surrogate sampler already
+  scores 0.363 (null-adjusted 0.16). Ridge velocity 0.246 (inconclusive).
+- My lessons: register r / b / R²c-at-b=1 and a structure-free sampler floor up front; hash appended
+  blocks by anchor, never by line numbers (inserting run-record lines above moved them).
+- Pending: gen_pt and dev_gen from the box, same r / b / R²c-at-b=1 columns (fix 6).

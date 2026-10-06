@@ -589,3 +589,47 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - The official R-10 job runs on the box from this commit: default stages, then `gen_pt` and
     `dev_gen`. The box pushes the results and run record when it finishes.
 
+
+- **2026-10-06, lead: R-10 after audit (eval-auditor, Confirmed with caveats, scoped).**
+  - **H1b, as operationalised on 2026-10-05, is falsified for frozen SyMuPe EncDec-base.** The
+    raw mean of 16 samples (top-p 0.95, conditioned on the panel's median tempo and loudness)
+    explains 0.15 of the velocity and 0.07 of the log IOI consensus variance on 56 unseen,
+    less-played PianoCoRe pieces. Sixteen experts reach about 0.88.
+  - Recorded with it:
+    - The score alone gets the shape of the consensus partly right: r 0.67 / 0.55.
+    - Even a perfectly calibrated amplitude would explain at most 0.45 / 0.31, below the plan's
+      0.50.
+    - A development-chosen amplitude scale gives 0.36 / 0.27, which is between the bars.
+  - The plan's H1b row is marked "falsified (R-10, scoped); score-predictable share of the
+    expert consensus about 0.3-0.45 of variance at best". The wording of the hypothesis is
+    unchanged.
+  - **H1b-axes**: inconclusive as registered, and near a structure-free floor (post hoc). It is
+    not evidence that a model's samples span the expert axes.
+  - **For the scorer:**
+    - Interpretation stays anchored to expert performances of the same piece: the R-02 basis
+      and the expert band.
+    - No model-predicted consensus replaces expert references where they exist.
+    - For pieces without references, a model-predicted curve may serve at most as a
+      low-confidence prior, shrunk by about 0.63 (the development scale), and is labelled as
+      such. It is not a scoring reference.
+  - **For the research bet** (CLAUDE.md: "piano performance quality is a low-dimensional
+    function of a low-dimensional, score-conditioned expressive space"):
+    - R-10 tests predictability from the score, not dimensionality. R-01 (quality is
+      low-dimensional) and R-02 (3-5 shared components per piece) are untouched.
+    - What fails is the strong reading that the score determines the shared expressive
+      consensus. A 25M-parameter score-to-performance model recovers at most about half of it.
+    - "Score-conditioned" should therefore mean "conditioned on the piece through expert
+      performances of it", not "predicted from the score alone".
+    - Proposed CLAUDE.md edit, for Henry: "... a low-dimensional, piece-conditioned expressive
+      space (anchored by expert performances of the piece; R-10: the score alone predicts only
+      part of the expert consensus)".
+  - **Pianist Transformer (`gen_pt`) and `dev_gen`** are reported when they arrive, with the
+    same decomposition. They cannot change the reading, and giving either a deciding role needs
+    a new pre-registration.
+  - **No R-10 follow-up chasing the 0.50 bar** on the same statistic. The fresh pool is used up
+    (all 65 qualifying pieces), and the best-scale ceiling is below 0.50.
+    - If calibrated predictors (dev-chosen shrinkage, model + ridge stacking) matter for the
+      product, they are a new pre-registered ticket on new pieces: another corpus or a
+      leave-composer-out design.
+    - Any captured-share statistic must report an envelope-surrogate sampler floor.
+    (Adopted by the lead 2026-10-06 as proposed in the R-10 Audit section 12. The CLAUDE.md wording is a proposal to Henry, not applied.)

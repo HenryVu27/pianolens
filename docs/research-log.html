@@ -184,7 +184,7 @@ count as proof it was wrong. The table gives their current status; Part 3 explai
 <tr>
 <td>H1b</td>
 <td>Given the score, a model can predict the part of expression that experts share.</td>
-<td>Waiting on the GPU run.</td>
+<td>Falsified for the frozen SyMuPe model (R-10, scoped): it explains 0.15 of the experts' average loudness curve and 0.07 of their timing, where 16 experts reach about 0.88. The shape is partly right.</td>
 </tr>
 <tr>
 <td>H2</td>
@@ -2610,7 +2610,7 @@ performances and the ratings used to build and test each stage.</p>
 <li><strong>The likelihood ratio S-LR passed the battery, but the battery was too easy.</strong> Every deadpan variant has one field exactly where the flat model is most confident, so S-LR separates them perfectly almost by construction, and the model-free "amount of expression" baseline does too. S-LR cannot tell a real performance from the same performance with half its expression (AUC 0.491). It is not used anywhere until it survives non-flat wrong expression. S-DEV is a flatness detector only; S-TYP fails. The report's too-flat check stays model-free.</li>
 <li><strong>The H1b preview turned out to be uninformative.</strong> The registered statistic asked how much of the experts' shared variation the spread of 16 model samples covers. The models reached about 0.10-0.12. The audit then put 16 real held-out experts in the model's place: they reach only about 0.25. A 0.50 bar was out of reach for real pianists, so the preview cannot falsify H1b. It measures how varied the samples are, not what the model predicts. The better-matched measure, how well the model's average curve matches the experts' average curve (centred R²), has a reachable ceiling of about 0.89. The models reach about 0.30-0.50 for dynamics and close to nothing for timing (a lower bound, because the timing formula dropped one centring step).</li>
 </ul>
-<p><strong>R-10.</strong> H1b now has a fixed definition (DECISIONS 2026-10-05). The primary measure is the mean-curve centred R² per target against a held-out expert oracle, with the plan's 0.50 / 0.20 thresholds. The secondary measure is the sample-spread coverage as a ratio to the expert oracle. It uses the frozen SyMuPe model on a fresh draw of pieces that neither SyMuPe nor R-07 has seen, because R-07 has already shown these numbers on R10u.</p>
+<p><strong>R-10.</strong> H1b now has a fixed definition (DECISIONS 2026-10-05). It ran on 2026-10-06 and H1b is falsified for frozen SyMuPe (scoped; Part 5). The primary measure is the mean-curve centred R² per target against a held-out expert oracle, with the plan's 0.50 / 0.20 thresholds. The secondary measure is the sample-spread coverage as a ratio to the expert oracle. It uses the frozen SyMuPe model on a fresh draw of pieces that neither SyMuPe nor R-07 has seen, because R-07 has already shown these numbers on R10u.</p>
 <p class="coderef">In the code: <code>experiments/2026-09-28-R-07-symupe-finetune/</code> (README, <code>make_split.py</code>, <code>split/pieces.csv</code>, <code>job/</code> with <code>setup.sh</code>, <code>fetch_data.sh</code>, <code>run.sh</code>, <code>eval.sh</code>, <code>symupe_train.py</code>, <code>pt_train.py</code>, <code>summarize_eval.py</code>), <code>src/pianolens/models/expression_split.py</code>. Tickets: R-07, R-10.</p>
 <h4 id="known-gaps-and-untested-assumptions-4">Known gaps and untested assumptions</h4>
 <p>Structural coherence and the score basis:</p>
@@ -2664,7 +2664,7 @@ performances and the ratings used to build and test each stage.</p>
 </ul>
 <p>Expression models:</p>
 <ul>
-<li>R-07 has not run. No fine-tuned model, no corrected typicality score and no H1b result exist yet.</li>
+<li>R-07 and R-10 have run. Fine-tuning did not help, no typicality score is validated, and H1b is falsified for frozen SyMuPe (scoped; see R-10 above).</li>
 <li>Pretraining exposure: most PianoCoRe pieces were seen paired by SyMuPe; only PercePiano, the 76 R10u pieces and one Vienna excerpt are unseen by both steps. Unpaired PERiScoPe performances of R10u pieces may exist.</li>
 <li>The flat model defines what the likelihood ratio measures; a different flat family could change the result.</li>
 <li>The R-07 H1b preview measures shared components on per-onset velocity and log inter-onset curves, not on R-02's smoothed per-beat curves, so its shared components are not the same object as the "3 to 5" in the H1b wording. R-10 must use the R-02 procedure itself.</li>
@@ -3351,6 +3351,15 @@ the test was too easy: it cannot tell a real performance from the same one with 
 expression. The preview of H1b, our bet that the score predicts what experts share, used a yardstick
 that even real pianists could not reach, so it said nothing. The question moves to R-10 with a
 measure whose ceiling is known.</p>
+<p><strong>The score alone does not predict what experts share (R-10).</strong> This was the project's central
+bet: given the score, the part of expression that experts agree on should be predictable. We
+tested it on 56 pieces the model had never seen, against a yardstick that 16 real experts reach
+easily (about 0.88). The model's average performance explains only 0.15 of the experts' average
+loudness curve and 0.07 of their timing. It gets the shape partly right (correlations of about 0.67
+and 0.55), but even with its loudness range corrected it would explain under half. It also does no
+better than a small model on simple score features, by this measure. The consequence is practical:
+judging interpretation needs real expert recordings of the same piece, which is how the report
+already works. A model's prediction can at most be a weak hint for pieces nobody has recorded.</p>
 <p><strong>Audio models can cheat on recording quality (R-05).</strong> We rendered 1,250 performances in four
 simulated recording settings. When the setting was tied to skill, as it is in real datasets, an
 audio skill classifier's score rose from 0.87 to 0.94. Shuffling the settings at test time dropped
@@ -3389,6 +3398,12 @@ it outright. The mechanism is shown; how large the effect is on real recordings 
 <td>Does fine-tuning help, and is there a usable typicality score?</td>
 <td>No and not yet; H1b preview uninformative</td>
 <td>Confirmed with caveats</td>
+</tr>
+<tr>
+<td>R-10</td>
+<td>Can the score predict what experts share (H1b)?</td>
+<td>No: 0.15 of loudness and 0.07 of timing, where experts reach 0.88</td>
+<td>Confirmed with caveats (H1b falsified, scoped)</td>
 </tr>
 <tr>
 <td>R-05</td>
@@ -4506,7 +4521,7 @@ gives each claim in plain words and its status as recorded in <code>EXPERIMENTS.
 <td>H1b</td>
 <td>Added after R-02. Given the score, a model can predict at least 50% of the held-out variance of the <em>shared</em> expert part on unseen pieces.</td>
 <td>20% or less</td>
-<td>Untested. Pre-registered through R-07 (fine-tuning) and R-10, waiting for the GPU (O-03). A preview in R-06 put timing (both models) and one model's loudness at the falsification level, and the other model's loudness (0.30) as inconclusive.</td>
+<td><strong>Falsified (R-10, 2026-10-06, scoped to frozen SyMuPe).</strong> On 56 fresh pieces the model's average curve explains 0.15 of the experts' loudness consensus and 0.07 of their timing (16 experts: about 0.88). Even with its loudness amplitude corrected it would explain at most 0.45 / 0.31. The score alone predicts only part of what experts share.</td>
 </tr>
 <tr>
 <td>H2</td>
@@ -5055,8 +5070,8 @@ it each time.</p>
 </thead>
 <tbody>
 <tr>
-<td>Run R-10 on the RTX 5080: does the frozen expression model predict the experts' average curve on 56 fresh pieces? (The fine-tune ran in R-07 and did not help.)</td>
-<td>The H1b verdict</td>
+<td>Decide what the H1b result means for the project's central bet (proposed: "piece-conditioned, anchored by expert performances" instead of "score-conditioned")</td>
+<td>The wording of the research bet in CLAUDE.md (R-10)</td>
 </tr>
 <tr>
 <td>Decide whether the report needs note-level channels (voice-separated loudness, per-note timing against the expert band)</td>
