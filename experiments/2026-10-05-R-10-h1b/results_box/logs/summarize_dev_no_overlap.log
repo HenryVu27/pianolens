@@ -1,0 +1,392 @@
+albeniz_op71_no6: n=48 k=11
+bach_bwv825_mv1: n=50 k=6
+bach_bwv825_mv5: n=15 k=3
+bach_bwv849_fugue: n=50 k=1
+bach_bwv849_prelude: n=48 k=4
+bach_bwv851_fugue: n=42 k=5
+bach_bwv851_prelude: n=50 k=2
+bach_bwv853_fugue: n=48 k=7
+bach_bwv853_prelude: n=50 k=8
+bach_bwv856_fugue: n=17 k=2
+bach_bwv856_prelude: n=15 k=3
+bach_bwv857_fugue: n=37 k=3
+bach_bwv857_prelude: n=42 k=5
+bach_bwv862_fugue: n=43 k=4
+bach_bwv862_prelude: n=30 k=5
+bach_bwv872: n=50 k=1
+bach_bwv872_fugue: n=25 k=4
+bach_bwv872_prelude: n=26 k=3
+bach_bwv911: n=49 k=4
+berg_op1: n=49 k=7
+chopin_op12: n=47 k=6
+chopin_op17_no2: n=49 k=10
+chopin_op17_no4: n=48 k=6
+chopin_op22: n=48 k=1
+chopin_op24_no1: n=50 k=8
+chopin_op24_no2: n=50 k=9
+chopin_op24_no3: n=50 k=8
+chopin_op24_no4: n=49 k=4
+chopin_op29: n=46 k=6
+chopin_op30_no2: n=49 k=8
+chopin_op33_no1: n=49 k=6
+chopin_op41_no2: n=49 k=2
+chopin_op42: n=46 k=7
+chopin_op51: n=49 k=12
+chopin_op63_no2: n=50 k=1
+chopin_op63_no3: n=49 k=6
+chopin_op67_no2: n=50 k=8
+chopin_op67_no3: n=50 k=4
+chopin_op68_no2: n=44 k=6
+chopin_op68_no3: n=50 k=6
+chopin_op6_no1: n=49 k=8
+chopin_op6_no2: n=48 k=12
+chopin_op7_no1: n=48 k=11
+chopin_op7_no3: n=50 k=8
+grieg_op43_no6: n=45 k=9
+grieg_op54_no4: n=50 k=6
+haydn_hobxvi34: n=13 k=2
+haydn_hobxvi34_mv1: n=49 k=9
+kuhlau_op20_no1_mv1: n=50 k=8
+kuhlau_op20_no1_mv2: n=15 k=0
+liszt_s169: n=50 k=8
+liszt_s254: n=49 k=10
+liszt_s434: n=46 k=9
+mendelssohn_op14: n=47 k=3
+mendelssohn_op19_no2: n=50 k=5
+mendelssohn_op19_no4: n=50 k=4
+mendelssohn_op30_no3: n=49 k=4
+mendelssohn_op30_no6: n=50 k=5
+mendelssohn_op38_no2: n=49 k=8
+mendelssohn_op38_no6: n=50 k=8
+mendelssohn_op53_no3: n=47 k=6
+mozart_k494: n=50 k=11
+mozart_k545_mv1: n=50 k=4
+mozart_k545_mv2: n=50 k=4
+mozart_k545_mv3: n=49 k=9
+pianocore:Bach,_Johann_Sebastian/Notebook_for_Anna_Magdalena_Bach,_Book_2,_BWV_Anh.113-132/36._Minuet_in_D_minor,_BWV_Anh.132: n=50 k=4
+pianocore:Chopin,_Frédéric/Largo_in_E_flat_major,_B.109: n=45 k=5
+pianocore:Chopin,_Frédéric/Nocturnes,_Op.15/Nocturne_No.6_in_G_minor,_Lento: n=50 k=6
+pianocore:Chopin,_Frédéric/Waltzes,_Op.34/Waltz_No.2_in_A_flat_major,_"Valse_brillante",_Vivace: n=40 k=8
+pianocore:Chopin,_Frédéric/Waltzes,_Op.64/Waltz_No.8_in_A_flat_major,_Moderato: n=50 k=4
+pianocore:Chopin,_Frédéric/Waltzes,_Op.70/Waltz_No.11_in_G_flat_major,_Molto_vivace: n=44 k=4
+pianocore:Chopin,_Frédéric/Waltzes,_Op.70/Waltz_No.13_in_D_flat_major,_Moderato: n=45 k=10
+pianocore:Mascagni,_Pietro/Cavalleria_rusticana: n=25 k=0
+pianocore:Pieczonka,_Albert/Danses_de_salon/1._Tarantelle: n=48 k=9
+pianocore:Satie,_Erik/Je_te_veux: n=50 k=11
+scarlatti_k1: n=50 k=11
+scarlatti_k141: n=50 k=9
+scarlatti_k32: n=48 k=6
+scarlatti_k380: n=50 k=8
+scarlatti_k9: n=49 k=1
+schubert_d817: n=49 k=6
+scriabin_op19: n=48 k=6
+tchaikovsky_op37a_no11: n=50 k=4
+tchaikovsky_op37a_no9: n=50 k=4
+tchaikovsky_op72_no5: n=33 k=1
+{
+ "pieces": {
+  "total": 85,
+  "primary_n_ge_min": 80,
+  "works_primary": 71,
+  "oracle_eligible": 75,
+  "axes_eligible": 75
+ },
+ "experts": {
+  "reliability_velocity": [
+   0.9814223819092843,
+   0.9784285116522177,
+   0.9850906993489361,
+   80
+  ],
+  "oracle_analytic_velocity": [
+   0.9220855144013524,
+   0.9101313932967314,
+   0.9338116193700321,
+   80
+  ],
+  "reliability_log_ioi": [
+   0.9787322824500837,
+   0.9726725793671027,
+   0.9807262872033624,
+   80
+  ],
+  "oracle_analytic_log_ioi": [
+   0.9119518872249004,
+   0.8928758438210587,
+   0.9210273275190743,
+   80
+  ],
+  "k": [
+   6.0,
+   5.0,
+   7.0,
+   80
+  ],
+  "var_shared": [
+   0.3878604804064907,
+   0.3528119560256593,
+   0.4032506769010391,
+   80
+  ],
+  "oracle_emp_velocity": [
+   0.9105730271086117,
+   0.8981660046075695,
+   0.9273300361873662,
+   75
+  ],
+  "oracle_emp_r2_velocity": [
+   0.9221430610228897,
+   0.9135085140844097,
+   0.9347929780832755,
+   75
+  ],
+  "oracle_emp_b_velocity": [
+   1.016506627916479,
+   1.007090256059119,
+   1.0241515823434388,
+   75
+  ],
+  "oracle_emp_log_ioi": [
+   0.9025526470684783,
+   0.8803815423266877,
+   0.9094602687324361,
+   75
+  ],
+  "oracle_emp_r2_log_ioi": [
+   0.9103970999205793,
+   0.8907644242223123,
+   0.9168044131685175,
+   75
+  ],
+  "oracle_emp_b_log_ioi": [
+   1.016940759324339,
+   1.0145513723528237,
+   1.0218772973503463,
+   75
+  ],
+  "cap_oracle": [
+   0.24135658428741064,
+   0.20280479220477168,
+   0.2672226677460579,
+   75
+  ],
+  "cap_random": [
+   0.012156896924669208,
+   0.009828731995447376,
+   0.013785340301996598,
+   75
+  ],
+  "expert_cond_r2_zero": [
+   0.0,
+   0.0,
+   0.0,
+   79
+  ],
+  "expert_cond_r2_perf_mean": [
+   -0.05317820489996894,
+   -0.0627211426740192,
+   -0.04152697679719767,
+   79
+  ],
+  "expert_cond_r2_expert_basis": [
+   0.051810150403042154,
+   0.040223400212688,
+   0.05983317238983987,
+   79
+  ]
+ },
+ "arms": {
+  "frozen_p100": {
+   "r2c_velocity": [
+    0.3235255351825865,
+    0.2542900362588295,
+    0.44538863468257084,
+    80
+   ],
+   "r_velocity": [
+    0.6807658535848183,
+    0.6159495862867621,
+    0.7044016399188455,
+    80
+   ],
+   "r2_velocity": [
+    0.46344635316721533,
+    0.3793938928468334,
+    0.4961816703203589,
+    80
+   ],
+   "b_velocity": [
+    0.9765530497265158,
+    0.9322367310966342,
+    1.0155909247393307,
+    80
+   ],
+   "r2c_r07_velocity": [
+    0.3235238827591885,
+    0.25427841426029973,
+    0.44536495101260887,
+    80
+   ],
+   "ratio_analytic_velocity": [
+    0.35511870330669815,
+    0.2665998403014529,
+    0.47574883133437396,
+    80
+   ],
+   "r2c_true_velocity": [
+    0.32894957880115044,
+    0.2572523461603008,
+    0.45246910486125425,
+    80
+   ],
+   "r2c_log_ioi": [
+    -0.18180946790832264,
+    -0.33617342422284896,
+    -0.06244771695355006,
+    80
+   ],
+   "r_log_ioi": [
+    0.5264799313229711,
+    0.48358549458664174,
+    0.5547109965885104,
+    80
+   ],
+   "r2_log_ioi": [
+    0.277185161923008,
+    0.23387252186199442,
+    0.30770428973621844,
+    80
+   ],
+   "b_log_ioi": [
+    1.1281546885065783,
+    1.0341363573405493,
+    1.2767567222532137,
+    80
+   ],
+   "r2c_r07_log_ioi": [
+    -0.3046139874261552,
+    -0.3957081913255489,
+    -0.11135416099738626,
+    80
+   ],
+   "ratio_analytic_log_ioi": [
+    -0.21136989412341173,
+    -0.38296352924382254,
+    -0.06844582090966365,
+    80
+   ],
+   "r2c_true_log_ioi": [
+    -0.188763430625686,
+    -0.3457646232376925,
+    -0.06429247169028378,
+    80
+   ],
+   "ioi_offset": [
+    -0.036843229047490184,
+    -0.04470193895193989,
+    -0.03118754323467421,
+    80
+   ],
+   "r2c_vs_rest_velocity": [
+    0.3202541961317415,
+    0.2594004584823676,
+    0.44433314706902427,
+    75
+   ],
+   "ratio_emp_velocity": [
+    0.3753571900825045,
+    0.28194541351147245,
+    0.4854665548967297,
+    75
+   ],
+   "r2c_vs_rest_log_ioi": [
+    -0.17593486507611736,
+    -0.3106326073928948,
+    -0.009997646571388168,
+    75
+   ],
+   "ratio_emp_log_ioi": [
+    -0.20097172934658455,
+    -0.37545191317345167,
+    -0.010787506725067335,
+    75
+   ],
+   "cap_model": [
+    0.07346283999118337,
+    0.06439980349920903,
+    0.08570230864427252,
+    75
+   ],
+   "axes_ratio": [
+    0.34749698307196386,
+    0.3089306468212156,
+    0.3839045495992955,
+    75
+   ],
+   "cond_r2_zero": [
+    0.0,
+    0.0,
+    0.0,
+    79
+   ],
+   "cond_r2_perf_mean": [
+    -0.05317820489996894,
+    -0.0627211426740192,
+    -0.04152697679719767,
+    79
+   ],
+   "cond_r2_expert_basis": [
+    0.051810150403042154,
+    0.040223400212688,
+    0.05983317238983987,
+    79
+   ],
+   "cond_r2_model_basis": [
+    -0.03389471527929344,
+    -0.045075629181482,
+    -0.026340094852201235,
+    79
+   ],
+   "reading_velocity": "inconclusive",
+   "ratio_of_medians_analytic_velocity": 0.3508628322749758,
+   "ratio_of_medians_emp_velocity": 0.35170621860902335,
+   "reading_log_ioi": "falsified",
+   "ratio_of_medians_analytic_log_ioi": -0.1993630041838883,
+   "ratio_of_medians_emp_log_ioi": -0.19493030755331536,
+   "reading_H1b_consensus": "mixed (velocity inconclusive, log IOI falsified)",
+   "reading_H1b_axes": "floor",
+   "r2c_velocity_composer_cluster_ci": [
+    0.3235255351825865,
+    0.10861321439322502,
+    0.44128870360958816,
+    80
+   ],
+   "r2c_log_ioi_composer_cluster_ci": [
+    -0.18180946790832264,
+    -0.4594720669450134,
+    0.011208378515837392,
+    80
+   ],
+   "axes_ratio_per_piece": {
+    "albeniz_op71_no6": 0.2365,
+    "bach_bwv825_mv1": 0.2447,
+    "bach_bwv849_fugue": 0.1197,
+    "bach_bwv849_prelude": 0.2284,
+    "bach_bwv851_fugue": 0.236,
+    "bach_bwv851_prelude": 0.3849,
+    "bach_bwv853_fugue": 0.3864,
+    "bach_bwv853_prelude": 0.3425,
+    "bach_bwv857_fugue": 0.348,
+    "bach_bwv857_prelude": 0.5357,
+    "bach_bwv862_fugue": 0.1956,
+    "bach_bwv872": 0.4509,
+    "bach_bwv911": 0.3449,
+    "berg_op1": 0.251,
+    "chopin_op12": 0.3089,
+    "chopin_op17_no2": 0.3395,
+    "chopin_op17_no4": 0.2407,
+    "chopin_op22": 0.185,
+    "chopin_op24_no1": 0.3017,
+    "chopin_op24_no2": 0.2641,
+    "chopin_op24_no3": 0.4548,
+   

@@ -1,0 +1,399 @@
+{
+ "model": "C:/Users/Vuduc/r07/models/EncDec-base",
+ "device": "cuda",
+ "k": 16,
+ "top_p": 1.0,
+ "seed": 0,
+ "items": [
+  {
+   "item": "bach_bwv852_fugue",
+   "n": 904,
+   "seconds": 12.459205100079998,
+   "ms_per_note": 13.782306526637166
+  },
+  {
+   "item": "bach_bwv852_prelude",
+   "n": 1412,
+   "seconds": 17.549654999980703,
+   "ms_per_note": 12.42893413596367
+  },
+  {
+   "item": "bach_bwv859_fugue",
+   "n": 856,
+   "seconds": 10.330377099802718,
+   "ms_per_note": 12.068197546498501
+  },
+  {
+   "item": "bach_bwv861_fugue",
+   "n": 746,
+   "seconds": 8.919973499840125,
+   "ms_per_note": 11.957069034638238
+  },
+  {
+   "item": "bach_bwv861_prelude",
+   "n": 803,
+   "seconds": 9.662244000006467,
+   "ms_per_note": 12.032682440854877
+  },
+  {
+   "item": "bach_bwv882_prelude",
+   "n": 1449,
+   "seconds": 17.926306399982423,
+   "ms_per_note": 12.371502001368132
+  },
+  {
+   "item": "bach_bwv910",
+   "n": 3002,
+   "seconds": 37.77622750005685,
+   "ms_per_note": 12.583686708879696
+  },
+  {
+   "item": "bach_bwv912",
+   "n": 3000,
+   "seconds": 37.82622670009732,
+   "ms_per_note": 12.608742233365774
+  },
+  {
+   "item": "bach_bwv913",
+   "n": 3000,
+   "seconds": 37.9419779998716,
+   "ms_per_note": 12.647325999957198
+  },
+  {
+   "item": "bach_bwv915",
+   "n": 3001,
+   "seconds": 37.9714784999378,
+   "ms_per_note": 12.652941852695037
+  },
+  {
+   "item": "bach_bwv916",
+   "n": 3000,
+   "seconds": 37.79695440013893,
+   "ms_per_note": 12.59898480004631
+  },
+  {
+   "item": "chaminade_op61",
+   "n": 2377,
+   "seconds": 29.901163599919528,
+   "ms_per_note": 12.579370466941324
+  },
+  {
+   "item": "chopin_op33_no3",
+   "n": 527,
+   "seconds": 6.12013139994815,
+   "ms_per_note": 11.613152561571441
+  },
+  {
+   "item": "chopin_op67_no1",
+   "n": 796,
+   "seconds": 9.54445410007611,
+   "ms_per_note": 11.990520226226268
+  },
+  {
+   "item": "chopin_op6_no3",
+   "n": 1348,
+   "seconds": 16.686972699826583,
+   "ms_per_note": 12.379059866340196
+  },
+  {
+   "item": "clementi_op36_no2",
+   "n": 2084,
+   "seconds": 25.96173430001363,
+   "ms_per_note": 12.457646017281013
+  },
+  {
+   "item": "clementi_op36_no3",
+   "n": 2043,
+   "seconds": 25.37744199996814,
+   "ms_per_note": 12.421655408697083
+  },
+  {
+   "item": "duvernoy_op176_no18",
+   "n": 414,
+   "seconds": 4.680831799982116,
+   "ms_per_note": 11.306357004787719
+  },
+  {
+   "item": "grieg_op54_no2",
+   "n": 1824,
+   "seconds": 22.545209700008854,
+   "ms_per_note": 12.36031233553117
+  },
+  {
+   "item": "kuhlau_op55_no1",
+   "n": 1644,
+   "seconds": 20.378374200081453,
+   "ms_per_note": 12.395604744575094
+  },
+  {
+   "item": "liszt_s207",
+   "n": 452,
+   "seconds": 5.1742313001304865,
+   "ms_per_note": 11.44741438081966
+  },
+  {
+   "item": "lyadov_op11_no1",
+   "n": 1047,
+   "seconds": 12.72059389995411,
+   "ms_per_note": 12.149564374359226
+  },
+  {
+   "item": "mendelssohn_op38_no3",
+   "n": 1731,
+   "seconds": 21.432684100000188,
+   "ms_per_note": 12.38167770075112
+  },
+  {
+   "item": "mendelssohn_op38_no4",
+   "n": 767,
+   "seconds": 9.175604899879545,
+   "ms_per_note": 11.96297900896942
+  },
+  {
+   "item": "mendelssohn_op53_no1",
+   "n": 1220,
+   "seconds": 14.904104199958965,
+   "ms_per_note": 12.21647885242538
+  },
+  {
+   "item": "mendelssohn_op53_no2",
+   "n": 1782,
+   "seconds": 22.0460001998581,
+   "ms_per_note": 12.371492816979854
+  },
+  {
+   "item": "mendelssohn_op72_no2",
+   "n": 540,
+   "seconds": 6.316058800090104,
+   "ms_per_note": 11.696405185352045
+  },
+  {
+   "item": "merikanto_op33",
+   "n": 890,
+   "seconds": 10.698656599968672,
+   "ms_per_note": 12.020962471874912
+  },
+  {
+   "item": "mozart_k1",
+   "n": 662,
+   "seconds": 7.8266934000421315,
+   "ms_per_note": 11.82279969794884
+  },
+  {
+   "item": "mozart_k3",
+   "n": 231,
+   "seconds": 2.392069299938157,
+   "ms_per_note": 10.355278354710638
+  },
+  {
+   "item": "pianocore_Bach__Carl_Philipp_Emanuel_4_Pieces_for_Anna_Magdalena_Bach__H.1_1._March__D_major__BWV_Anh.122_",
+   "n": 434,
+   "seconds": 4.919346899958327,
+   "ms_per_note": 11.33490069114822
+  },
+  {
+   "item": "pianocore_Bach__Carl_Philipp_Emanuel_4_Pieces_for_Anna_Magdalena_Bach__H.1_3._March__G_major__BWV_Anh.124_",
+   "n": 500,
+   "seconds": 5.728237200062722,
+   "ms_per_note": 11.456474400125444
+  },
+  {
+   "item": "pianocore_Bach__Carl_Philipp_Emanuel_Keyboard_Sonata_in_B_minor__H.245",
+   "n": 727,
+   "seconds": 8.601121099898592,
+   "ms_per_note": 11.830978129158998
+  },
+  {
+   "item": "pianocore_Bach__Carl_Philipp_Emanuel_March_in_E_flat_major__H_deest",
+   "n": 716,
+   "seconds": 8.486697799991816,
+   "ms_per_note": 11.852929888256726
+  },
+  {
+   "item": "pianocore_Bach__Johann_Sebastian_Notebook_for_Anna_Magdalena_Bach__Book_2__BWV_Anh.113-132_10._Polonaise_in_G_minor__BWV_Anh.119",
+   "n": 296,
+   "seconds": 3.156674599973485,
+   "ms_per_note": 10.664441216126638
+  },
+  {
+   "item": "pianocore_Bach__Johann_Sebastian_Notebook_for_Anna_Magdalena_Bach__Book_2__BWV_Anh.113-132_15._Minuet_in_C_minor__BWV_Anh.121",
+   "n": 298,
+   "seconds": 3.2130078999325633,
+   "ms_per_note": 10.781905704471688
+  },
+  {
+   "item": "pianocore_Bart\u00f3k__B\u00e9la_Romanian_Folk_Dances__Sz.56_3._Pe_loc",
+   "n": 276,
+   "seconds": 2.899571599904448,
+   "ms_per_note": 10.505694202552347
+  },
+  {
+   "item": "pianocore_Boulanger__Lili_3_Morceaux_1._D_un_Vieux_Jardin._Expressif__C_sharp_minor_",
+   "n": 580,
+   "seconds": 6.805269599892199,
+   "ms_per_note": 11.733223448089998
+  },
+  {
+   "item": "pianocore_Boulanger__Lili_3_Morceaux_3._Cort\u00e8ge._Pas_vite__B_major_",
+   "n": 909,
+   "seconds": 11.015129700070247,
+   "ms_per_note": 12.117854455522824
+  },
+  {
+   "item": "pianocore_Debussy__Claude_2_Arabesques",
+   "n": 3000,
+   "seconds": 37.48723979992792,
+   "ms_per_note": 12.495746599975973
+  },
+  {
+   "item": "pianocore_Elgar__Edward_Variations_on_an_Original_Theme__Enigma___Op.36_Variation_IX._Adagio__Nimrod_",
+   "n": 660,
+   "seconds": 7.793923699995503,
+   "ms_per_note": 11.80897530302349
+  },
+  {
+   "item": "pianocore_Field__John_Nocturne_No.1_in_E_flat_major__H_24",
+   "n": 1158,
+   "seconds": 14.097792399814352,
+   "ms_per_note": 12.174259412620339
+  },
+  {
+   "item": "pianocore_Glinka__Mikhail_Nocturne_in_E_flat_major",
+   "n": 1491,
+   "seconds": 18.421809599967673,
+   "ms_per_note": 12.35533843056182
+  },
+  {
+   "item": "pianocore_Gossec__Fran\u00e7ois_Joseph_Gavotte_in_D_major_pour_Mlle_Laure",
+   "n": 1038,
+   "seconds": 12.596144499955699,
+   "ms_per_note": 12.135013969128805
+  },
+  {
+   "item": "pianocore_Handel__George_Frideric_Gavotte_in_G_major__HWV_491",
+   "n": 372,
+   "seconds": 4.126025200122967,
+   "ms_per_note": 11.091465591728406
+  },
+  {
+   "item": "pianocore_Haydn__Joseph_12_Minuets__Hob.IX_8_12._Minuet_in_F_major",
+   "n": 406,
+   "seconds": 4.543988500023261,
+   "ms_per_note": 11.192089901535125
+  },
+  {
+   "item": "pianocore_Haydn__Joseph_Fl\u00f6tenuhr_in_C_major__Hob.XIX_8",
+   "n": 1762,
+   "seconds": 21.827402099967003,
+   "ms_per_note": 12.387855902364928
+  },
+  {
+   "item": "pianocore_Rameau__Jean-Philippe_Suite_in_E_minor__RCT_2_8._Tambourin",
+   "n": 567,
+   "seconds": 6.640485399868339,
+   "ms_per_note": 11.711614461848923
+  },
+  {
+   "item": "pianocore_Ravel__Maurice_Le_Tombeau_de_Couperin__M.68",
+   "n": 3001,
+   "seconds": 37.929588600061834,
+   "ms_per_note": 12.638983205618738
+  },
+  {
+   "item": "prokofiev_op22_no1",
+   "n": 232,
+   "seconds": 2.39633380016312,
+   "ms_per_note": 10.329025000703103
+  },
+  {
+   "item": "prokofiev_op22_no11",
+   "n": 450,
+   "seconds": 5.159253200050443,
+   "ms_per_note": 11.465007111223208
+  },
+  {
+   "item": "prokofiev_op22_no14",
+   "n": 1042,
+   "seconds": 12.761655000038445,
+   "ms_per_note": 12.24726967374131
+  },
+  {
+   "item": "prokofiev_op22_no16",
+   "n": 304,
+   "seconds": 3.29252739995718,
+   "ms_per_note": 10.83068223670125
+  },
+  {
+   "item": "prokofiev_op22_no17",
+   "n": 454,
+   "seconds": 5.224340500077233,
+   "ms_per_note": 11.507357929685535
+  },
+  {
+   "item": "prokofiev_op22_no18",
+   "n": 337,
+   "seconds": 3.7264884000178427,
+   "ms_per_note": 11.05782908017164
+  },
+  {
+   "item": "prokofiev_op22_no20",
+   "n": 476,
+   "seconds": 5.471298299962655,
+   "ms_per_note": 11.494324159585409
+  },
+  {
+   "item": "prokofiev_op22_no7",
+   "n": 522,
+   "seconds": 6.08512179995887,
+   "ms_per_note": 11.657321455859904
+  },
+  {
+   "item": "prokofiev_op22_no8",
+   "n": 387,
+   "seconds": 4.423793999943882,
+   "ms_per_note": 11.430992247917008
+  },
+  {
+   "item": "scarlatti_k213",
+   "n": 1065,
+   "seconds": 13.050949499942362,
+   "ms_per_note": 12.254412676002218
+  },
+  {
+   "item": "scarlatti_k322",
+   "n": 1079,
+   "seconds": 13.154024000046775,
+   "ms_per_note": 12.190939759079495
+  },
+  {
+   "item": "scarlatti_k54",
+   "n": 2348,
+   "seconds": 29.439730799989775,
+   "ms_per_note": 12.538215843266514
+  },
+  {
+   "item": "scarlatti_k87",
+   "n": 1692,
+   "seconds": 21.07555629988201,
+   "ms_per_note": 12.456002541301425
+  },
+  {
+   "item": "schumann_op133_no1",
+   "n": 478,
+   "seconds": 5.533782199956477,
+   "ms_per_note": 11.576950209113967
+  },
+  {
+   "item": "schumann_op68_no14",
+   "n": 380,
+   "seconds": 4.29150929977186,
+   "ms_per_note": 11.293445525715422
+  },
+  {
+   "item": "turina_op55_no5",
+   "n": 1273,
+   "seconds": 15.766476799966767,
+   "ms_per_note": 12.385292065959755
+  }
+ ]
+}

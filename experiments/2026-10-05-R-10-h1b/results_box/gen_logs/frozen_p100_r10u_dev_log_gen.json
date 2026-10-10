@@ -1,0 +1,555 @@
+{
+ "model": "C:/Users/Vuduc/r07/models/EncDec-base",
+ "device": "cuda",
+ "k": 16,
+ "top_p": 1.0,
+ "seed": 0,
+ "items": [
+  {
+   "item": "albeniz_op71_no6",
+   "n": 1415,
+   "seconds": 18.481550200027414,
+   "ms_per_note": 13.061166219100645
+  },
+  {
+   "item": "bach_bwv825_mv1",
+   "n": 622,
+   "seconds": 6.952050300023984,
+   "ms_per_note": 11.176929742803834
+  },
+  {
+   "item": "bach_bwv825_mv5",
+   "n": 682,
+   "seconds": 7.645968900003936,
+   "ms_per_note": 11.211098093847413
+  },
+  {
+   "item": "bach_bwv849_fugue",
+   "n": 1310,
+   "seconds": 15.231872899981681,
+   "ms_per_note": 11.627383893115788
+  },
+  {
+   "item": "bach_bwv849_prelude",
+   "n": 723,
+   "seconds": 8.158653499966022,
+   "ms_per_note": 11.284444674918426
+  },
+  {
+   "item": "bach_bwv851_fugue",
+   "n": 913,
+   "seconds": 10.462323500018101,
+   "ms_per_note": 11.459280941969443
+  },
+  {
+   "item": "bach_bwv851_prelude",
+   "n": 780,
+   "seconds": 8.818130699975882,
+   "ms_per_note": 11.305295769199848
+  },
+  {
+   "item": "bach_bwv853_fugue",
+   "n": 1385,
+   "seconds": 16.18059149995679,
+   "ms_per_note": 11.682737545095156
+  },
+  {
+   "item": "bach_bwv853_prelude",
+   "n": 800,
+   "seconds": 9.110174000030383,
+   "ms_per_note": 11.38771750003798
+  },
+  {
+   "item": "bach_bwv856",
+   "n": 1658,
+   "seconds": 19.415286199946422,
+   "ms_per_note": 11.71006405304368
+  },
+  {
+   "item": "bach_bwv856_fugue",
+   "n": 752,
+   "seconds": 8.494315600022674,
+   "ms_per_note": 11.295632446838662
+  },
+  {
+   "item": "bach_bwv856_prelude",
+   "n": 909,
+   "seconds": 10.416299999982584,
+   "ms_per_note": 11.4590759075716
+  },
+  {
+   "item": "bach_bwv857",
+   "n": 1862,
+   "seconds": 21.93050190003123,
+   "ms_per_note": 11.777927980682724
+  },
+  {
+   "item": "bach_bwv857_fugue",
+   "n": 1318,
+   "seconds": 15.366727699991316,
+   "ms_per_note": 11.659125720782486
+  },
+  {
+   "item": "bach_bwv857_prelude",
+   "n": 555,
+   "seconds": 6.149464299960528,
+   "ms_per_note": 11.080115855784735
+  },
+  {
+   "item": "bach_bwv862",
+   "n": 1566,
+   "seconds": 18.289458299987018,
+   "ms_per_note": 11.67909214558558
+  },
+  {
+   "item": "bach_bwv862_fugue",
+   "n": 882,
+   "seconds": 10.082483700010926,
+   "ms_per_note": 11.431387414978374
+  },
+  {
+   "item": "bach_bwv862_prelude",
+   "n": 681,
+   "seconds": 7.676945700019132,
+   "ms_per_note": 11.27304801764924
+  },
+  {
+   "item": "bach_bwv872",
+   "n": 1621,
+   "seconds": 19.029817199974786,
+   "ms_per_note": 11.739554102390368
+  },
+  {
+   "item": "bach_bwv872_fugue",
+   "n": 797,
+   "seconds": 9.01640409999527,
+   "ms_per_note": 11.312928607271356
+  },
+  {
+   "item": "bach_bwv872_prelude",
+   "n": 807,
+   "seconds": 9.13124479999533,
+   "ms_per_note": 11.315049318457657
+  },
+  {
+   "item": "bach_bwv911",
+   "n": 3000,
+   "seconds": 35.6257278000121,
+   "ms_per_note": 11.875242600004034
+  },
+  {
+   "item": "berg_op1",
+   "n": 3000,
+   "seconds": 35.55079020000994,
+   "ms_per_note": 11.850263400003314
+  },
+  {
+   "item": "chopin_op12",
+   "n": 3001,
+   "seconds": 35.6444050000282,
+   "ms_per_note": 11.877509163621527
+  },
+  {
+   "item": "chopin_op17_no2",
+   "n": 784,
+   "seconds": 8.847440599987749,
+   "ms_per_note": 11.285000765290496
+  },
+  {
+   "item": "chopin_op17_no4",
+   "n": 1622,
+   "seconds": 18.980951700010337,
+   "ms_per_note": 11.702189704075424
+  },
+  {
+   "item": "chopin_op22",
+   "n": 3001,
+   "seconds": 37.40978539997013,
+   "ms_per_note": 12.465773208920405
+  },
+  {
+   "item": "chopin_op24_no1",
+   "n": 1102,
+   "seconds": 12.68923190003261,
+   "ms_per_note": 11.514729491862623
+  },
+  {
+   "item": "chopin_op24_no2",
+   "n": 1417,
+   "seconds": 16.60998509998899,
+   "ms_per_note": 11.721937261812977
+  },
+  {
+   "item": "chopin_op24_no3",
+   "n": 760,
+   "seconds": 8.604629300010856,
+   "ms_per_note": 11.321880657909022
+  },
+  {
+   "item": "chopin_op24_no4",
+   "n": 2106,
+   "seconds": 24.85266380000394,
+   "ms_per_note": 11.800884995253533
+  },
+  {
+   "item": "chopin_op29",
+   "n": 2228,
+   "seconds": 26.302001799980644,
+   "ms_per_note": 11.805207271086465
+  },
+  {
+   "item": "chopin_op30_no2",
+   "n": 791,
+   "seconds": 9.00140809995355,
+   "ms_per_note": 11.379782680092985
+  },
+  {
+   "item": "chopin_op33_no1",
+   "n": 500,
+   "seconds": 5.514019199996255,
+   "ms_per_note": 11.02803839999251
+  },
+  {
+   "item": "chopin_op41_no2",
+   "n": 839,
+   "seconds": 9.591696999967098,
+   "ms_per_note": 11.432296781843979
+  },
+  {
+   "item": "chopin_op42",
+   "n": 3000,
+   "seconds": 35.75410970003577,
+   "ms_per_note": 11.91803656667859
+  },
+  {
+   "item": "chopin_op51",
+   "n": 2431,
+   "seconds": 28.737469999992754,
+   "ms_per_note": 11.821254627722235
+  },
+  {
+   "item": "chopin_op63_no2",
+   "n": 560,
+   "seconds": 6.186399800004438,
+   "ms_per_note": 11.047142500007924
+  },
+  {
+   "item": "chopin_op63_no3",
+   "n": 778,
+   "seconds": 8.829277899989393,
+   "ms_per_note": 11.348686246772997
+  },
+  {
+   "item": "chopin_op67_no2",
+   "n": 786,
+   "seconds": 8.91345310001634,
+   "ms_per_note": 11.340271119613664
+  },
+  {
+   "item": "chopin_op67_no3",
+   "n": 671,
+   "seconds": 7.5383194999885745,
+   "ms_per_note": 11.234455290594001
+  },
+  {
+   "item": "chopin_op68_no2",
+   "n": 917,
+   "seconds": 10.611664800031576,
+   "ms_per_note": 11.572153544200193
+  },
+  {
+   "item": "chopin_op68_no3",
+   "n": 763,
+   "seconds": 8.631129300047178,
+   "ms_per_note": 11.312096068213863
+  },
+  {
+   "item": "chopin_op6_no1",
+   "n": 1321,
+   "seconds": 15.358407799969427,
+   "ms_per_note": 11.626349583625608
+  },
+  {
+   "item": "chopin_op6_no2",
+   "n": 1061,
+   "seconds": 12.27343679999467,
+   "ms_per_note": 11.567800942502044
+  },
+  {
+   "item": "chopin_op7_no1",
+   "n": 1131,
+   "seconds": 13.33065409999108,
+   "ms_per_note": 11.786608399638443
+  },
+  {
+   "item": "chopin_op7_no3",
+   "n": 1205,
+   "seconds": 13.956915199989453,
+   "ms_per_note": 11.582502240655147
+  },
+  {
+   "item": "clementi_op36_no1",
+   "n": 1470,
+   "seconds": 17.16832490003435,
+   "ms_per_note": 11.679132585057381
+  },
+  {
+   "item": "grieg_op43_no6",
+   "n": 1626,
+   "seconds": 19.001755300036166,
+   "ms_per_note": 11.686196371485957
+  },
+  {
+   "item": "grieg_op54_no4",
+   "n": 1323,
+   "seconds": 15.479233200021554,
+   "ms_per_note": 11.7001006802884
+  },
+  {
+   "item": "haydn_hobxvi34",
+   "n": 3001,
+   "seconds": 35.82097290002275,
+   "ms_per_note": 11.936345518168196
+  },
+  {
+   "item": "haydn_hobxvi34_mv1",
+   "n": 1652,
+   "seconds": 19.32497510005487,
+   "ms_per_note": 11.697926816013844
+  },
+  {
+   "item": "kuhlau_op20_no1_mv1",
+   "n": 1070,
+   "seconds": 12.315199100004975,
+   "ms_per_note": 11.509531869163528
+  },
+  {
+   "item": "kuhlau_op20_no1_mv2",
+   "n": 252,
+   "seconds": 2.4650505000026897,
+   "ms_per_note": 9.781946428582101
+  },
+  {
+   "item": "liszt_s169",
+   "n": 896,
+   "seconds": 10.233488600002602,
+   "ms_per_note": 11.421304241074333
+  },
+  {
+   "item": "liszt_s254",
+   "n": 3002,
+   "seconds": 35.60652780003147,
+   "ms_per_note": 11.860935309803954
+  },
+  {
+   "item": "liszt_s434",
+   "n": 3001,
+   "seconds": 35.56216019997373,
+   "ms_per_note": 11.850103365536066
+  },
+  {
+   "item": "mendelssohn_op14",
+   "n": 3001,
+   "seconds": 35.61147760000313,
+   "ms_per_note": 11.866537020994045
+  },
+  {
+   "item": "mendelssohn_op19_no2",
+   "n": 863,
+   "seconds": 9.820065100037027,
+   "ms_per_note": 11.37898621093514
+  },
+  {
+   "item": "mendelssohn_op19_no4",
+   "n": 581,
+   "seconds": 6.438519100018311,
+   "ms_per_note": 11.081788468189865
+  },
+  {
+   "item": "mendelssohn_op30_no3",
+   "n": 440,
+   "seconds": 4.748860799998511,
+   "ms_per_note": 10.792865454542069
+  },
+  {
+   "item": "mendelssohn_op30_no6",
+   "n": 824,
+   "seconds": 9.373449400009122,
+   "ms_per_note": 11.375545388360585
+  },
+  {
+   "item": "mendelssohn_op38_no2",
+   "n": 1208,
+   "seconds": 13.98941029998241,
+   "ms_per_note": 11.580637665548352
+  },
+  {
+   "item": "mendelssohn_op38_no6",
+   "n": 1165,
+   "seconds": 13.534664699982386,
+   "ms_per_note": 11.617737939899044
+  },
+  {
+   "item": "mendelssohn_op53_no3",
+   "n": 2217,
+   "seconds": 26.204136199958157,
+   "ms_per_note": 11.819637437960377
+  },
+  {
+   "item": "mozart_k494",
+   "n": 2688,
+   "seconds": 31.858376000018325,
+   "ms_per_note": 11.852074404768722
+  },
+  {
+   "item": "mozart_k545",
+   "n": 3001,
+   "seconds": 35.67667049996089,
+   "ms_per_note": 11.888260746404828
+  },
+  {
+   "item": "mozart_k545_mv1",
+   "n": 1366,
+   "seconds": 15.912453899974935,
+   "ms_per_note": 11.648941361621475
+  },
+  {
+   "item": "mozart_k545_mv2",
+   "n": 1326,
+   "seconds": 15.42179860000033,
+   "ms_per_note": 11.630315686274757
+  },
+  {
+   "item": "mozart_k545_mv3",
+   "n": 960,
+   "seconds": 11.029967900016345,
+   "ms_per_note": 11.48954989585036
+  },
+  {
+   "item": "pianocore_Bach__Johann_Sebastian_Notebook_for_Anna_Magdalena_Bach__Book_2__BWV_Anh.113-132_36._Minuet_in_D_minor__BWV_Anh.132",
+   "n": 240,
+   "seconds": 2.3593633999698795,
+   "ms_per_note": 9.83068083320783
+  },
+  {
+   "item": "pianocore_Bart\u00f3k__B\u00e9la_Romanian_Folk_Dances__Sz.56",
+   "n": 2057,
+   "seconds": 24.288502799987327,
+   "ms_per_note": 11.807731064651106
+  },
+  {
+   "item": "pianocore_Chopin__Fr\u00e9d\u00e9ric_Largo_in_E_flat_major__B.109",
+   "n": 451,
+   "seconds": 4.882521799998358,
+   "ms_per_note": 10.825990687357779
+  },
+  {
+   "item": "pianocore_Chopin__Fr\u00e9d\u00e9ric_Nocturnes__Op.15_Nocturne_No.6_in_G_minor__Lento",
+   "n": 1095,
+   "seconds": 12.76068510004552,
+   "ms_per_note": 11.653593698671708
+  },
+  {
+   "item": "pianocore_Chopin__Fr\u00e9d\u00e9ric_Waltzes__Op.34_Waltz_No.2_in_A_flat_major___Valse_brillante___Vivace",
+   "n": 3002,
+   "seconds": 35.635458300006576,
+   "ms_per_note": 11.870572385078805
+  },
+  {
+   "item": "pianocore_Chopin__Fr\u00e9d\u00e9ric_Waltzes__Op.64_Waltz_No.8_in_A_flat_major__Moderato",
+   "n": 1936,
+   "seconds": 22.7526107999729,
+   "ms_per_note": 11.752381611556249
+  },
+  {
+   "item": "pianocore_Chopin__Fr\u00e9d\u00e9ric_Waltzes__Op.70_Waltz_No.11_in_G_flat_major__Molto_vivace",
+   "n": 1376,
+   "seconds": 15.99723909999011,
+   "ms_per_note": 11.625900508713743
+  },
+  {
+   "item": "pianocore_Chopin__Fr\u00e9d\u00e9ric_Waltzes__Op.70_Waltz_No.13_in_D_flat_major__Moderato",
+   "n": 1514,
+   "seconds": 17.687537399993744,
+   "ms_per_note": 11.68265350065637
+  },
+  {
+   "item": "pianocore_Mascagni__Pietro_Cavalleria_rusticana",
+   "n": 772,
+   "seconds": 8.75637989997631,
+   "ms_per_note": 11.342461010332007
+  },
+  {
+   "item": "pianocore_Pieczonka__Albert_Danses_de_salon_1._Tarantelle",
+   "n": 1609,
+   "seconds": 18.829231700045057,
+   "ms_per_note": 11.702443567461192
+  },
+  {
+   "item": "pianocore_Satie__Erik_Je_te_veux",
+   "n": 2038,
+   "seconds": 24.026891399989836,
+   "ms_per_note": 11.789446221781077
+  },
+  {
+   "item": "scarlatti_k1",
+   "n": 1474,
+   "seconds": 17.144350000016857,
+   "ms_per_note": 11.631173677080636
+  },
+  {
+   "item": "scarlatti_k141",
+   "n": 3000,
+   "seconds": 35.531187499989755,
+   "ms_per_note": 11.843729166663252
+  },
+  {
+   "item": "scarlatti_k32",
+   "n": 334,
+   "seconds": 3.4736090999795124,
+   "ms_per_note": 10.400027245447642
+  },
+  {
+   "item": "scarlatti_k380",
+   "n": 1139,
+   "seconds": 13.148573899990879,
+   "ms_per_note": 11.543963037744406
+  },
+  {
+   "item": "scarlatti_k9",
+   "n": 1326,
+   "seconds": 15.353900199988857,
+   "ms_per_note": 11.579110256401853
+  },
+  {
+   "item": "schubert_d817",
+   "n": 1815,
+   "seconds": 21.463456300029065,
+   "ms_per_note": 11.825595757591772
+  },
+  {
+   "item": "scriabin_op19",
+   "n": 3000,
+   "seconds": 35.70356290001655,
+   "ms_per_note": 11.90118763333885
+  },
+  {
+   "item": "tchaikovsky_op37a_no11",
+   "n": 1846,
+   "seconds": 21.80749229999492,
+   "ms_per_note": 11.813376110506457
+  },
+  {
+   "item": "tchaikovsky_op37a_no9",
+   "n": 2219,
+   "seconds": 26.22018130001379,
+   "ms_per_note": 11.816215096896707
+  },
+  {
+   "item": "tchaikovsky_op72_no5",
+   "n": 1685,
+   "seconds": 19.782317399978638,
+   "ms_per_note": 11.740247715120853
+  }
+ ]
+}

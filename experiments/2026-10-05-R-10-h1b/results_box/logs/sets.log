@@ -1,0 +1,131 @@
+{
+ "args": {
+  "pieces": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/pieces/fresh_pieces.csv",
+  "pianocore": "C:/Users/Vuduc/r07/data/pianocore",
+  "out": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/sets/fresh",
+  "cap": 50,
+  "min_match": 0.8,
+  "max_notes": 3000,
+  "workers": 8,
+  "limit": 0,
+  "work_col": "work",
+  "r07_cap_rule": false
+ },
+ "seconds": 54.0,
+ "pieces_listed": 65,
+ "pieces_with_items": 65,
+ "rows_selected": 1975,
+ "renditions": 1895,
+ "renditions_per_piece": {
+  "min": 14,
+  "median": 28.0,
+  "max": 49
+ },
+ "excluded": {
+  "match_share": 80
+ },
+ "by_capture_model": {
+  "Aria-AMT": 1745,
+  "Transkun V2": 86,
+  "ATEPP": 51,
+  "ByteDance": 13
+ },
+ "digest": {
+  "items": {
+   "n": 1895,
+   "sha256": "890e3528023d97cfa5b0d59b4ac312a4a1a5ee36d7db6dc0b292da4c21450478"
+  },
+  "gen_items": {
+   "n": 65,
+   "sha256": "69e0f678f4997f3488ed1a43424a70b8c9b19f2a59618a8e37c7bcfd7db0b117"
+  }
+ }
+}
+fresh set digest MATCHES the Mac pre-registration copy
+{
+ "args": {
+  "pieces": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/dev_pieces_r10u.csv",
+  "pianocore": "C:/Users/Vuduc/r07/data/pianocore",
+  "out": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/sets/r10u_dev",
+  "cap": 50,
+  "min_match": 0.8,
+  "max_notes": 3000,
+  "workers": 8,
+  "limit": 0,
+  "work_col": "work",
+  "r07_cap_rule": false
+ },
+ "seconds": 86.4,
+ "pieces_listed": 106,
+ "pieces_with_items": 91,
+ "rows_selected": 4322,
+ "renditions": 4059,
+ "renditions_per_piece": {
+  "min": 3,
+  "median": 49.0,
+  "max": 50
+ },
+ "excluded": {
+  "match_share": 263
+ },
+ "by_capture_model": {
+  "Aria-AMT": 3777,
+  "Transkun V2": 219,
+  "ATEPP": 54,
+  "ByteDance": 9
+ },
+ "digest": {
+  "items": {
+   "n": 4059,
+   "sha256": "20bdcb0ddc34c57fe7bd96a47f17340c617c80665f122497ffb7ee7305de724b"
+  },
+  "gen_items": {
+   "n": 91,
+   "sha256": "164eec660ec9308099c49bd7b3a412e7e2af52757082c2228d8749c61780e819"
+  }
+ }
+}
+{
+ "args": {
+  "pieces": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/dev_pieces_r10s.csv",
+  "pianocore": "C:/Users/Vuduc/r07/data/pianocore",
+  "out": "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/sets/r10s_dev",
+  "cap": 50,
+  "min_match": 0.8,
+  "max_notes": 3000,
+  "workers": 8,
+  "limit": 0,
+  "work_col": "work",
+  "r07_cap_rule": false
+ },
+ "seconds": 47.3,
+ "pieces_listed": 64,
+ "pieces_with_items": 48,
+ "rows_selected": 2013,
+ "renditions": 1931,
+ "renditions_per_piece": {
+  "min": 8,
+  "median": 49.0,
+  "max": 50
+ },
+ "excluded": {
+  "match_share": 82
+ },
+ "by_capture_model": {
+  "Aria-AMT": 1488,
+  "Transkun V2": 309,
+  "ATEPP": 134
+ },
+ "digest": {
+  "items": {
+   "n": 1931,
+   "sha256": "dcb549600a0d33bb541d27e9c10af771b084fdff62f7ef41b78d5dc3ce9011d7"
+  },
+  "gen_items": {
+   "n": 48,
+   "sha256": "6eb3944afe91213b294705ca355c23aef4114bbb9bd3d3a4daf05fb710e12a58"
+  }
+ }
+}
+R4: r10u_dev digest MATCHES the Mac reference
+R4: r10s_dev digest MATCHES the Mac reference

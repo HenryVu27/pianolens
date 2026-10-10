@@ -442,10 +442,11 @@ Sizes: **S** ≤ half a day of agent work, **M** ≤ 2 days, **L** longer.
   `src/pianolens/models/expression_data.py`, `tests/models/`.
 - **R-10 H1b: score-conditioned predictability of expert expression** (L). blocked_by: R-06, R-02 audit, R-07 (all done).
   owner: ml-researcher. status: pre-registered 2026-10-05, job prepared and dry-run on the Mac;
-  status 2026-10-06: done, verdict Confirmed with caveats (scoped): H1b falsified for frozen SyMuPe (DECISIONS 2026-10-06); author text fixes in progress; gen_pt / dev_gen secondary still on the box.
-  RUNNING on the RTX 5080 box since 2026-10-06. Default stages DONE 02:32 UTC (provisional, not
-  audited: H1b-consensus falsified on velocity and log IOI; H1b-axes inconclusive; results in
-  `results_box/`). gen_pt and dev_gen still running; the box pushes again when done. Next: eval-auditor. Was: waiting for the RTX 5080 run (`experiments/2026-10-05-R-10-h1b/job/`). Model: frozen SyMuPe;
+  status 2026-10-06: done, verdict Confirmed with caveats (scoped): H1b falsified for frozen SyMuPe (DECISIONS 2026-10-06); author text fixes in progress.
+  status 2026-10-10: box run COMPLETE (gen_pt and dev_gen finished 06:24 UTC after a pause and a
+  reboot; 0 errors; headline unchanged). Secondary outputs and box logs in `results_box/`; run
+  record entry added. Open: post-audit correction 6 (author reports the gen_pt / dev_gen columns).
+  Model: frozen SyMuPe;
   metric and fresh-piece design fixed in DECISIONS 2026-10-05 (R-07 after audit).
   paths: `experiments/2026-10-05-R-10-h1b/`.
   - Pre-register.

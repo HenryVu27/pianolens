@@ -1,0 +1,21 @@
+{
+ "n_notes": {
+  "velocity": 209446,
+  "log_ioi": 208954
+ },
+ "alpha": {
+  "velocity": 1000.0,
+  "log_ioi": 1.0
+ },
+ "cv_r": {
+  "velocity": 0.516289792655893,
+  "log_ioi": 0.1668203663530956
+ },
+ "n_pieces": 138,
+ "n_works": 97,
+ "sets": [
+  "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/sets/r10u_dev",
+  "C:/Personal/pianolens/experiments/2026-10-05-R-10-h1b/job/outputs/sets/r10s_dev"
+ ]
+}
+R4: ridge MATCHES the Mac reference

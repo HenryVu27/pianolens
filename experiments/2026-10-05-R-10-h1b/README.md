@@ -444,6 +444,38 @@ Work: 74,262 score notes in the 65 fresh generation items; 131,674 in the R10u d
   - Post-audit (2026-10-06): the headline above, the `results_box/` logs line and the amendment
     hash command are corrected in `## Post-audit corrections (2026-10-06)` at the end of this
     file. The lines above are left as written.
+- **2026-10-10, RTX 5080 box, lead session: secondary stages complete (ALL DONE).**
+  - Timeline: `gen_pt` started 02:32:11 UTC 2026-10-06 and was paused (processes suspended) at
+    Henry's request at 03:13:46 UTC (11 of 65 items counted at the last check before the pause; 12
+    on disk at the restart). The box rebooted at 15:09 UTC 2026-10-06, which killed the suspended job. On Henry's
+    request the remaining stages were restarted at 04:36:57 UTC 2026-10-10 with the same `run.sh`
+    (`STAGES="gen_pt summarize"`, then `STAGES="dev_gen summarize"`); finished items were skipped,
+    so only the item in progress at the pause was regenerated. `gen_pt` exit 0 at 05:53:10 UTC,
+    `dev_gen` exit 0 at 06:24:34 UTC. Pre-registration hash re-checked: unchanged.
+  - Generation: pt_frozen_p100 65 / 65 fresh items, frozen_p100 91 / 91 R10u dev items; 0 errors
+    in every `_log_gen.json`; no tracebacks or out-of-memory errors in the logs.
+  - **Headline unchanged** (`results/fresh/summary.json`; the primary reading is the one audited
+    2026-10-06, the secondary numbers below are not audited): "H1b-consensus
+    (frozen_p95, registered): velocity falsified, log IOI falsified. H1b-axes (frozen_p100,
+    registered): inconclusive". Primary numbers identical to the 2026-10-06 entry: velocity
+    0.150 [0.022, 0.283], log IOI 0.073 [0.032, 0.180]; H1b-axes 0.437 [0.383, 0.610] (12 pieces).
+  - Pianist Transformer (frozen, top-p 1.0; secondary, not deciding), 56 primary pieces: median
+    R²c velocity 0.061 [−0.127, 0.273], log IOI −0.045 [−0.176, 0.078]; axes ratio 0.467
+    [0.369, 0.655] (12 pieces). Paired: frozen_p95 − pt_frozen velocity −0.018 [−0.101, 0.110],
+    log IOI +0.078 [−0.056, 0.197]; pt_frozen − ridge velocity −0.125 [−0.260, −0.020], log IOI
+    −0.098 [−0.220, 0.059]. Shape and amplitude: r velocity 0.650 [0.569, 0.701], b 1.073
+    [1.017, 1.157]; r log IOI 0.391 [0.316, 0.492], b 0.830 [0.676, 0.939].
+  - Development (R10u, frozen SyMuPe top-p 1.0, `dev_gen`; not deciding): 85 primary pieces,
+    R²c velocity 0.324 [0.254, 0.445], log IOI −0.173 [−0.304, −0.061]; axes ratio 0.347
+    [0.309, 0.384] (79 pieces); r velocity 0.679 [0.620, 0.704], b 0.974 [0.935, 1.016]; r log
+    IOI 0.524 [0.479, 0.555], b 1.124 [1.015, 1.238]. Without the R3 overlap pieces (80 primary): velocity 0.324
+    [0.254, 0.445], log IOI −0.182 [−0.336, −0.062]; axes 0.347 [0.309, 0.384] (75 pieces).
+  - `results_box/` refreshed (fresh and fresh_as_registered now include the pt_frozen arm; new
+    r10u_dev and r10u_dev_no_overlap). Box run logs added under `results_box/logs/` (`*.log` is
+    gitignored, so they are force-added; this answers post-audit correction 3), and the
+    per-item generation logs under `results_box/gen_logs/`. Generated samples and ridge weights
+    stay on the box. Post-audit correction 6 (r / b / R²c-at-b = 1 columns for these arms) is
+    left to the author; r and b above are read from `summary.json`.
 
 ## Pre-run amendments (2026-10-05, after the eval-auditor pre-run review, PRERUN_REVIEW.md)
 
