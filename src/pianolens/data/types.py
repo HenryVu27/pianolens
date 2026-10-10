@@ -36,6 +36,7 @@ import pandas as pd
 __all__ = [
     "ALIGNMENT_DTYPE",
     "ALIGNMENT_LABELS",
+    "HAND_LABEL_DTYPE",
     "MEASURE_DTYPE",
     "PEDAL_DTYPE",
     "PERFORMANCE_NOTE_FIELDS",
@@ -114,6 +115,12 @@ ALIGNMENT_LABELS: tuple[str, ...] = ("match", "interpolated", "insertion", "dele
 * ``insertion``: a performed note with no score note (extra note).
 * ``deletion``: a score note with no performed note (missed note).
 """
+
+HAND_LABEL_DTYPE = np.dtype([("id", "U64"), ("hand", "U1"), ("finger", "i1")])
+"""Per-note hand (and finger) labels for a performance, one row per ``Performance.notes`` row
+and in the same order. ``id`` is the performance note id. ``hand`` is ``"L"``, ``"R"`` or
+``""`` (no label). ``finger`` is 1 (thumb) to 5 (little finger) within that hand, or 0 (no
+label). Producers document where the labels come from (video model or manual)."""
 
 _PEDAL_NUMBERS = (64, 66, 67)
 

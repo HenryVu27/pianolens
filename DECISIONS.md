@@ -633,3 +633,11 @@ Append only. Each entry records the date, the decision, the reason, and who deci
       leave-composer-out design.
     - Any captured-share statistic must report an envelope-surrogate sampler floor.
     (Adopted by the lead 2026-10-06 as proposed in the R-10 Audit section 12. The CLAUDE.md wording is a proposal to Henry, not applied.)
+- **2026-10-10, lead: BL-24 PianoVAM hand labels.** Accepted `HAND_LABEL_DTYPE` in
+  `data/types.py` as a shared contract (any future hand-labelled source returns it). PianoVAM
+  piece ids stay `pianovam:`-prefixed for now; switching the 29 title-exact recordings to
+  canonical ids waits until the BL-19 validation aligns them to their scores (title matches are
+  not alignment). The BL-19 proxy validation is opened as BL-19b (pre-registered, feature-engineer,
+  wave 2), scoped by the data-engineer's list: take splitting, alignment to the score, the 15
+  ambiguous movements resolved or excluded, a `Noinfo` policy (up to 48% on some pieces), the
+  0.8% video-label hand error as a noise floor, and the engraver-hand-mark recall check.

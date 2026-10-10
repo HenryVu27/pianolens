@@ -13,7 +13,8 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [dcml_jc_bach.md](dcml_jc_bach.md) — DCML jc_bach: TSV-built label-free Part, unfold via `next`, ms3 traps, counts (D-12)
 - [dcml_romantic.md](dcml_romantic.md) — shared `data/dcml.py`, 5 Romantic corpora: spanners, text markup, gap ties, ms3 unfold bugs (D-13)
 - [rach3_takes_bl16.md](rach3_takes_bl16.md) — Hanon book structure, take-splitting DP, p3 asynchrony, no same-day beginner takes, BL-16 numbers
+- [pianovam_hands.md](pianovam_hands.md) — BL-24 hand labels: chord row order != notes (match pitch+onset), counts, Noinfo, catalogue candidates
 - [skypiano.md](skypiano.md) — SKY-Piano not released, license unclear; where to re-check (D-09, BL-11)
 - types.py contract lives in `src/pianolens/data/types.py`; builders `performance_from_partitura`,
   `score_from_partitura` are the only sanctioned way to wrap partitura objects. D-07 added
-  `BeatCurve`, `ALIGNMENT_LABELS`, `Alignment.interpolated` / `.paired`.
+  `BeatCurve`, `ALIGNMENT_LABELS`, `Alignment.interpolated` / `.paired`; BL-24 added `HAND_LABEL_DTYPE`.
