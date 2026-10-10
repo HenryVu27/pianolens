@@ -441,6 +441,54 @@ Run 1, started 2026-09-29 by a lead session on Henry's RTX 5080 box.
   (`job/outputs/`: per-item scores, generations, token shards, checkpoints) stay local on the RTX
   5080 box and are not in git (license and size).
 
+### Corrections and additions after the audits (ml-researcher, 2026-10-10)
+
+The entries above are left as written at the time. These lines correct or extend them; the
+audited readings are in the two audit sections below.
+
+- **Sampling setting: top-p 0.95, not 1.0** (DECISIONS 2026-10-05, "R-10 pre-registered; SyMuPe
+  sampling trap"). SyMuPe EncDec-base ignores `perform_score(lm_top_p=...)` and samples at its
+  default top-p 0.95, so every SyMuPe sample in this run (frozen and E, on every set) was drawn at
+  0.95. That includes the S-TYP reference samples (`typset`, K = 16), which the pre-registration
+  specifies at top-p 1.0. S-TYP failed, so its reading stands. The captured shares in (b) were
+  also measured at 0.95, which narrows the sample spread they depend on.
+- **Reproduction gate.** "Missed by 0.001" above should read: missed, 0.3987 vs R-06's unrounded
+  0.3882 (+0.0105 against a 0.01 tolerance; AUDIT.md section 3).
+- **H1b preview.** "At the H1b falsification level" above should read: **uninformative for H1b**;
+  the captured share's held-out expert ceiling is about 0.25 (AUDIT.md section 4; DECISIONS
+  2026-10-05). The 74 pre-registered unseen pieces (5 of them with paired content inside
+  whole-set ids) are the headline and the 7 PERiScoPe-paired pieces are reported separately in
+  REPORT section 4b.
+- **pt_E − pt_frozen script.** The box script that wrote `results/pt_E_vs_pt_frozen*.json` was
+  not committed. `pair_ci.py` replaces it: it recomputes the paired difference with
+  `job/summarize_eval.py`'s own `boot_ci` and `t_interval` from `results/<set>/a_per_rendition.csv`
+  and asserts equality with the committed JSONs. Run on the Mac on 2026-10-10
+  (`uv run python experiments/2026-09-28-R-07-symupe-finetune/pair_ci.py`, 40 s): all three files
+  equal, parsed values and bytes.
+- **Exploratory, post hoc: (a) by transcriber on R10u and R10s** (not pre-registered; AUDIT.md
+  section 8). R10 rows joined to PianoCoRe `metadata.csv` by performance id; paired composite
+  difference within each capture model with the summariser's `boot_ci` (two-way passage x
+  performer bootstrap, 2,000 resamples, seed 0, unweighted mean over works). Command:
+  `uv run python experiments/2026-09-28-R-07-symupe-finetune/posthoc_tables.py transcriber`.
+  The E − frozen values equal AUDIT.md section 8.
+
+  | Set | Capture model | n renditions (works) | E − frozen [95% CI] | pt_E − pt_frozen [95% CI] |
+  |---|---|---|---|---|
+  | R10u | Aria-AMT | 3,540 (74) | +0.044 [+0.031, +0.055] | +0.103 [+0.092, +0.117] |
+  | R10u | Transkun V2 | 204 (56) | −0.012 [−0.027, +0.004] | +0.048 [+0.031, +0.069] |
+  | R10u | ATEPP | 54 (25) | −0.014 [−0.036, +0.014] | +0.071 [+0.045, +0.123] |
+  | R10u | ByteDance | 10 (10) | +0.049 [+0.019, +0.082] | +0.107 [+0.058, +0.161] |
+  | R10s | Aria-AMT | 1,382 (24) | +0.019 [+0.001, +0.028] | +0.069 [+0.047, +0.094] |
+  | R10s | Transkun V2 | 297 (23) | −0.061 [−0.081, −0.027] | +0.020 [−0.003, +0.044] |
+  | R10s | ATEPP | 133 (15) | −0.051 [−0.076, −0.012] | +0.011 [−0.005, +0.054] |
+
+  E's training rows were 77% Aria-AMT (AUDIT.md section 8). E's R10u gain sits in the Aria-AMT
+  stratum and is absent on the same set's Transkun V2 and ATEPP renditions; on R10s those two are
+  negative. That fits adaptation to the dominant corpus or transcriber, not to expert expression.
+  Transcriber and corpus are confounded (Aria-AMT = Aria-MIDI, Transkun V2 = PERiScoPe), so the
+  two cannot be separated here. ByteDance (10 renditions, one per work) is too small to read.
+  pt_E's point estimate is positive in every stratum.
+
 ## Audit (2026-10-05, eval-auditor)
 
 **Verdict: Confirmed with caveats.** Every pre-registered reading follows from the outputs, and

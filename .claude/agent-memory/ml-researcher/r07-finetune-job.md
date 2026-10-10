@@ -1,7 +1,9 @@
 # R-07 fine-tune job prep (2026-09-28)
 
 Folder: `experiments/2026-09-28-R-07-symupe-finetune/` (README = pre-registration; first 300 lines
-hashed: artifacts/prereg_sha256.txt `17dfca04...083b`). Status: prepared, not run (O-03).
+hashed: artifacts/prereg_sha256.txt `17dfca04...083b`). Status (2026-10-10): run on the box
+2026-09-29..10-05, two audits (box section in README + Mac AUDIT.md), Confirmed with caveats;
+all author fixes closed 2026-10-10 (see "Post-audit state" below).
 
 ## Split (committed `split/pieces.csv`, sha256 3341bfa5...86; `make_split.py`, seed 20260928)
 - Unit = work (`expression_split.work_key`: strips _mvN / _prelude / _fugue; pianocore multi-movement
@@ -42,3 +44,15 @@ own conditioning, S-DEV = composite r with flat targets scored 0. Battery = expr
 Pass = R1 (7 deadpan variants: AUC>=.75, CI lb>.5, per-work >=.5 on P) + R2 (jitT20/40, jitV8/16)
 + R3 (point AUC>=.75 on V). R1+R3 without R2 = flatness detector only.
 - 2026-10-05 (R-10 dry run): the S-TYP "top-p 1.0" typset samples were really top-p 0.95, because SyMuPe EncDec ignores `lm_top_p` (see library-gotchas). Reported to the lead.
+
+## Post-audit state (2026-10-10)
+- REPORT sections 4/5/Gaps rewritten final; my corrections tagged "[author fix 2026-10-10]",
+  box-audit ones "[audit 2026-10-05]". Regenerate html with scripts/build_research_log.py (3 args).
+- `pair_ci.py` rebuilds results/pt_E_vs_pt_frozen*.json byte-identical from a_per_rendition.csv
+  (imports job/summarize_eval.py via sys.path; 40 s). Reusable `pair(A, arm, base)`.
+- `posthoc_tables.py`: per-capture-model paired CIs (stem suffix PianoCoRe_NNNNNN -> metadata.csv
+  `id` -> capture_model; R10u also has 10 ByteDance renditions the audit omitted) and R10u H1b
+  medians by group (unseen = r02 & not paired; paired = n_periscope_paired>0 | periscope_possible).
+- README run-record additions go in a subsection *above* `## Audit`, never inside it; check
+  `git diff` shows only '+' lines and re-hash head -n 300.
+- Readings to quote: (b) is "uninformative for H1b" (lead reconciliation), not "falsification level".

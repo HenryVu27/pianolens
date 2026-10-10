@@ -1,6 +1,6 @@
 # R-07 report: fine-tuning SyMuPe (and Pianist Transformer) on piece-disjoint PianoCoRe
 
-Written 2026-09-29, about 22:10 UTC (17:10 local), while the job was still running. This is a readable companion to `README.md`, which holds the pre-registration and the lead's run record. **Audited 2026-10-05 by `eval-auditor`: Confirmed with caveats** (details in README `## Audit`; the key caveats are summarised in the "Audit verdict" section at the end). Every number cites the file it came from, and paths are relative to this folder unless they start with `C:\`. Section 4b (added later) has the first evaluation results, for set P; they are provisional and not audited.
+First written 2026-09-29, about 22:10 UTC (17:10 local), while the job was still running; evaluation results were added in section 4b as they arrived (2026-09-30 to 2026-10-05). **Run complete 2026-10-05 08:29 UTC. Audited 2026-10-05 by `eval-auditor` twice (on the RTX box with the full outputs, and on the Mac with the committed statistics): Confirmed with caveats** (README `## Audit`, `## Second audit` and `AUDIT.md`; the key caveats are summarised in the "Audit verdict" section at the end). [author fix 2026-10-10] Sections 4 and 5 and "Gaps" were rewritten to the final state, and the section 4b readings that the audits corrected (reproduction-gate wording, the H1b reading, the S-LR wording) are marked "[author fix 2026-10-10]"; corrections marked "[audit 2026-10-05]" are the box audit's and are kept as written. This is a readable companion to `README.md`, which holds the pre-registration and the lead's run record. Every number cites the file it came from, and paths are relative to this folder unless they start with `C:\`.
 
 ---
 
@@ -166,13 +166,15 @@ Times are UTC, taken from `run.sh` stamps in the logs under `C:\Users\Vuduc\r07\
 | 12 | from 21:21 | eval: frozen, pt_frozen | Started while E trained. These arms do not depend on E, and the rules were fixed beforehand (run record). | - |
 | 13 | ~21:49-22:06 | `tokenize_flat`, train F | Same 636 / 9 skipped items as E. Ran to the 5,000-step cap. | - |
 | 14 | 22:07 | `calibrate_pt` | 3.14 s per step, peak 8.32 GB, projected 6.98 h for 8,000 steps. Measured while the frozen evaluation shared the GPU, so it is an upper bound (run record). | - |
-| 15 | from 22:08 | train pt_E; eval E, F | Running when this was written. | - |
+| 15 | from 22:08 | train pt_E; eval E, F | Running when this table was written. [author fix 2026-10-10] All stages later completed; the interruption, pauses, restarts and the pt_E R10u out-of-memory retry are in section 4 below and in the README run record. | - |
 
 The run record confirms that the changes are platform fixes only: the recipe, split, selection and decision rules did not change. The diff hash at launch is `c71b7d83be77...`. `git diff --stat` shows exactly these files: `job/eval.sh`, `job/run.sh`, `job/setup.sh`, `src/pianolens/data/pianocore.py`, and the README run record. `job/fetch_data.sh` appears as modified in `git status`, but only its line endings differ.
 
 ---
 
-## 4. Results so far (training only; no evaluation results yet)
+## 4. Training, data and cost (final)
+
+[author fix 2026-10-10] This section was titled "Results so far (training only; no evaluation results yet)" and was written while pt_E was at step 1. It now gives the final state of every training run. The evaluation results are in section 4b.
 
 ### Data (`job/outputs/data/prep_meta.json`, `leakage_report.json`)
 
@@ -207,9 +209,11 @@ Tokenization:
 | SyMuPe (E, F) | `job/outputs/calibrate/calibrate.json` | 0.150 (25 timed) | 64 × 256 notes | 2.77 GB | 1.25 h for 30,000 |
 | Pianist Transformer | `job/outputs/calibrate_pt/calibrate.json` | 3.14 | 32 × 4,096 tokens | 8.32 GB | 6.98 h for 8,000 |
 
-Actual wall time:
-- **E** ran 21:15-21:47 UTC, about 32 min for 11,000 steps.
-- **F** ran 21:49-22:06 UTC, about 17 min for 5,000 steps.
+Actual wall time (README run record):
+- **E** ran 21:15-21:47 UTC 2026-09-29, about 32 min for 11,000 steps.
+- **F** ran 21:49-22:06 UTC 2026-09-29, about 17 min for 5,000 steps.
+- **pt_E** ran in two parts. Steps 0-1,500: 22:08 UTC 2026-09-29 to about 00:01 UTC 2026-09-30, at about 7.2 s per step while it shared the GPU with two evaluations; it was then stopped deliberately after a low-RAM interruption (`last.pt` = `best.pt` = step 1,500). Steps 1,500-8,000: resumed 04:30 UTC 2026-10-01 from `last.pt`, finished 09:40 UTC (about 5.2 h for 6,500 steps; 2.78 s per step at step 1,525), peak 8.33 GB, again sharing the GPU with the evaluation driver. The 8,000-step cap was reached, as calibration projected; it fits in 16 GB without the fallbacks.
+- **Evaluation** of all five arms on all five sets ran from 21:21 UTC 2026-09-29 to 08:29 UTC 2026-10-05. That span includes sleep events, owner-requested pauses and a stop, and runs that shared the GPU with each other and with the desktop, so it is not a cost figure. The per-item outputs are complete (box audit section 8).
 
 Summing the logged `sec_per_step` gives about 1,923 s for E and 988 s for F. Logged peak memory was 2.79 GB for both (`train_log.jsonl`, `max_mem_gb`). Both fit easily in 16 GB without the fallbacks, and no cloud GPU was needed.
 
@@ -239,7 +243,7 @@ Summing the logged `sec_per_step` gives about 1,923 s for E and 988 s for F. Log
 - Final state (`job/outputs/logs/train.log`): step 11,000, `stopped_early: true`, best 2.43952. `best.pt` holds the **step-9,000** weights.
 - Almost all of the gain comes in the first 1,000 steps: 3.2450 → 2.4675. Steps 1,000 to 9,000 add only 0.028. By field, the largest drop from step 0 is in Velocity (3.168 → 1.802). Why has not been investigated, and this report draws no conclusion from it.
 - The training loss (about 2.1-2.4 after warmup) stays below the validation loss throughout. The two use different window sampling (random starts vs windows from the start of each item) and different pieces, so the gap is not a clean measure of overfitting.
-- **"Minimum for use downstream", validation-loss half:** the best validation loss (2.4395) is below step 0 (3.2450), so this condition **holds** (the run record says the same). The other half, the reading of (a) on P, is still pending.
+- **"Minimum for use downstream", validation-loss half:** the best validation loss (2.4395) is below step 0 (3.2450), so this condition **holds** (the run record says the same). The other half, the reading of (a) on P, came out **harms** (section 4b), so E is not used downstream and R-10 uses the frozen model.
 - Data exposure, derived from the numbers above: 11,000 steps × 64 windows × at most 256 notes is at most about 180 M note positions, about 2.7 passes over the 67.1 M training notes. The pre-registered cap allowed about 7 passes. This is an upper bound, because windows on short items hold fewer than 256 notes.
 
 **F: validation loss by evaluation** (`job/outputs/symupe_F/train_log.jsonl`). The validation data are flat renditions of the validation items.
@@ -262,25 +266,45 @@ Summing the logged `sec_per_step` gives about 1,923 s for E and 988 s for F. Log
 - F learns the flat durations almost exactly: the TimeDuration loss is about 0.04. Velocity and TimeShift stay around 1.97 and 1.67, which fits the injected velocity and onset noise. This is only a description; F's job is to supply ℓ_F for S-LR.
 - F's and E's losses are on different validation data (flat vs real), so they cannot be compared with each other.
 
-**pt_E** (`job/outputs/pt_E/train_log.jsonl`, `C:\Users\Vuduc\r07\logs\train_pt.log`): started 22:08:28 UTC. The step-0 (released SFT weights) validation loss is **1.6420** on 512 windows. Only step 1 had been logged when this report was written. That loss covers all 8 tokens per note (see section 2), so it is not comparable with SyMuPe's.
+**pt_E: validation loss** (`job/outputs/pt_E/train_log.jsonl`; values as given in the README run record, on 512 fixed validation windows). The loss covers all 8 tokens per note (section 2), so it is not comparable with SyMuPe's.
+
+| Step | Val loss | Note |
+|---|---|---|
+| 0 (released SFT weights) | 1.6420 | |
+| 500 | 1.0578 | |
+| 1,000 | 1.0294 | |
+| 1,500 | 1.0176 | stopped; resumed here on 2026-10-01 (one `resume` event, no duplicated steps, box audit section 8) |
+| 6,500 | 0.9786 | |
+| **8,000** | **0.9762** | best; the cap; `best.pt` = step 8,000 (dated 2026-10-01 09:39 UTC) |
+
+- Final state: step 8,000 (the cap), not stopped early (4 evaluations without a 0.1% relative improvement at the end). The run record gives only the steps above; the full curve is in the box-only `train_log.jsonl`.
+- As for E, most of the gain comes early (1.6420 → 1.0578 by step 500). After the resume the data order follows the documented resume rule (re-seeded from seed and step); weights and optimizer state are exact.
+- No evaluation output of pt_E is older than this `best.pt` (box audit section 8), so no intermediate checkpoint entered any summary.
 
 ---
 
-## 4b. First evaluation results: set P (provisional, not audited)
+## 4b. Evaluation results: P, V, A, R10u, R10s (audited 2026-10-05)
 
 Added 2026-09-30, about 01:10 UTC, from `job/outputs/results/P/summary.json`, `pass_fail.json` and
 `auc.csv`. The arms in this summary are frozen, E, F and pt_frozen (pt_E is not trained yet). These
 numbers are read with the pre-registered rules only, and **nothing here is Confirmed until
-`eval-auditor` signs it off**.
+`eval-auditor` signs it off**. [author fix 2026-10-10] The later sets were added below as they
+arrived. Both audits (2026-10-05) reproduced every number here from the committed statistics; the
+audited readings and their caveats are in the "Audit verdict" section at the end.
 
-### Reproduction gate: missed by 0.001
+### Reproduction gate: missed (0.3987 vs 0.3882, +0.0105 against a 0.01 tolerance)
+
+[author fix 2026-10-10] This heading read "missed by 0.001". R-06's unrounded P composite for
+SyMuPe is 0.3882 (AUDIT.md section 3), so the difference is +0.0105 (+0.0107 against the rounded
+0.388); the gate is missed by about 0.0005. Paired per rendition against R-06 it is +0.0105
+[−0.0001, 0.0206], mostly in log articulation (+0.032 [0.014, 0.049]).
 
 | Arm | P composite, this run [95% CI] | R-06 | Difference |
 |---|---|---|---|
 | frozen SyMuPe | 0.3987 [0.3647, 0.4314] | 0.388 | +0.011 (the gate is 0.01) |
 | frozen Pianist Transformer | 0.3948 [0.3637, 0.4264] | 0.393 | +0.002 |
 
-The frozen SyMuPe re-run misses the gate by 0.001. Under the pre-registered rule this is the first
+The frozen SyMuPe re-run misses the gate (see the correction above). Under the pre-registered rule this is the first
 finding, and (a) uses the re-run frozen numbers, with R-06's shown alongside. Known differences
 from R-06: GPU instead of CPU sampling, and evaluation items rebuilt on this machine (same counts).
 The Pianist Transformer re-run reproduces within the gate.
@@ -322,6 +346,15 @@ Paired AUC = the share of real renditions scoring above their own variant (from 
   but a perfect score on every variant, including the half-flat ones outside F's training family,
   needs checking before it is trusted (for example, how far apart the score distributions are, and
   whether one field dominates).
+  [author fix 2026-10-10] "Outside F's training family" is wrong (AUDIT.md section 5). Every R1
+  variant has a field at F's training mode: all deadpans use durations 0.95 × nominal, inside F's
+  U(0.85, 1.0) family; their velocity is the conditioning velocity; each half-flat variant's flat
+  half is in F's family on the field that differs. The audits found: −ℓ_F alone passes R1 and ℓ_E
+  alone passes R2; the trivial B-amount baseline also scores 1.000 on all 7 R1 variants; S-LR is
+  at chance against the same rendition with its expression halved (scale0.5 AUC 0.491 [0.397,
+  0.591] on P). Correct wording: **S-LR passes the deadpan and jitter battery; R1 is matched by the
+  amount-of-expression baseline; it is at chance against halved expression; it is not tested
+  against non-flat wrong expression.** It is used nowhere (DECISIONS 2026-10-05).
 - **S-DEV** separates deadpans but misses timing jitter, the same pattern as the trivial B-amount
   baseline. If R3 holds it would be a "flatness detector only".
 - **S-TYP** fails R1 (half_flat_velocity AUC 0.236). **S-RAW** fails R1 again, as in R-06.
@@ -349,6 +382,8 @@ Paired AUC = the share of real renditions scoring above their own variant (from 
 The audit flag on S-LR stands and grows: it separates every deadpan variant perfectly on both P and
 V. That is what a working likelihood-ratio score should do against flat playing, but perfection on
 every variant (including ones outside F's training family) must be checked before S-LR is used.
+[author fix 2026-10-10] No R1 variant is outside F's training family; see the correction under
+"(c) Typicality scores" above.
 
 **(a) on V (secondary, not deciding):** frozen 0.644, E 0.546, E − frozen **−0.098 [−0.135,
 −0.063]** (whole CI below 0; every one of the 4 excerpts lower: −0.154, −0.113, −0.050, −0.076).
@@ -370,7 +405,9 @@ The pre-registered secondary comparison is pt_E against pt_frozen. `summarize_ev
 differences only against the frozen SyMuPe arm, so pt_E − pt_frozen was computed afterwards with
 the script's own `boot_ci` (two-way passage x performer bootstrap, 2,000 resamples, seed 0) and
 `t_interval`, from the same `a_per_rendition.csv` (`results/pt_E_vs_pt_frozen.json`). No other
-statistic was added.
+statistic was added. [author fix 2026-10-10] The box script that wrote these JSONs was not committed;
+`pair_ci.py` in this folder replaces it and reproduces all three `results/pt_E_vs_pt_frozen*.json`
+byte for byte from the committed `results/<set>/a_per_rendition.csv`.
 
 | Set | pt_frozen | pt_E | **pt_E − pt_frozen [95% CI]** | Reading |
 |---|---|---|---|---|
@@ -414,6 +451,33 @@ Median k = 6 shared components; split-half reliability 0.98 for both targets.
   subspace (about 8×) but far below the 0.50 bar. The frozen model reads the same; fine-tuning did
   not change it.
 - This is a preview. R-10 owns the H1b verdict.
+- [author fix 2026-10-10] **Corrected reading: uninformative for H1b** (DECISIONS 2026-10-05; Mac
+  audit, AUDIT.md section 4). The captured share measures the diversity of the model's samples,
+  and its held-out expert ceiling is about 0.25 (16 real performances held out from the subspace
+  estimate; the box audit's variant, with k re-estimated from the remaining performers, gives
+  0.273), so the 0.50 bar was unreachable for
+  real performers and a value near 0.20 cannot falsify. Two further limits: every SyMuPe sample
+  here was drawn at top-p 0.95, not 1.0 (EncDec-base ignores `lm_top_p`), which narrows the
+  spread; and the log IOI R²c centers only the target, not the predicted curve as R-06 does, so
+  the log IOI values are lower bounds. For frozen SyMuPe, R-10 recomputed it with the R-06 formula
+  on the 74 unseen pieces: 0.144 [0.098, 0.226] against 0.127 here (R-10 README, "Development vs
+  fresh pieces; B2"). The fine-tuned arms were not recomputed. Nothing about H1b goes into
+  STATUS.md or the plan from R-07.
+- [author fix 2026-10-10] **Headline on the 74 pre-registered unseen pieces, with the 7 PERiScoPe-
+  paired pieces separately** (medians; `posthoc_tables.py h1b_groups` from `results/R10u/h1b.csv`
+  and `split/pieces.csv`; the 74-piece values equal AUDIT.md section 4). 5 of the 74 contain
+  paired content inside whole-set piece ids (R-10 pre-run review); without them frozen reads R²c
+  velocity 0.330 and log IOI 0.142.
+
+  | Arm | Captured share, 74 unseen | R²c velocity, 74 | R²c log IOI, 74 | Captured share, 7 paired | R²c velocity, 7 | R²c log IOI, 7 |
+  |---|---|---|---|---|---|---|
+  | E | 0.096 | 0.439 | 0.053 | 0.096 | 0.413 | 0.214 |
+  | frozen | 0.112 | 0.328 | 0.127 | 0.132 | 0.517 | 0.329 |
+  | pt_E | 0.124 | 0.495 | 0.259 | 0.131 | 0.591 | 0.521 |
+  | pt_frozen | 0.100 | 0.303 | −0.021 | 0.154 | 0.114 | −0.031 |
+
+  The 7 paired pieces are Bach BWV 857 and 862 (prelude and fugue each) and Mozart K. 545 mv1-3;
+  with n = 7 their medians are noisy. The other 4 of the 85 H1b pieces are unpaired work-mates.
 
 **(a) on R10u (secondary, not deciding):** E − frozen **+0.041 [+0.028, +0.051]** = "improves"
 (the opposite of P, V and A, where E harms). R10u is transcribed PianoCoRe MIDI, the same kind of
@@ -430,7 +494,8 @@ and frozen numbers above are unchanged.
 | pt_E | 0.124 | 0.492 | 0.260 |
 
 - pt_E's captured share, 0.124, is also at the falsification level (≤ 0.20). Both R²c values are
-  inconclusive (between 0.20 and 0.50; velocity just under 0.50).
+  inconclusive (between 0.20 and 0.50; velocity just under 0.50). [author fix 2026-10-10] As for
+  E, the captured-share reading is uninformative for H1b (see the correction above).
 - (a) pt_E − pt_frozen on R10u: **+0.100 [+0.089, +0.114]**, improves (velocity +0.048, timing
   +0.109, articulation +0.145; `results/pt_E_vs_pt_frozen_R10u.json`). pt_E − frozen SyMuPe
   +0.052 [+0.037, +0.064].
@@ -461,47 +526,78 @@ Exposure in pretraining does not lift it. E's velocity mean-curve R²c reaches 0
   velocity −0.004). Computed with the summariser's own `boot_ci`, as for P / V / A
   (`results/pt_E_vs_pt_frozen_R10s.json`).
 
+### (a) by transcriber on R10u and R10s (exploratory, post hoc; added 2026-10-10)
+
+[author fix 2026-10-10] Not pre-registered; asked for by the Mac audit (AUDIT.md section 8). The
+R10 rows of `a_per_rendition.csv` were joined to PianoCoRe `metadata.csv` by performance id and
+the paired composite difference recomputed within each capture model with the summariser's own
+`boot_ci` (`posthoc_tables.py transcriber`; the E − frozen values equal AUDIT.md section 8).
+
+| Set | Capture model | n renditions (works) | E − frozen [95% CI] | pt_E − pt_frozen [95% CI] |
+|---|---|---|---|---|
+| R10u | Aria-AMT | 3,540 (74) | +0.044 [+0.031, +0.055] | +0.103 [+0.092, +0.117] |
+| R10u | Transkun V2 | 204 (56) | −0.012 [−0.027, +0.004] | +0.048 [+0.031, +0.069] |
+| R10u | ATEPP | 54 (25) | −0.014 [−0.036, +0.014] | +0.071 [+0.045, +0.123] |
+| R10u | ByteDance | 10 (10) | +0.049 [+0.019, +0.082] | +0.107 [+0.058, +0.161] |
+| R10s | Aria-AMT | 1,382 (24) | +0.019 [+0.001, +0.028] | +0.069 [+0.047, +0.094] |
+| R10s | Transkun V2 | 297 (23) | −0.061 [−0.081, −0.027] | +0.020 [−0.003, +0.044] |
+| R10s | ATEPP | 133 (15) | −0.051 [−0.076, −0.012] | +0.011 [−0.005, +0.054] |
+
+- E's training rows were 77% Aria-AMT (17.6% Transkun V2, 5.1% ATEPP; AUDIT.md section 8). E's
+  R10u gain sits in the Aria-AMT stratum; on the same set's Transkun V2 and ATEPP renditions it is
+  absent, and on R10s it is negative for both. That fits adaptation to the dominant corpus or
+  transcriber rather than to expert expression. ByteDance has 10 renditions, one per work, too few
+  to read.
+- pt_E's point estimate is positive in every stratum, largest on Aria-AMT; on R10s its Transkun V2
+  and ATEPP intervals include 0.
+- Transcriber and source corpus are confounded (Aria-AMT = Aria-MIDI, Transkun V2 = PERiScoPe;
+  BL-18 lesson), so neither explanation can be separated from the other here.
+
 ---
 
-## 5. What is still running, and what each result will decide
+## 5. Final state: what ran, and what each result decided
 
-### Running at the time of writing
+[author fix 2026-10-10] This section was "What is still running, and what each result will
+decide", written at 22:10 UTC on 2026-09-29. Everything it listed has since run.
 
-- **Pianist Transformer fine-tune (pt_E).**
-  - Up to 8,000 steps. Calibration projects about 7.0 h, an upper bound because it was measured while the GPU was shared; early stopping may end it sooner.
-  - Validation every 500 steps; checkpoints every 250 steps in `job/outputs/pt_E/ckpt/`.
-  - A rerun of `STAGES=train_pt bash run.sh` resumes from the last checkpoint (for example after an out-of-memory crash, if another program takes the GPU memory).
-- **Evaluation (`job/eval.sh`).** The run record says frozen and pt_frozen started at 21:21 UTC and E and F at 22:08 UTC. On disk at 22:10 UTC:
-  - `eval_sets/P` is built: 16,780 items, i.e. 981 renditions × (real + 16 variants) + 103 external deadpans (`eval_sets/P/make_meta.json`);
-  - `eval/frozen/P/` has `score`, `gen` and `typset` folders;
-  - `eval/E/P/` has `score`;
-  - `eval_frozen_P.log` reports 16,780 scored items and 86 generation items.
+### Arms and sets (all complete, 2026-10-05 08:29 UTC)
 
-  There is no `eval/pt_frozen/` folder yet. That is expected: `eval.sh` runs the arms one after another within each set, and pt_frozen comes after frozen. There are also no V, A, R10u or R10s sets yet, and `results/` is empty. eval.sh builds each set, runs every arm with a checkpoint, and then summarises into `results/<set>/`: P, then V, A, R10u, R10s.
+| Arm | Checkpoint | Jobs | Sets |
+|---|---|---|---|
+| frozen | released EncDec-base | score, gen (K = 8 on P / V / A, K = 16 on R10u / R10s), typset (K = 16, P and V) | P, V, A, R10u, R10s |
+| E | `symupe_E/ckpt/best.pt` (step 9,000) | same as frozen | all five |
+| F | `symupe_F/ckpt/best.pt` (step 5,000) | score only (for S-LR) | all five |
+| pt_frozen | released PT SFT | score, gen | all five |
+| pt_E | `pt_E/ckpt/best.pt` (step 8,000) | score, gen | all five (R10u generation after an out-of-memory retry, 91 of 91, 0 errors) |
 
-### Arms and sets that remain
+Every arm x set has its full item count, every output loads, and no output predates its arm's
+final `best.pt` (box audit section 8). Every SyMuPe sample (frozen, E, including S-TYP's typset)
+was drawn at top-p 0.95, not 1.0 (README run record, correction of 2026-10-10).
 
-| Arm | Checkpoint | Jobs |
+### What each result decided (pre-registered readings, as audited)
+
+| Question | Result | Consequence |
 |---|---|---|
-| frozen | released EncDec-base | score, gen (K = 8 for P / V / A, K = 16 for R10u / R10s), typset (K = 16, P and V only) |
-| E | `symupe_E/ckpt/best.pt` (step 9,000) | same as frozen |
-| F | `symupe_F/ckpt/best.pt` (step 5,000) | score only (for S-LR) |
-| pt_frozen | released PT SFT | score, gen |
-| pt_E | `pt_E/ckpt/best.pt` (pending) | score, gen |
+| Reproduction gate (frozen on P) | **Missed**: 0.3987 vs R-06's 0.3882 (+0.0105, tolerance 0.01), mostly in log articulation | Reported first; (a) uses the re-run frozen numbers, R-06 shown alongside. The cause (items rebuilt on Windows vs GPU sampling) is not separated (box check B3, partial). |
+| (a) E vs frozen on P | **Harms**: −0.0509 [−0.0720, −0.0287]; t over 3 works [−0.178, 0.076]; V and A also harm | **E is not used downstream. R-10 and tier D use frozen SyMuPe EncDec-base.** |
+| (a) secondary sets | R10u improves (+0.041), concentrated in Aria-AMT renditions (post hoc table above); R10s no detectable change | Not deciding. |
+| (b) H1b preview | Pre-registered wording "at the falsification level"; **corrected to uninformative for H1b** (expert ceiling about 0.25 on this statistic) | Nothing about H1b from R-07. R-10 decided H1b with mean-curve R²c against an expert oracle (DECISIONS 2026-10-05). |
+| (c) S-LR | **Pass** as registered, but R1 is matched by B-amount and S-LR is at chance against halved expression | **Used nowhere** until a non-flat battery and box check B1 (DECISIONS 2026-10-05). |
+| (c) S-DEV | **Flatness detector only** | The "too flat" check stays model-free (B-amount does at least as well). |
+| (c) S-TYP | **Fail** | Used nowhere. Its reference samples were top-p 0.95, not the registered 1.0; the reading stands. |
+| Secondary arm pt_E vs pt_frozen | P no detectable change (+0.013 [−0.013, 0.039]); V no detectable change; A improves (+0.031 [0.001, 0.064], fragile); R10u +0.100 and R10s +0.059 improve | Not deciding. pt_E has no role in R-10 without a new pre-registered rule (DECISIONS 2026-10-05). |
+| (d) cost | SyMuPe 0.150 s per step, 2.77 GB; PT 3.14 s per step, 8.32 GB; no cloud GPU | Descriptive. |
 
-### What each pending result decides (the pre-registered readings; no other reading applies)
+### Still open after the audits
 
-- **Reproduction gate (frozen on P).** If the re-run P composite is within 0.01 of 0.388, the pipeline reproduces R-06. If not, that is reported first, and E is compared with the re-run.
-- **(a) E vs frozen on P.**
-  - The paired composite difference and its two-way bootstrap CI decide between **improves / harms / no detectable change**.
-  - Per-work and per-target tables and the 3-work t-interval are always reported next to it.
-  - Together with the validation-loss condition, which already holds, this decides whether R-10 uses E or the frozen model: E is used only if (a) is "improves" or "no detectable change".
-  - R10u, R10s, V and A are reported with the same statistic, but they do not decide anything.
-- **(b) H1b preview on R10u.** The median captured share (and the mean-curve R²c per target) against 0.50 / 0.20 gives "consistent with H1b", "at the falsification level" or inconclusive. This is a preview only; R-10 owns H1b.
-- **(c) Typicality.** For each of S-LR, S-TYP and S-DEV: **pass**, **flatness detector only** (may feed only the F-06 "too flat" flag), or **fail** (used nowhere), by R1 / R2 / R3. S-RAW, B-smooth and B-amount are references. S-TYP is computed on P and V only.
-- **Secondary arm.** pt_E vs pt_frozen, the same (a) and (b), not deciding the primary question.
-
-After the evaluation, the verdict stays **Provisional** until `eval-auditor` signs it off.
+- **Box check B1** (S-LR per-field decomposition and a combined trivial baseline): answered by the
+  box audit section 2 except the combined B-amount + B-smooth baseline, which was not computed.
+- **Box check B2** for the fine-tuned arms: the R-06-formula log IOI R²c was recomputed by R-10 for
+  frozen only.
+- **Box check B3**: no result of the item-digest comparison (rebuilt P items against the Mac's
+  R-06 items; digests in AUDIT.md section 10) is recorded in this folder.
+- **A non-flat battery for S-LR** (phase-randomised, transplanted, time-reversed or
+  phrase-shuffled deviations) has not been registered.
 
 ---
 
@@ -509,8 +605,10 @@ After the evaluation, the verdict stays **Provisional** until `eval-auditor` sig
 
 - **No evaluation numbers exist yet.** The results folder was empty when this was written, so nothing on questions (a) to (c) is reported here. [audit 2026-10-05: superseded; the results are in section 4b and audited in README "Audit".]
 - **`TimeShift` / `TimeDuration` units** in the SyMuPe tokenizer were not checked. The encoder's exact field composition is taken from the config and the job code, not traced through symupe's source.
-- **Frozen typset.** `eval/frozen/P/typset` exists, but it was not checked for completeness.
-- **E and F step times** were measured while the frozen evaluation shared the GPU, so they are not clean cost figures.
+- **Frozen typset.** [author fix 2026-10-10] Checked by both audits: `typset/` holds every real item for frozen and E on P (981) and V (88), and every S-TYP AUC row has its full n.
+- **E and F step times** were measured while the frozen evaluation shared the GPU, so they are not clean cost figures. The same holds for pt_E (section 4).
+- **Sampling setting.** [author fix 2026-10-10] Every SyMuPe sample was drawn at top-p 0.95, not the 1.0 registered for S-TYP's reference samples; a diversity statistic such as the captured share should use 1.0.
+- **R-06 generations** are not on the RTX box, so the reproduction-gate miss cannot be split into item rebuild vs GPU sampling.
 
 ---
 
@@ -540,4 +638,7 @@ pre-registration is unchanged since commit e4becf8. What the caveats change:
   shows no change.
 - **Data and run integrity:** confirmed. The 636 skipped training items are long items in 21
   pieces (3.5% of training notes); they affect training only.
-
+- [author fix 2026-10-10] **Reconciled reading of (b).** The Mac audit (AUDIT.md) and the lead's
+  reconciliation in the README read the H1b preview as **uninformative for H1b**, not "at the
+  falsification level": a bar that real performers cannot reach cannot falsify (DECISIONS
+  2026-10-05). R-10 decided H1b separately.

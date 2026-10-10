@@ -12,7 +12,7 @@ Numbers: `artifacts/gate.json`, `a_summary.json`, `a_rows.csv`, `b_summary.json`
 README Results section has the tables. **Why:** keep the next session from recomputing.
 
 Layout (tonebase-derived content only in gitignored `data/interim/tonebase_annotations/`, BL-29):
-PROTOCOL.md v1.2, scores/, pages/, encoder_A/ (rows, barmaps, operationalisation_A.csv),
+PROTOCOL.md v1.3 (BL-31, 2026-10-10: gap within text's own columns, tie margin max(staff space, 15% of smaller gap), near ties double-coded blind, 4 new trailing CSV columns; R-11 rows stay v1.2), scores/, pages/, encoder_A/ (rows, barmaps, operationalisation_A.csv),
 encoder_B/ (NOC only, blind). Code: run.py (gate, c, drivers), part_a.py, part_b.py.
 
 Traps hit (how to apply: check these before any new note-level analysis on PianoCoRe):
