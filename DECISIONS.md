@@ -641,3 +641,19 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   wave 2), scoped by the data-engineer's list: take splitting, alignment to the score, the 15
   ambiguous movements resolved or excluded, a `Noinfo` policy (up to 48% on some pieces), the
   0.8% video-label hand error as a noise floor, and the engraver-hand-mark recall check.
+- **2026-10-10, lead: BL-19b staff-vs-hand proxies (Confirmed with caveats, eval-auditor
+  2026-10-10).** Staff 1 = right hand is wrong for 6.66% [3.51, 9.00] of matched notes against
+  the PianoVAM video labels (31 pieces), and the mismatches are systematic (they recur at the
+  same score note), not label noise.
+  - **Per-hand feedback stays off.** Staff is not a per-note hand label (D1 above the 2% bar).
+  - **Hand synchrony stays as deployed, marked fragile.** D2 passes at the boundary and is not
+    stable to one piece. Dropping events with at-risk notes removes too little (5.49% to 5.34%
+    affected for P1/P3) to justify a report change. Revisit when hand assignment exists.
+  - **A hand-assignment model is backlog (BL-34), not started.** Trained on PianoVAM labels,
+    leave-piece-out, pre-registered, with the 0.76% label-noise floor and the staff rule as
+    baseline. Henry decides priority against the study and own-take tickets.
+  - **Score data defects go to the data-engineer (DF-14):** catalogue `bach_bwv971` is the 2nd
+    movement only, and Schumann Op. 17 i (PianoCoRe engraving) has a left-hand passage on the
+    upper staff in mm. 41-49.
+  - **PianoVAM ids stay prefixed.** The 42 aligned recordings could now take canonical ids; not
+    worth the churn until a ticket needs cross-dataset joins on them.

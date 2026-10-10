@@ -333,3 +333,17 @@ paths:
 - **Hash an appended block by anchor, not by line numbers.** Run records inserted above it move
   the lines. Example:
   `awk '/^## Pre-run amendments/{f=1} f&&n<101{print;n++}' README.md | shasum -a 256`.
+
+## Lessons from the BL-19b audit (2026-10-10)
+
+- **A "share of units above X" criterion on about 30 units can land exactly on its bar.** Report
+  the leave-one-unit-out reading and the share of bootstrap resamples that pass, next to the
+  registered reading. In BL-19b, hand synchrony passed at 3 of 30 pieces (bar 10%); removing any
+  one of the 27 passing pieces, or raising the event minimum to 100, gave a concern, and only 59%
+  of piece resamples passed.
+- **Before calling disagreements with ground truth noise or signal, check whether they recur at
+  the same item.** Random label noise recurs at about the base rate. In BL-19b a staff-vs-hand
+  mismatch recurred at the same score note 90% of the time (base 6.8%), so it was systematic.
+- **A run-length statistic in performance order cannot show passage-level structure when the
+  other stream interleaves.** Count concentration per measure instead. BL-19b's median run of 1
+  hid a whole passage (Schumann Op. 17 i, mm. 41-49) engraved on the wrong staff.

@@ -30,3 +30,4 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [r11-teacher-annotations-audit-facts.md](r11-teacher-annotations-audit-facts.md): R-11 rerun recipe (patch run.ART), waltz LH chords in upper XML part, nocturne 15-measure null pool, (b) gain sweep, deviation-timing traps
 - [r10-h1b-prerun-review-facts.md](r10-h1b-prerun-review-facts.md): content n-gram leak check (whole-set ids escape work keys), near-dup renditions inflate oracles, top-p switch timeline, model card = PERiScoPe v1.0
 - [r10-h1b-audit-facts.md](r10-h1b-audit-facts.md): anchor hash, audit_checks.py recompute, shape same / amplitude overshoot, dev-scale inconclusive, envelope floor 0.36; addendum: restart log trap, PT/dev_gen
+- [bl19b-hand-proxies-audit-facts.md](bl19b-hand-proxies-audit-facts.md): author transcript + timeline, rerun recipe (absolute ROOT), pandas `take` column trap, recurrence check 0.90 vs 0.068, D2 knife-edge, Toccata same-pitch, Op.17 engraving

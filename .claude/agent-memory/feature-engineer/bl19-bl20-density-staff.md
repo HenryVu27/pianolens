@@ -25,7 +25,6 @@
 - Staff numbering gap: 25 catalogue scores give hand_synchrony zero events. Causes: staves
   numbered 3/4 (e.g. ASAP liszt_s162_no1); one staff per part merging onto staff 1 (Bach
   inventions, the Minute Waltz); Mozart PianoCoRe scores numbered 1/3.
-- PianoVAM v1.2 upstream has Fingering/ (per-note L/R hand + finger from video, 99.2% hand
-  accuracy on labelled notes per the card) and Fingering_GT/. They are not in data/raw. About 20
-  recordings match catalogue scores (list in the BL-19 README).
+- PianoVAM hand labels were fetched by BL-24 and validated by BL-19b: see bl19b-hand-labels.md
+  (true staff mismatch 6.7% pooled; the proxies find 39% of it).
 - Numbers: 5.2% of notes and 3.9% of events at risk; median piece 0.9% of events.
