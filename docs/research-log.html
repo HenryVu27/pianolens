@@ -1537,9 +1537,10 @@ performances and the ratings used to build and test each stage.</p>
 <li>one-hand capacity: a staff starts more than 5 notes at once, or spans more than 16 semitones (wider than a tenth), so the other hand probably takes some of them.</li>
 </ul>
 <p>About 5% of notes (5.2%) and 3.9% of the onsets that hand synchrony compares were flagged. The share is very uneven across pieces: the median piece has 0.9% of its hand-synchrony onsets flagged, while 4.2% of pieces have more than 20%. The pre-registered concern level (a median above 5%, or more than 10% of pieces above 20%) was not reached, so the proxies pass for hand synchrony pooled over a piece. Impressionist and Spanish piano writing is the exception: about 10% of notes are flagged for Debussy and Ravel, and 15% of hand-synchrony onsets for Albéniz.</p>
-<p>The auditor added an important limit. Some scores carry the engraver's own hand marks, such as "m.g." (left hand) written in the upper staff. In 57% of the 248 bars where the engraver wrote a hand word naming the other staff's hand, the proxies flagged no note at all. The likely reason is that when one hand takes notes on the other staff while its own staff rests or holds, no proxy fires. So the 5% is a floor set by the proxies, not a bound on the true rate: the result is a pass on the proxies, and the real mismatch rate is unknown until notes with real hand labels are checked. PianoVAM supplies such labels, taken from video of the players' hands, for most of its recordings, and about 20 of its recordings match pieces in the app's list. Those labels have not been downloaded yet (BL-24). Until they are, per-hand feedback stays off.</p>
-<p><strong>A numbering problem found on the way.</strong> Hand synchrony compares staff 1 with staff 2, but 25 scores in the app's list gave it no onsets at all, and more gave only some, because their staves were numbered 3 and 4, 1 and 3, or one staff per part. The fix (DF-09) renumbers the two main piano staves to 1 (upper) and 2 (lower) whenever a score is prepared for alignment. After it, no score in the list gives zero onsets, and the hand-synchrony onsets across the list rose from 297,495 to 314,448. The rule is right for solo scores and arbitrary for piano duets: the three four-hands pieces in the list are split three different ways, and hand synchrony means nothing for four hands. Flagging duets is an open defect (DF-11).</p>
-<p class="coderef">In the code: <code>hand_synchrony</code> in <code>src/pianolens/features/control.py</code>; <code>score_note_frame</code> in <code>src/pianolens/features/_score_utils.py</code>; staff renumbering <code>normalise_piano_staves</code> in <code>src/pianolens/align/_adapters.py</code>; proxies in <code>scripts/staff_hand_proxies.py</code>; MAJEPPA staff assignment in <code>src/pianolens/data/majeppa.py</code>. Tickets BL-19, BL-24, DF-09, DF-11.</p>
+<p>The auditor added an important limit. Some scores carry the engraver's own hand marks, such as "m.g." (left hand) written in the upper staff. In 57% of the 248 bars where the engraver wrote a hand word naming the other staff's hand, the proxies flagged no note at all. The likely reason is that when one hand takes notes on the other staff while its own staff rests or holds, no proxy fires. So the 5% is a floor set by the proxies, not a bound on the true rate: the result is a pass on the proxies, and the real mismatch rate is unknown until notes with real hand labels are checked. PianoVAM supplies such labels, taken from video of the players' hands, for most of its recordings, and about 20 of its recordings match pieces in the app's list. Those labels were fetched on 2026-10-10 (BL-24) and checked in BL-19b, below.</p>
+<p><strong>Measured against real hand labels (BL-19b).</strong> PianoVAM's video hand labels were joined to 42 recordings of 31 catalogue pieces after cutting each practice session into takes and aligning every take to its score (117,238 labelled notes, 8 pianists). The rule was fixed in advance. Staff 1 = right hand is wrong for 6.66% of notes [3.51, 9.00], against a label error of about 0.76%. The median piece is at 3.35%, and 4 of 31 pieces are above 10%. The errors are systematic, not noise: when a note is played by the other hand once, it is played that way again 90% of the time. Some of it is engraving: in the first movement of Schumann's Fantasie Op. 17, bars 41 to 49 put left-hand material on the upper staff, and all 7 recordings play it with the left hand. In the worst piece, the Toccata from Ravel's <em>Le Tombeau de Couperin</em>, 86% of the mismatches are same-pitch notes the hands alternate on. Staff still beats a middle-C split by 16.7 points, in every piece. Hand synchrony passes its rule (no more than 10% of pieces with over 20% of onsets affected) exactly at the boundary: 3 of 30 pieces, and dropping any one passing piece would turn it into a concern. The BL-19 proxies catch only 39% of real mismatches. So per-hand feedback stays off, hand synchrony stays as it is but is fragile, and a model that assigns hands from the score and the playing is in the backlog (BL-34). The auditor confirmed it with caveats.</p>
+<p><strong>A numbering problem found on the way.</strong> Hand synchrony compares staff 1 with staff 2, but 25 scores in the app's list gave it no onsets at all, and more gave only some, because their staves were numbered 3 and 4, 1 and 3, or one staff per part. The fix (DF-09) renumbers the two main piano staves to 1 (upper) and 2 (lower) whenever a score is prepared for alignment. After it, no score in the list gives zero onsets, and the hand-synchrony onsets across the list rose from 297,495 to 314,448. The rule is right for solo scores and arbitrary for piano duets: the three four-hands pieces in the list are split three different ways, and hand synchrony means nothing for four hands. Since 2026-10-10 (DF-11) duets are detected from the score layout (all three in the list, and no solo look-alikes), and their reports leave hand synchrony out and say why.</p>
+<p class="coderef">In the code: <code>hand_synchrony</code> in <code>src/pianolens/features/control.py</code>; <code>score_note_frame</code> in <code>src/pianolens/features/_score_utils.py</code>; staff renumbering <code>normalise_piano_staves</code> in <code>src/pianolens/align/_adapters.py</code>; proxies in <code>scripts/staff_hand_proxies.py</code>; MAJEPPA staff assignment in <code>src/pianolens/data/majeppa.py</code>. Tickets BL-19, BL-19b, BL-24, DF-09, DF-11; hand-label check in <code>experiments/2026-10-10-BL-19b-hand-proxies/</code> (<code>src/pianolens/data/session_takes.py</code>, <code>src/pianolens/features/hand_proxies.py</code>); duet detection <code>src/pianolens/report/four_hands.py</code>.</p>
 <h4 id="what-happens-in-very-fast-passages">What happens in very fast passages?</h4>
 <p>Fast passages stress the method in two places: the aligner and the wrong-pitch pairing. Timing precision is not the problem.</p>
 <p><strong>Timing precision.</strong> A key-sensing piano records onsets far more finely than any musical timing difference at issue here; the repo has not measured Disklavier precision itself, but it is not the limiting factor. For audio transcribed to MIDI, the project measured the added timing error at about 2 ms (A-01, expert recordings through a simulated phone) and a median robust spread of 3.1 ms (BL-13, microphone recordings against Disklavier MIDI). Both are small compared with the spacing of notes even in fast playing. What goes wrong at speed is ambiguity, not measurement.</p>
@@ -1590,7 +1591,7 @@ performances and the ratings used to build and test each stage.</p>
 <li>The recurring-error rule was calibrated with different pianists standing in for one player's takes. Real repeated takes of one learner (O-01) are the needed test.</li>
 <li>Bar-level synthetic scores are measured on the bars without natural ground-truth mistakes, about half of all bars, and are therefore probably optimistic.</li>
 <li>On transcribed input, correctness inherits transcription errors (the apparent error rate roughly doubles), and extra notes are excluded from tiers. Phone recordings add artefacts that the controlled simulation did not reproduce.</li>
-<li>On transcribed input the checker loses more wrong notes (DF-12). When 3 wrong keys were injected into clean bars of expert transcriptions (BL-18b), 16% to 19% were not counted as wrong, against 2.5% to 8.3% on Disklavier playing. Most were left unpaired, shown as a missed note plus an extra, because they sat more than 100 ms from the expected onset (DF-13): the window was set on key-sensor playing, and onset estimates are worse on transcriptions. A smaller share collided with a written note of the new pitch in the same bar. A wider or onset-adaptive window, and an injection that avoids pitches written in the same bar, are untested.</li>
+<li>On transcribed input the checker loses more wrong notes (DF-12). When 3 wrong keys were injected into clean bars of expert transcriptions (BL-18b), 16% to 19% were not counted as wrong, against 2.5% to 8.3% on Disklavier playing. Most were left unpaired, shown as a missed note plus an extra, because they sat more than 100 ms from the expected onset (DF-13): the window was set on key-sensor playing, and onset estimates are worse on transcriptions. A smaller share collided with a written note of the new pitch in the same bar. DF-13 tested wider windows, pre-registered, on 16 new pieces with an injection that avoids pitches written in the same bar. Only about half of the loss is the window; in the other half the aligner gives the intended written note to a different played note of the same pitch, or matches one played note to two written notes (DF-15). The best window (scaled to the local tempo) counted 3.6 to 4.7 points more of the injected notes, but raised wrong-note labels on clean recordings by 15.0% and 16.8% against a 15% limit, so it failed and the 100 ms window stays.</li>
 </ul>
 <h3 id="tempo-and-control">Tempo and control</h3>
 <p>This chapter covers two linked parts of PianoLens. The first is the tempo model, which takes the note times of a performance and splits them into a smooth tempo curve (what the pianist meant to do with the pulse) and a leftover residual (the small timing deviations around that curve). The second is the set of control features, called tier B, which read that residual and a few other signals to ask a single question: is this player in command of the instrument? The chapter explains how each measure is built, why it was built that way, what evidence supports each choice, and what has never been tested. The experiment stories themselves are told elsewhere in this log (see D-10, R-09, F-07, BL-16 and F-04b).</p>
@@ -2001,7 +2002,7 @@ performances and the ratings used to build and test each stage.</p>
 <p class="coderef">In the code: <code>even_runs</code>, <code>strict_runs</code> and <code>_evenness</code> in <code>src/pianolens/features/control.py</code>; validation in <code>docs/specs/control-validation.md</code>; decisions in <code>DECISIONS.md</code> ("F-04 follow-ups", "after R-04", "after F-08").</p>
 <h4 id="do-the-hands-play-together-and-how-do-we-know-which-hand-played-a-note">Do the hands play together, and how do we know which hand played a note?</h4>
 <p>When notes in both hands are written at the same moment, a controlled player sounds them together, or leads with one hand consistently for a musical reason. Scattered, inconsistent gaps between the hands are a sign of weak coordination. The measure takes every score onset where both staves have matched notes and computes two differences: the mean onset of the upper-staff notes minus the mean onset of the lower-staff notes, in milliseconds, and the same difference in mean velocity.</p>
-<p>MIDI does not record which hand played a note, so PianoLens assumes the upper staff is the right hand and the lower staff the left hand, as notation intends. For MAJEPPA, whose score files carry no staff information, the higher of the two note tracks becomes the upper staff; 829 of 886 score files have exactly two tracks, and in a 40-score check only 0.14% of notes could not be placed. This assumption fails for hand crossings, for notes written in the other staff, and when one hand takes notes from both staves. None of these cases is detected. Score-only proxies suggest they touch a small share of the onsets hand synchrony compares in most pieces (median 0.9%), but more than 20% in about 1 piece in 25, and the proxies miss most engraver-marked hand swaps (BL-19; see "How do we know which hand played a note?" in the alignment chapter). Since DF-09, the two main staves of every score are renumbered to 1 and 2 before alignment, so scores that numbered them differently no longer give an empty result.</p>
+<p>MIDI does not record which hand played a note, so PianoLens assumes the upper staff is the right hand and the lower staff the left hand, as notation intends. For MAJEPPA, whose score files carry no staff information, the higher of the two note tracks becomes the upper staff; 829 of 886 score files have exactly two tracks, and in a 40-score check only 0.14% of notes could not be placed. This assumption fails for hand crossings, for notes written in the other staff, and when one hand takes notes from both staves. None of these cases is detected. Score-only proxies suggest they touch a small share of the onsets hand synchrony compares in most pieces (median 0.9%), but more than 20% in about 1 piece in 25, and the proxies miss most engraver-marked hand swaps (BL-19). Against real video hand labels the staff is wrong for 6.66% of notes, and hand synchrony passes its rule only at the boundary (BL-19b; see "How do we know which hand played a note?" in the alignment chapter). Piano duets are detected and get no hand synchrony (DF-11). Since DF-09, the two main staves of every score are renumbered to 1 and 2 before alignment, so scores that numbered them differently no longer give an empty result.</p>
 <p>The sign convention is that a positive value means the left hand came first. This is the opposite of Goebl, Flossmann and Widmer (2009, 2010), whose values must be negated before comparison.</p>
 <p>The central difficulty is a physical artefact. A MIDI onset is the moment the hammer strikes the string, not the moment the finger starts moving. A louder note is a faster key press, so its hammer reaches the string sooner. If both hands start together and one plays louder, the louder hand still sounds first. Goebl (2001) showed that the familiar melody lead of about 30 ms is mostly this effect, and Repp (1996) found that leads follow the velocity difference. PianoLens therefore fits the asynchrony against the velocity difference with a straight line, using only points within three robust standard deviations of the median, and treats what the line does not explain as the coordination signal. The slope captures the artefact. On real performances it is negative, as the physics predicts (right hand louder, right hand earlier): between -0.14 and -1.08 ms per velocity unit in the sanity set. As a cross-check, the spread is also computed only over onsets where the two hands' velocities differ by at most 5 units.</p>
 <p>Spreads use a robust standard deviation: 1.4826 times the median absolute deviation from the median. The distribution has heavy tails from arpeggiated chords, deliberate bass anticipations and alignment errors, and a plain standard deviation would be dominated by a few such events. The robust version describes the typical onset. Notated arpeggios are not removed, although Goebl, Flossmann and Widmer did remove them (with ornaments, trills and grace notes, about 10% of their events); the robust spread limits their effect without eliminating it.</p>
@@ -2210,7 +2211,7 @@ performances and the ratings used to build and test each stage.</p>
 <li><strong>Systematic unevenness.</strong> Evenness pools neuromuscular patterns (thumb passage, octave boundary) with random noise. Whether separating them would help is untested.</li>
 <li><strong>Note-rate dependence.</strong> Evenness comparisons across pieces or players need rate matching; the only rule in use is the plus or minus 20% window in the report.</li>
 <li><strong>Velocity evenness</strong> is not a skill measure without a dynamics reference, and velocity features on transcribed input are low confidence.</li>
-<li><strong>Hand assignment by staff</strong> is an assumption. Hand crossings, cross-staff writing and shared notes are not detected, and notated arpeggios are not excluded. BL-19's proxy estimate is a floor, not a bound, and dropping flagged onsets from hand synchrony was proposed but not done. Piano duets are split arbitrarily (DF-11).</li>
+<li><strong>Hand assignment by staff</strong> is an assumption. Hand crossings, cross-staff writing and shared notes are not detected, and notated arpeggios are not excluded. Against PianoVAM's video hand labels the staff is wrong for 6.66% of notes, systematically (BL-19b); hand synchrony passes only at the boundary, and dropping flagged onsets would barely help (5.49% to 5.34% of onsets affected). Piano duets are now detected and skipped (DF-11).</li>
 <li><strong>Unverified reference points.</strong> The plus or minus 30 ms audibility band for asynchrony comes from a source not read directly, and Kim (2021) gives no unit for its hand-sync values.</li>
 <li><strong>Part-pedalling</strong> is invisible to the CC64 threshold, and the pedal-down share depends strongly on that threshold.</li>
 <li><strong>Score pedal markings</strong> are ignored, so requested washes of sound count as blur.</li>
@@ -3247,8 +3248,8 @@ performances and the ratings used to build and test each stage.</p>
 <li>the minimum of 10 references;</li>
 <li>the 20% note-rate window for published evenness values.</li>
 <li><strong>Narrow calibration coverage.</strong> The global correctness limits come from 62 pieces of (n)ASAP. The per-bar check was calibrated on 40 key-sensor performances and 5 Chopin pieces for transcribed input. Nothing is calibrated on phone audio.</li>
-<li><strong>Rates above nominal.</strong> The BL-18 rule for transcribed input is an interim default. It met C1 to C3 on one new sample of 12 pieces but failed BL-18b by the pre-registered rule, and it is kept as a disclosed deviation. The other cases listed above are not fixed.</li>
-<li><strong>Wrong notes lost on transcribed input (DF-12, DF-13).</strong> 16% to 19% of injected wrong notes are not counted as wrong on transcriptions, mostly because they fall outside the 100 ms pairing window. So about 7 in 10 bars with 3 wrong notes become strong. A wider or onset-adaptive window has not been tested against the false pairings it could cause in dense passages.</li>
+<li><strong>Rates above nominal.</strong> The BL-18 rule for transcribed input is an interim default. It met C1 to C3 on one new sample of 12 pieces but failed BL-18b by the pre-registered rule, and it is kept as a disclosed deviation. On a second sample (DF-13's 16 pieces) its clean strong rate is 1.49% and 1.86%, above the 1.25% band by point estimate, and not because of one piece, so it stays interim. The other cases listed above are not fixed.</li>
+<li><strong>Wrong notes lost on transcribed input (DF-12, DF-13, DF-15).</strong> 16% to 19% of injected wrong notes are not counted as wrong on transcriptions, so about 7 in 10 bars with 3 wrong notes become strong. A wider pairing window was tested (DF-13) and failed: it reaches only half of the loss and adds wrong-note labels on clean playing. The rest is the aligner (re-matching and duplicate matches, DF-15), which is the next fix.</li>
 <li><strong>Phrase boundaries.</strong> Claude's boundaries in the report are below the project's accuracy bar on Romantic pieces, untested on nocturnes, waltzes and compound metres, and cached only for the owner's five pieces, whose annotators mostly recognised the piece. The phrase-tempo finding is therefore shown with its caveats and never becomes a practice item.</li>
 <li><strong>Fast runs and fast repeats.</strong> The bar-level wording in fast runs and the low-confidence rule for missed fast repeats rest on synthetic mistakes and on microphone recordings of a player piano; neither is validated on a learner's phone recording.</li>
 <li><strong>Command-line transcriber mix.</strong> From the command line, transcribed input is checked against experts from any transcriber, but the calibration was per transcriber family, and Aria-AMT runs hot.</li>
@@ -4991,6 +4992,16 @@ it each time.</p>
 <td>The tight ornament rule fails mostly because ornaments are played on an unexpected side; the pitch check found nothing on real data</td>
 <td>Most of the failure is one score's unexpanded tremolo shorthand. The pitch check is zero by construction under the default. The reassignment pass also moves a correct match about 1 time in 8.</td>
 </tr>
+<tr>
+<td>BL-19b</td>
+<td>Mismatches between staff and hand are single notes passed to the other hand, not whole passages</td>
+<td>They are systematic: a mismatched note is mismatched again 90% of the time, and one score puts a whole left-hand passage on the upper staff. Hand synchrony's pass holds only at the boundary and fails if any one passing piece is dropped</td>
+</tr>
+<tr>
+<td>DF-13</td>
+<td>The wider window's false-pairing excess comes from one piece, and the rest of the lost wrong notes are aligner re-matches</td>
+<td>One piece is the only drop that flips the result, but the failure is not one piece's doing. Part of the "re-match" half is the aligner matching one played note to two written notes, a separate defect (DF-15) that also occurs on clean playing</td>
+</tr>
 </tbody>
 </table>
 <h2 id="part-5-where-things-stand">Part 5. Where things stand</h2>
@@ -5057,9 +5068,11 @@ it each time.</p>
   On a phone recording about 7 in 10 bars with three wrong notes are flagged strong.</li>
 <li><strong>Wrong notes the checker does not count on transcriptions (DF-12, DF-13).</strong> On transcribed
   input 16 to 19 percent of injected wrong notes are not counted as wrong, mostly because they sit
-  more than 100 ms from the expected onset and are left as a missed note plus an extra. A wider or
-  onset-adaptive pairing window is the obvious fix, but it has not been tested against the false
-  pairings it could cause in dense passages.</li>
+  more than 100 ms from the expected onset and are left as a missed note plus an extra. A wider
+  pairing window was tested and failed (DF-13): it recovers only part of the loss and adds
+  wrong-note labels on clean playing. The other half is the aligner (DF-15), not yet fixed.</li>
+<li><strong>Which hand played a note.</strong> The staff is wrong for 6.66% of notes against real video hand
+  labels (BL-19b). Per-hand feedback stays off until hands are assigned by a tested model (BL-34).</li>
 </ul>
 <h3 id="what-comes-next">What comes next</h3>
 <table>
@@ -5099,16 +5112,16 @@ it each time.</p>
 <td>How large the audio shortcut is outside simulation (H8)</td>
 </tr>
 <tr>
-<td>Test a wider or onset-adaptive wrong-pitch window on transcribed input, pre-registered, then rerun the strong-flag confirmation with a rule-relative criterion</td>
-<td>Counting more of a phone learner's wrong notes, and a settled strong rule for phone recordings (DF-12, DF-13, BL-18b)</td>
+<td>Stop the aligner giving one played note two written notes, then a pre-registered re-pairing step for wrong pitches; rebuild the expert floor tables and recheck the strong rule on transcribed input</td>
+<td>Counting more of a phone learner's wrong notes, and a settled strong rule for phone recordings (DF-12, DF-15, BL-28, BL-18b)</td>
 </tr>
 <tr>
 <td>Improve Claude's Romantic phrase reading: phrase labels made after the model's cutoff, a rule for where a cadence arrives, a period cue</td>
 <td>Phrase feedback on the repertoire most learners play (BL-17)</td>
 </tr>
 <tr>
-<td>Fetch PianoVAM's video hand labels</td>
-<td>A measured staff-versus-hand error rate (BL-24)</td>
+<td>A hand-assignment model trained on PianoVAM's hand labels, tested on unseen pieces</td>
+<td>Per-hand feedback and a sturdier hand-synchrony measure (BL-34)</td>
 </tr>
 <tr>
 <td>Expand tremolo shorthand in scores, then retest a tighter ornament rule</td>
@@ -5169,7 +5182,19 @@ for audio, P for the product, D for a data check, BL for a backlog item that bec
 <tr>
 <td>R-07</td>
 <td>Fine-tune the expression model</td>
-<td>Ready, waiting on the GPU</td>
+<td>Confirmed with caveats (two audits); fine-tuning harms, S-LR not used</td>
+<td>Part 3, prediction</td>
+</tr>
+<tr>
+<td>R-10</td>
+<td>Can the score predict what experts share (H1b)?</td>
+<td>H1b falsified for frozen SyMuPe (scoped); Confirmed with caveats</td>
+<td>Part 3, prediction</td>
+</tr>
+<tr>
+<td>R-11</td>
+<td>Do experts and the report follow teachers' marks?</td>
+<td>Confirmed with caveats; (a) inconclusive, (b) the report does not notice</td>
 <td>Part 5</td>
 </tr>
 <tr>
@@ -5272,6 +5297,18 @@ for audio, P for the product, D for a data check, BL for a backlog item that bec
 <td>BL-23</td>
 <td>Can a tighter ornament rule and a same-pitch repair close the fast-passage gap?</td>
 <td>Confirmed with caveats; candidate failed, repair step adopted, gap still open</td>
+<td>Part 2, alignment chapter</td>
+</tr>
+<tr>
+<td>BL-19b</td>
+<td>How often is staff not hand, against real hand labels?</td>
+<td>Confirmed with caveats; 6.66% of notes, hand synchrony passes at the boundary</td>
+<td>Part 2, alignment chapter</td>
+</tr>
+<tr>
+<td>DF-13</td>
+<td>Does a wider wrong-note pairing window help on transcriptions?</td>
+<td>FAIL by the pre-registered rule; Confirmed with caveats; 100 ms stays</td>
 <td>Part 2, alignment chapter</td>
 </tr>
 </tbody>
