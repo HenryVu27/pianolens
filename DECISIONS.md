@@ -657,3 +657,19 @@ Append only. Each entry records the date, the decision, the reason, and who deci
     upper staff in mm. 41-49.
   - **PianoVAM ids stay prefixed.** The 42 aligned recordings could now take canonical ids; not
     worth the churn until a ticket needs cross-dataset joins on them.
+- **2026-10-10, lead: DF-13 pairing window (FAIL by the pre-registered rule; Confirmed with
+  caveats, eval-auditor 2026-10-10).** The registered outcome is applied: the wrong-pitch
+  pairing window stays 100 ms on all input. No deviation. The `wrong_pitch_window` option stays
+  in `correctness()` with default `"fixed"`.
+  - Why not adopt `tempo` as a disclosed deviation: the F1 miss rests on the point estimate as
+    registered, Aria-AMT's miss is not marginal, and the window reaches only about half of the
+    DF-12 loss anyway. Adopting a failed candidate after seeing the result is what the
+    pre-registration exists to prevent.
+  - Next levers for DF-12 are the aligner, not the window: reject duplicate matches (DF-15, one
+    performed note matched to two score notes) and a cross-pitch re-pair post-pass,
+    pre-registered with a repair / break check. A ground-truth precision check of new pairs
+    (transcriptions of Disklavier recordings) would replace F1's upper bound if a window is ever
+    retested; any such bar must be a robust per-piece statistic, not a ratio of sums.
+  - **BL-18b's interim rule stays interim.** On a second sample (DF-13's 16 pieces) rule P's
+    clean strong rate is 1.49% / 1.86%, above the 1.25% band by point estimate (CIs include
+    it), and not only because of one piece. Re-examine after DF-15 and BL-28.

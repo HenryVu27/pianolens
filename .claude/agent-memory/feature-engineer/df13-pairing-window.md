@@ -1,12 +1,12 @@
 ---
 name: df13-pairing-window
-description: DF-13 wrong-pitch pairing window on transcribed input - dev decomposition of DF-12 loss, candidate rules, criteria, script and trap notes
+description: DF-13 wrong-pitch pairing window on transcribed input - FAIL by rule (audited, 100 ms stays); DF-12 loss decomposition, duplicate-match defect DF-15, audit corrections
 metadata:
   type: project
 ---
 
 DF-13 (2026-10-10). Prereg `docs/specs/correctness-validation.md` "Pre-registration DF-13"
-(anchor hash 44bd842e...1214, end marker line "End of the DF-13 pre-registration.").
+(anchor hash 44bd842e...771f, end marker line "End of the DF-13 pre-registration.").
 Script `scripts/eval_pairing_window_df13.py` (`--set dev|heldout`, `--from-cache`,
 `--reachability`); outputs `data/interim/df13/`. Floor rebuild
 `scripts/rebuild_floor_tables_df13.py --rule <r>`; `a01_henry_reports.py --floor-tables`.
@@ -38,6 +38,17 @@ false-pairing bar is dominated by the noisiest transcription piece; register a p
 statistic (median of per-piece ratios, or leave-one-piece-out) or a GT precision check instead.
 Also: P clean strong under fixed = 1.49 / 1.86% on these pieces (BL-18b band 1.25%).
 Floor tables relabelled today differ from cached f08c_floor_tables.pkl in 9 bars of 150 tables.
+
+**Audit (2026-10-10): Confirmed with caveats; lead kept 100 ms (registered outcome).** Fixes I
+got wrong: (1) cited the pre-edit hash tail (...1214) instead of the final ...771f - always
+re-hash after the last edit and copy the hash from that output; (2) "no harm" for criteria that
+were merely within tolerance; (3) the dev "re-match" half overlapped with collisions (43 / 30% of
+re-matching notes were injected) and on held-out 30/188, 16/225 were parangonar duplicate
+matches (one performed note matched to two same-pitch score notes, both labelled correct) ->
+DF-15 OPEN; (4) F1 bounds false pairings of the MIDI, not learner false alarms (R1/R2 do);
+(5) P clean strong excess was in 4/16 and 6/16 pieces, not just "Scarbo". Next levers: DF-15
+(reject duplicate matches) and a cross-pitch re-pair post-pass, each with a repair/break check.
+BL-18b R1(0)+run rule stays interim (second sample fails C1 by point estimate).
 
 **Traps**
 - The whole report-level effect of a checker change on clean bars is near 0 because transcribed

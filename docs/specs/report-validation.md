@@ -864,3 +864,17 @@ Conditions:
   verdict, and record the deviation from the action in DECISIONS.
 - Position statistics for runs (start / end / middle) need fragments merged and a tolerance at
   the edges, or they understate truncation.
+
+**Note added 2026-10-10 (feature-engineer, after the DF-13 audit; the audited text above is not
+edited).** Second-sample reading of C1. DF-13 (`experiments/2026-10-10-DF-13-pairing-window/`)
+measured the same quantity as C1, rule P = R1(0) + run rule with the 100 ms checker, on 16 new
+PianoCoRe pieces (its dev run under the same code reproduces C1 exactly, 0.58 / 1.04%). Clean
+strong: 1.49% [0.52, 2.59] (Transkun V2) and 1.86% [0.66, 3.19] (Aria-AMT), piece bootstrap. So
+C1 fails by point estimate in both families on this sample; the intervals include the band
+[0.30, 1.25]%, so the sample does not show C1 false either. The excess is not one piece: 4 of 16
+(Transkun V2) and 6 of 16 (Aria-AMT) pieces exceed 1.25% (0 of 12 and 3 of 12 on BL-18b), with
+Ravel's "Scarbo" the largest. The rebuilt A-01 floor (leave-one-out) gives Aria-AMT 1.48%. The
+wording "meets C1-C3 on one new sample of 12 pieces" therefore needs "not met by point estimate
+on DF-13's 16 pieces (1.49 / 1.86%)". R1(0) + run rule stays interim, not confirmed. This does
+not favour R0 (worse on C1 in BL-18b); it points to a piece-difficulty-aware limit or more
+references.

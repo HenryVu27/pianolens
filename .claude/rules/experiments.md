@@ -347,3 +347,19 @@ paths:
 - **A run-length statistic in performance order cannot show passage-level structure when the
   other stream interleaves.** Count concentration per measure instead. BL-19b's median run of 1
   hid a whole passage (Schumann Op. 17 i, mm. 41-49) engraved on the wrong staff.
+
+## Lessons from the DF-13 audit (2026-10-10)
+
+- **Reachability from dev resampling cannot produce pieces unlike dev.** For a ratio-of-sums
+  criterion, report how concentrated it is on its heaviest pieces, and register a robust
+  per-piece statistic instead where possible. DF-13 dev said F1 passes with probability 0.99;
+  one held-out piece held 38% of the baseline labels and only 36-48% of held-out resamples
+  passed.
+- **Before naming a "re-matched" mechanism, check that each match is unique in both
+  directions.** parangonar can match one performed note to two score notes, and `correctness()`
+  accepted both (DF-15).
+- **An injection fix needs a same-seed comparison of the chosen units with and without it.**
+  State the narrowed error model next to any end-to-end share (DF-13: collision-free injection
+  means the share applies to out-of-bar slips only).
+- **"The leave-one-out range straddles the bar" is not a reading.** Count how many drops flip
+  it; in DF-13 only 1 of 16 did.

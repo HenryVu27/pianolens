@@ -459,3 +459,10 @@ PARTIAL (Transkun V2 only); `fixed` (100 ms) stays. `tempo` meets every criterio
 (clean wrong-pitch label rate +15.02% Transkun V2, +16.8% Aria-AMT, against at most +15%),
 with strict recall +3.6 / +4.7 pt and targeted 3-wrong bars strong 73.0 -> 78.5% / 69.0 ->
 76.2%. One piece (Ravel, "Scarbo") holds about half of the added clean pairs.
+
+*Audit 2026-10-10 (eval-auditor): Confirmed with caveats; the lead applied the registered outcome
+(100 ms stays, no deviation).* Qualifier to the pre-registration's "aligner re-matched" sentence
+(the pre-registration itself is not edited): on dev, 43% / 30% of the notes that took the intended
+score note are injected notes (collisions); on held-out, 30 of 188 / 16 of 225 cases are
+duplicate aligner matches, not re-matches (DF-15). Corrections: README "Corrections after the
+audit (2026-10-10)".

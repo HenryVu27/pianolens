@@ -54,6 +54,6 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [df11-four-hands.md](df11-four-hands.md) - DF-11 duet rule + catalogue look-alikes, Op. 29 Flauta 0.11-semitone margin,
   old-vs-new report byte-identity recipe (symlink data/experiments/docs or R-02 cache drifts).
 - [df13-pairing-window.md](df13-pairing-window.md) - DF-13: only half the DF-12 unpaired loss is window-reachable (rest = aligner
-  re-matching after injection); held-out FAIL (F1 clean pairs, Scarbo); relabel experts too.
+  re-matching / duplicate matches DF-15); FAIL audited, 100 ms stays; re-hash after last edit.
 - [bl19b-hand-labels.md](bl19b-hand-labels.md) - BL-19b: session take splitting (cut SW at gap runs), Italian Concerto
   catalogue = mvt 2 only, parangonar duplicate matches, staff mismatch 6.7% (systematic per note), D2 unstable.
