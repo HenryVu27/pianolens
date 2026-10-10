@@ -363,3 +363,59 @@ def test_reassign_keeps_good_matches():
     pn2["onset_sec"][-1] = 3.02
     res2 = correctness(aligned(sn, pn2, pairs), reassign=True)
     assert res2.summary["n_reassigned"] == 0
+
+
+# --------------------------------------------------------------------------- DF-13 window rules
+
+
+def _paired(res) -> bool:
+    return res.notes.set_index("performance_id").loc["p10", "label"] == "wrong_pitch"
+
+
+def test_window_rule_default_is_fixed():
+    res = correctness(aligned(*wrong_pitch_case(1, 0.02)))
+    assert res.params["wrong_pitch_window"] == "fixed"
+    with pytest.raises(ValueError):
+        correctness(aligned(*wrong_pitch_case(1, 0.02)), wrong_pitch_window="bogus")
+
+
+@pytest.mark.parametrize(("dt", "fixed", "wide"), [(0.15, False, True), (0.19, False, True),
+                                                   (0.25, False, False)])
+def test_wide_window(dt, fixed, wide):
+    case = wrong_pitch_case(1, dt)
+    assert _paired(correctness(aligned(*case))) is fixed
+    assert _paired(correctness(aligned(*case), wrong_pitch_window="wide")) is wide
+
+
+def test_tempo_window_scales_with_tempo():
+    """build() plays 0.5 s per quarter, so the tempo window is 0.4 x 0.5 = 0.2 s."""
+    from pianolens.features.correctness import pairing_windows
+
+    sn, pn, pairs = wrong_pitch_case(1, 0.0)
+    kq = np.unique(sn["onset_quarter"]).astype(float)
+    w = pairing_windows("tempo", sn["onset_quarter"], kq, 0.5 * kq, np.full(len(sn), -1),
+                        pn["onset_sec"], 0.1)
+    assert np.allclose(w, 0.2)
+    # four times slower: 0.8 s, clipped to the 0.3 s upper limit; much faster: 0.1 s floor
+    assert np.allclose(pairing_windows("tempo", sn["onset_quarter"], kq, 2.0 * kq,
+                                       np.full(len(sn), -1), pn["onset_sec"], 0.1), 0.3)
+    assert np.allclose(pairing_windows("tempo", sn["onset_quarter"], kq, 0.1 * kq,
+                                       np.full(len(sn), -1), pn["onset_sec"], 0.1), 0.1)
+    assert _paired(correctness(aligned(*wrong_pitch_case(1, 0.18)), wrong_pitch_window="tempo"))
+    assert not _paired(correctness(aligned(*wrong_pitch_case(1, 0.22)),
+                                   wrong_pitch_window="tempo"))
+
+
+def test_error_window_follows_local_onset_error():
+    """Tight playing (chord spread 12 ms) keeps the 100 ms floor; a chord nearby played 80 ms
+    apart widens the window to 2 x 80 ms = 160 ms around it, but not far away."""
+    case = wrong_pitch_case(1, 0.15)
+    assert not _paired(correctness(aligned(*case), wrong_pitch_window="error"))
+    sn, pn, pairs = wrong_pitch_case(1, 0.15)
+    pn["onset_sec"][13] += 0.08  # quarter 6 (two onsets after s10): its chord-mate is 80 ms early
+    res = correctness(aligned(sn, pn, pairs), wrong_pitch_window="error")
+    assert _paired(res)
+    assert res.params["wrong_pitch_window"] == "error"
+    sn, pn, pairs = wrong_pitch_case(1, 0.15)
+    pn["onset_sec"][29] += 0.08  # quarter 14: more than 3 onsets away
+    assert not _paired(correctness(aligned(sn, pn, pairs), wrong_pitch_window="error"))

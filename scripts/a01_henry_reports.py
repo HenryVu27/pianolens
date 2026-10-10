@@ -116,7 +116,11 @@ def main() -> None:
 
     p = argparse.ArgumentParser()
     p.add_argument("--out", type=Path, default=OUT, help="output folder (personal data)")
-    out = p.parse_args().out
+    p.add_argument("--floor-tables", type=Path, default=FLOOR_TABLES,
+                   help="cached A-01 floor expert tables (DF-13: rebuilt with the transcribed "
+                        "window rule by scripts/rebuild_floor_tables_df13.py)")
+    args = p.parse_args()
+    out = args.out
     warnings.filterwarnings("ignore")
     logging.basicConfig(level=logging.ERROR)
     import pickle
@@ -124,7 +128,7 @@ def main() -> None:
     from pianolens.report import report_from_files, write_report
 
     summ = json.loads((BASE / "a01" / "summary.json").read_text())
-    floor = pickle.loads(FLOOR_TABLES.read_bytes())
+    floor = pickle.loads(args.floor_tables.read_bytes())
     meta = json.loads((BASE / "scores" / "scores.json").read_text())
     out.mkdir(parents=True, exist_ok=True)
     stab = {}

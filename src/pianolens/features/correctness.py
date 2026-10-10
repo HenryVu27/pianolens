@@ -55,6 +55,22 @@ spread, rolled chords and melody lead add to the error; with the ground-truth al
 injected wrong pitches fall outside 50 ms and 5% outside 100 ms (DECISIONS 2026-09-27, F-02b,
 ``docs/specs/correctness-validation.md``).
 
+**Window rules** (``wrong_pitch_window``; DF-13, ``experiments/2026-10-10-DF-13-pairing-window/``).
+``"fixed"`` (default) uses ``wrong_pitch_window_sec`` for every score note. Three per-note rules
+are candidates for transcribed input, where expected onsets are less accurate (DF-12); each is
+at least ``wrong_pitch_window_sec`` and at most ``ADAPTIVE_WINDOW_MAX_SEC``:
+
+* ``"wide"``: ``WIDE_WINDOW_SEC`` (200 ms) everywhere.
+* ``"tempo"``: ``TEMPO_WINDOW_QUARTERS`` (0.4) quarter notes at the local tempo. The local
+  seconds per quarter is the slope of the score-to-performance time map between the knots
+  ``TEMPO_WINDOW_KNOTS`` positions before and after the note's score onset.
+* ``"error"``: ``ERROR_WINDOW_FACTOR`` (2) times the local onset-estimate error, the largest
+  leave-one-out residual (:func:`pianolens.align.postpass.loo_expected_onsets`) among matched
+  notes within ``ERROR_WINDOW_ONSETS`` distinct score onsets of the note.
+
+Pair costs stay in units of ``wrong_pitch_window_sec`` for every rule, so "closest first" means
+closest in seconds.
+
 **Missed notes are reliable per bar, not per note.** Which duplicate of a repeated or doubled
 pitch was skipped is often ambiguous (deletion F1 0.75 in F-01, DECISIONS 2026-09-27). Read
 ``bars["n_missed"]`` rather than individual missed ids.
@@ -74,15 +90,23 @@ import numpy as np
 import pandas as pd
 
 __all__ = [
+    "ADAPTIVE_WINDOW_MAX_SEC",
+    "ERROR_WINDOW_FACTOR",
+    "ERROR_WINDOW_ONSETS",
     "ONSET_TOLERANCE_SEC",
     "ORNAMENT_PITCH_OFFSETS",
     "ORNAMENT_RULES",
     "ORNAMENT_SEMITONES",
+    "TEMPO_WINDOW_KNOTS",
+    "TEMPO_WINDOW_QUARTERS",
+    "WIDE_WINDOW_SEC",
+    "WINDOW_RULES",
     "WRONG_PITCH_WINDOW_SEC",
     "CorrectnessResult",
     "correctness",
     "expected_onsets",
     "measure_rows",
+    "pairing_windows",
 ]
 
 ONSET_TOLERANCE_SEC = 0.05
@@ -92,6 +116,27 @@ WRONG_PITCH_WINDOW_SEC = 0.1
 """Default max |performed onset - expected onset| for merging an insertion and a deletion into
 one wrong pitch (F-02b, DECISIONS 2026-09-27). See the module docstring for why it is wider than
 ``ONSET_TOLERANCE_SEC``."""
+
+WINDOW_RULES = ("fixed", "wide", "tempo", "error")
+"""Values of ``correctness(wrong_pitch_window=...)``; see the module docstring."""
+
+WIDE_WINDOW_SEC = 0.2
+"""``"wide"`` rule: one window for every score note (seconds)."""
+
+TEMPO_WINDOW_QUARTERS = 0.4
+"""``"tempo"`` rule: window in quarter notes at the local tempo."""
+
+TEMPO_WINDOW_KNOTS = 3
+"""``"tempo"`` rule: the local slope spans this many time-map knots on each side of the note."""
+
+ERROR_WINDOW_FACTOR = 2.0
+"""``"error"`` rule: window = this factor x the local onset-estimate error."""
+
+ERROR_WINDOW_ONSETS = 3
+"""``"error"`` rule: matched notes within this many distinct score onsets (each side) count."""
+
+ADAPTIVE_WINDOW_MAX_SEC = 0.3
+"""Upper limit of every per-note window rule (seconds)."""
 
 ORNAMENT_SEMITONES = 2
 """Pitch range around an ornamented / grace score note within which extra notes are
@@ -224,6 +269,59 @@ def _allowed_offsets(names: tuple[str, ...]) -> frozenset[int]:
     return frozenset(out)
 
 
+def pairing_windows(rule: str, s_quarter: np.ndarray, kq: np.ndarray, kt: np.ndarray,
+                    partner: np.ndarray, p_onset: np.ndarray, base_sec: float
+                    ) -> np.ndarray:
+    """Wrong-pitch pairing window (seconds) of every score note under ``rule``
+    (module docstring, "Window rules").
+
+    Args:
+        rule: one of :data:`WINDOW_RULES`.
+        s_quarter: score onsets in quarters, one per score note.
+        kq, kt: time-map knots (:func:`expected_onsets`), quarters and seconds.
+        partner: performed index matched to each score note (-1 if none); used by ``"error"``.
+        p_onset: performed onsets (seconds).
+        base_sec: the ``"fixed"`` window and the lower limit of the other rules.
+    """
+    q = np.asarray(s_quarter, dtype=float)
+    n = len(q)
+    if rule == "fixed":
+        return np.full(n, base_sec)
+    if rule == "wide":
+        return np.full(n, max(base_sec, WIDE_WINDOW_SEC))
+    if rule == "tempo":
+        if len(kq) < 2:
+            return np.full(n, base_sec)
+        k = np.clip(np.searchsorted(kq, q), 0, len(kq) - 1)
+        lo = np.clip(k - TEMPO_WINDOW_KNOTS, 0, len(kq) - 1)
+        hi = np.clip(k + TEMPO_WINDOW_KNOTS, 0, len(kq) - 1)
+        dq = kq[hi] - kq[lo]
+        spq = np.where(dq > 0, (kt[hi] - kt[lo]) / np.where(dq > 0, dq, 1.0), 0.0)
+        w = TEMPO_WINDOW_QUARTERS * spq
+    elif rule == "error":
+        from pianolens.align.postpass import loo_expected_onsets
+
+        m = np.flatnonzero(partner >= 0)
+        w = np.zeros(n)
+        if len(m):
+            res = np.abs(np.asarray(p_onset, dtype=float)[partner[m]]
+                         - loo_expected_onsets(q, partner, p_onset, m))
+            uq = np.unique(q)
+            rank = np.searchsorted(uq, q)
+            ok = np.isfinite(res)
+            mr, mres = rank[m][ok], res[ok]
+            order = np.argsort(mr, kind="stable")
+            mr, mres = mr[order], mres[order]
+            for i in range(n):
+                a = np.searchsorted(mr, rank[i] - ERROR_WINDOW_ONSETS, side="left")
+                b = np.searchsorted(mr, rank[i] + ERROR_WINDOW_ONSETS, side="right")
+                if b > a:
+                    w[i] = ERROR_WINDOW_FACTOR * float(mres[a:b].max())
+    else:
+        raise ValueError(f"wrong_pitch_window must be one of {WINDOW_RULES}, not {rule!r}")
+    return np.clip(w, base_sec, max(base_sec, ADAPTIVE_WINDOW_MAX_SEC))
+
+
 def correctness(
     aligned: Any,
     *,
@@ -233,6 +331,7 @@ def correctness(
     ornaments: bool = True,
     ornament_rule: str = "legacy",
     reassign: bool = True,
+    wrong_pitch_window: str = "fixed",
 ) -> CorrectnessResult:
     """Label every note of an aligned performance correct / extra / missed / wrong pitch.
 
@@ -252,11 +351,16 @@ def correctness(
             labelling. The alignment object itself is not modified. Default True since BL-23
             (``ornament_rule`` stays ``"legacy"``: the tight rule failed the genuine-ornament
             check, ``experiments/2026-09-29-BL-23-aligner-ornaments/``).
+        wrong_pitch_window: per-note window rule, one of :data:`WINDOW_RULES` (module
+            docstring, "Window rules"). ``"fixed"`` uses ``wrong_pitch_window_sec`` everywhere.
 
     Returns:
         :class:`CorrectnessResult`. Unmatched ids that are not in the note arrays are ignored
         and counted in ``summary["n_unknown_ids"]``.
     """
+    if wrong_pitch_window not in WINDOW_RULES:
+        raise ValueError(f"wrong_pitch_window must be one of {WINDOW_RULES}, "
+                         f"not {wrong_pitch_window!r}")
     if ornament_rule not in ORNAMENT_RULES:
         raise ValueError(f"ornament_rule must be one of {ORNAMENT_RULES}, not {ornament_rule!r}")
     tight = ornament_rule == "tight"
@@ -329,6 +433,8 @@ def correctness(
                              pn["onset_sec"][s_partner[m]].astype(float))  # fmt: skip
     exp_on = _interp(sn["onset_quarter"], kq, kt)
     exp_off = _interp(sn["onset_quarter"] + sn["duration_quarter"], kq, kt)
+    win = pairing_windows(wrong_pitch_window, sn["onset_quarter"], kq, kt,
+                          np.where(m, s_partner, -1), p_on, wrong_pitch_window_sec)
 
     if ornaments:
         s_label[(s_label == "missed") & is_grace] = "ornament_skipped"
@@ -360,8 +466,8 @@ def correctness(
             order = np.argsort(p_on[ins])
             ins_sorted, on_sorted = ins[order], p_on[ins][order]
             for i in dels:
-                a = np.searchsorted(on_sorted, exp_on[i] - wrong_pitch_window_sec, side="left")
-                b = np.searchsorted(on_sorted, exp_on[i] + wrong_pitch_window_sec, side="right")
+                a = np.searchsorted(on_sorted, exp_on[i] - win[i], side="left")
+                b = np.searchsorted(on_sorted, exp_on[i] + win[i], side="right")
                 for j in ins_sorted[a:b]:
                     dp = abs(int(p_pitch[j]) - int(s_pitch[i]))
                     if 1 <= dp <= max_semitones or (allow_octave and dp == 12):
@@ -442,7 +548,8 @@ def correctness(
     }
     params = {"wrong_pitch_window_sec": wrong_pitch_window_sec, "max_semitones": max_semitones,
               "allow_octave": allow_octave, "ornaments": ornaments,
-              "ornament_rule": ornament_rule, "reassign": reassign}  # fmt: skip
+              "ornament_rule": ornament_rule, "reassign": reassign,
+              "wrong_pitch_window": wrong_pitch_window}  # fmt: skip
     return CorrectnessResult(notes_df, score_df, bars, summary, params)
 
 

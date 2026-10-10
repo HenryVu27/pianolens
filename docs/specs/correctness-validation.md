@@ -334,3 +334,128 @@ otherwise `L` stays. If the default changes, the calibration constants that depe
 and what happens to the 26 BL-20 different-pitch absorptions. Reproduction check: `L`,
 `aligned`, all injections, must reproduce BL-20 Part B strict recall and absorbed shares.
 Outcome shares per cell (paired intended / other, absorbed, extra, ornament).
+
+## Pre-registration DF-13: wrong-pitch pairing window on transcribed input (2026-10-10)
+
+Written by `feature-engineer` before any held-out transcription was drawn or aligned. Experiment
+folder `experiments/2026-10-10-DF-13-pairing-window/`; script
+`scripts/eval_pairing_window_df13.py`; outputs (gitignored) `data/interim/df13/`.
+
+**Problem (DF-12 / DF-13).** On transcribed input 16-19% of injected wrong notes are not counted
+as wrong (BL-18b audit, item 4). The audit attributed most of the loss to the 100 ms pairing
+window. **Seen before this section (dev only, all disclosed):** the BL-18b targeted copies were
+regenerated (238 targets, identical to the audit) and the 6,765 injected notes followed per rule.
+The audit split reproduces (counted in the same bar 83.4 / 80.4%, unpaired 10.1 / 13.3%,
+absorbed 4.9 / 4.1%, ornament 1.5 / 2.0%; Transkun V2 / Aria-AMT). New: of the unpaired notes,
+only 146 / 215 (43% / 48%) have their intended score note labelled missed; in the rest the
+aligner re-matched the intended score note to another performed note of the same pitch, whose
+onset is a median 0.28 / 0.37 s from the note's expected onset (the realignment after the
+injection moves matches; in the clean copy that note was mostly matched to another score note). No pairing
+window can recover those. So the **window-reachable loss is 4.3% (Transkun V2) / 6.4%
+(Aria-AMT) of injected notes**, about half of the unpaired share. A robust (outlier-knot) time
+map was also tried on dev and recovered fewer notes than the current one; it is not a candidate.
+
+**Rules** (`features.correctness`, parameter `wrong_pitch_window`; the code exists and is not
+default; constants fixed here and not tuned further):
+- `fixed` (baseline): 100 ms (`WRONG_PITCH_WINDOW_SEC`), as deployed.
+- **`tempo` (primary):** 0.4 quarter note at the local tempo, clipped to [0.1, 0.3] s. Local
+  seconds per quarter: slope of the time map between the knots 3 positions before and after the
+  note's score onset.
+- `error` (first fallback): 2 x the largest leave-one-out onset residual
+  (`align.postpass.loo_expected_onsets`) among matched notes within 3 distinct score onsets,
+  clipped to [0.1, 0.3] s.
+- `wide` (second fallback): 200 ms everywhere.
+Pair costs stay in units of 100 ms, so "closest first" is closest in seconds for every rule.
+The primary was chosen on dev, where it had the best balance (dev values below). The constants
+0.4 / 2 / 200 ms / 0.3 s were picked from a small dev sweep (fixed 150-300 ms, tempo 0.25-0.4
+quarter, error factor 1-2, caps 0.25-0.4 s).
+
+**Dev set** (already seen): the BL-18b pieces, experts and targets (12 pieces, 15 experts and
+up to 10 targets per family, 238 usable targets), the BL-18b D-08 copies (seed 1) and targeted
+copies (seed 2; injections may equal a pitch written in the same bar, flagged as collisions).
+
+**Held-out set** (new): PianoCoRe pieces with at least 25 transcriptions in each family and
+exactly one score.mxl, excluding Henry's 5, the 6 BL-18 T2 pieces and the 12 BL-18b pieces:
+241 pieces qualify (count only, computed before the draw). Draw **16 pieces**, seed 1010
+(`numpy.random.default_rng`), from the pool sorted by piece id. Per piece and family
+(family = transcriber = source corpus: Transkun V2 = PERiScoPe, Aria-AMT = Aria-MIDI; reported
+separately, never pooled for a verdict): the transcriptions sorted by id minus every id used in
+the A-01 floor, BL-18 and BL-18b, permuted with the same generator; the first 15 are experts,
+the next 10 targets. Alignments with match ratio below 0.8 are dropped. Each target gets a D-08
+copy (rate 0.05, seed 1, as BL-18b) and a targeted copy (seed 2, the BL-18b procedure: up to 10
+spaced clean bars where every expert has at most 1 wrong note under `fixed`, 3 wrong pitches
+±1 / ±2 each) with the **collision fix**: a new pitch may not be any pitch written in that bar
+of the score. Every job is aligned once per copy; every rule labels the same alignment, and a
+target is checked against expert tables labelled with the same rule.
+
+**Metrics** (per family; point estimates decide; piece bootstrap 95% CI, 2,000 resamples, seed
+0, and a t-interval over pieces reported):
+- Targeted injected notes: strict recall (labelled wrong pitch and paired with the intended
+  score note), mispair (wrong pitch with another score note), unpaired, absorbed, ornament.
+- Clean transcriptions (experts and targets): wrong-pitch labels per 1,000 graded score notes,
+  and per 1,000 performed notes in fast runs (`build.fast_run_notes`, local IOI < 100 ms). On
+  clean copies every new pair is counted as a false pairing (an upper bound: some are real
+  transcriber or performer pitch errors).
+- Report level, rule P = R1(0) + run rule (the interim transcribed default), extras not
+  counted: clean strong and notable+ rates outside runs; strong share of targeted bars (the
+  end-to-end DF-12 measurement, E0); D-08 injected-bar strong and notable+ (information).
+- Dense passages: strict and mispair of targeted injected notes in fast runs.
+
+**Criteria for a candidate, per family** (candidate minus `fixed`; "pt" = percentage point):
+- **B1, benefit (rule-relative, detection floor):** strict recall gain in [+1.5, +10] pt. Above
+  +10 pt is checked by hand before acceptance (the dev window-reachable loss is 4-6%).
+- **M1, mispairing:** mispair increase at most +1.5 pt and at most one third of the B1 gain (at
+  least about 75% of the newly paired injected notes go to the intended note).
+- **F1, clean false pairing:** clean wrong-pitch label rate up by at most 15% of the baseline
+  rate.
+- **R1, clean strong:** |change| of P's clean strong rate at most 0.25 pt. (Whether the rate lies
+  in BL-18b's band [0.30, 1.25]% is reported as information; it is a property of the tier rule
+  and of the piece sample, and both `fixed` and the candidate are shown.)
+- **R2, clean notable+:** |change| at most 0.5 pt.
+- **E1, end-to-end (rule-relative, detection floor):** strong share of targeted 3-wrong-note
+  bars up by [+2, +20] pt. The baseline share E0 is the tracked DF-12 number.
+- **D1, dense passages (BL-20 risk):** in fast runs, strict recall change at least -1.0 pt,
+  mispair increase at most +1.5 pt, and the clean fast-run wrong-pitch rate up by at most 25% of
+  its baseline.
+
+**Verdict and action.** A candidate PASSes when B1-E1 and D1 hold in both families, is PARTIAL
+in one, FAILs in neither. Order: `tempo`; if it does not PASS, `error`, then `wide` (the same
+criteria; this ordered fallback is a multiple comparison and is reported as such). The first
+candidate that PASSes becomes the rule for **transcribed input only**: `correctness` resolves
+the window rule from the performance provenance (`transcribed` -> the rule; every other
+provenance, including Disklavier and other key-sensor input, keeps `fixed`, checked by a unit
+test). Then: the A-01 floor expert tables are rebuilt with the rule, Henry's 10 reports are
+rerun into `data/interim/reports/henry_df13/`, the BL-18b C1-C3 measurements are reported
+under the rule on dev and held-out, and every transcribed calibration value that moves is
+reported; key-sensor constants (`CORRECTNESS_EXPERT_BARS`) are not touched. A PARTIAL is not
+implemented per family (family is confounded with corpus, BL-18 audit); if no candidate
+PASSes, `fixed` stays and the lead decides.
+
+**Dev values** (computed before this section; Transkun V2 / Aria-AMT; `tempo`): B1 +3.3 / +3.7
+pt; M1 +0.8 / +0.5 pt; F1 +8.9% / +9.5% (+0.41 / +0.72 per 1,000); R1 +0.00 / +0.05 pt; R2 +0.03
+/ +0.11 pt; E0 71.5% / 68.4% (reproduces BL-18b C4) -> E1 +5.8 / +6.2 pt; D1 strict +0.7 / +1.6
+pt, mispair +0.3 / 0.0 pt, clean fast +13% / +11%. `error` and `wide` also meet every criterion
+on dev, with larger fast-run mispair and clean increases.
+
+**Reachability** (R-09 lesson; dev per-piece sums, 2,000 resamples of 16 pieces per family):
+if the dev effect is true, `tempo` PASSes with probability 0.64, is PARTIAL 0.34, FAILs 0.02;
+the binding criterion is M1 in Transkun V2 (0.76; its dev value +0.8 pt is close to one third of
++3.3 pt). (`error`: 0.51 / 0.42 / 0.07; `wide`: 0.39 / 0.48 / 0.13.) If a rule had no effect,
+B1 and E1 fail by their floors, so FAIL is reachable; PASS needs a real gain.
+
+**Also reported.** Outcome shares per rule; D-08 note outcomes with collisions split out; the
+held-out collision count (zero by construction for targeted copies); the share of unpaired
+losses whose intended score note was re-matched by the aligner (not reachable by any window;
+proposed as a separate fix).
+
+End of the DF-13 pre-registration.
+
+### DF-13 results (Provisional, awaiting eval-auditor)
+
+Recorded below the pre-registration's end marker, so its anchor hash is unchanged. Details,
+tables and the run record: `experiments/2026-10-10-DF-13-pairing-window/README.md`.
+**FAIL by the pre-registered rule**: `tempo` and `error` fail in both families, `wide` is
+PARTIAL (Transkun V2 only); `fixed` (100 ms) stays. `tempo` meets every criterion except F1
+(clean wrong-pitch label rate +15.02% Transkun V2, +16.8% Aria-AMT, against at most +15%),
+with strict recall +3.6 / +4.7 pt and targeted 3-wrong bars strong 73.0 -> 78.5% / 69.0 ->
+76.2%. One piece (Ravel, "Scarbo") holds about half of the added clean pairs.
