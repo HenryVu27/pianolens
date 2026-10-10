@@ -102,19 +102,25 @@ def envnull(out: dict) -> None:
         rows.append({"piece": piece, "work": pr["work"], "k": k, "k_box": int(pr["k"]),
                      "cap_oracle": np.mean(ce), "cap_oracle_box": pr["cap_oracle"],
                      "cap_env": np.mean(cn), "cap_p100": am.loc["frozen_p100", "cap_model"],
-                     "cap_p95": am.loc["frozen_p95", "cap_model"]})
+                     "cap_p95": am.loc["frozen_p95", "cap_model"],
+                     # addendum 2026-10-10: Pianist Transformer arm, when present
+                     "cap_pt": (am.loc["pt_frozen", "cap_model"] if "pt_frozen" in am.index
+                                else np.nan)})
     D = pd.DataFrame(rows)
     D["ratio_env"] = D["cap_env"] / D["cap_oracle"]
-    for a in ("p100", "p95"):
+    arms = ("p100", "p95", "pt") if D["cap_pt"].notna().any() else ("p100", "p95")
+    for a in arms:
         D[f"ratio_{a}"] = D[f"cap_{a}"] / D["cap_oracle"]
         D[f"adj_{a}"] = (D[f"cap_{a}"] - D["cap_env"]) / (D["cap_oracle"] - D["cap_env"])
     out["envnull"] = {
         "pieces": len(D), "k_matches_box": bool((D["k"] == D["k_box"]).all()),
         "cap_oracle_max_abs_diff_vs_box": float(
             (D["cap_oracle"] - D["cap_oracle_box"]).abs().max()),
-        **{c: f3(cb(D, c)) for c in ("ratio_env", "ratio_p100", "ratio_p95", "adj_p100",
-                                     "adj_p95")},
+        **{c: f3(cb(D, c)) for c in ["ratio_env"] + [f"{p}_{a}" for p in ("ratio", "adj")
+                                                     for a in arms]},
         "pieces_model_p100_at_or_below_env": int((D["cap_p100"] <= D["cap_env"]).sum())}
+    if "pt" in arms:
+        out["envnull"]["pieces_pt_at_or_below_env"] = int((D["cap_pt"] <= D["cap_env"]).sum())
 
 
 def main(argv=None) -> None:

@@ -931,6 +931,147 @@ Reproduce (Mac): `uv run python experiments/2026-10-05-R-10-h1b/audit_checks.py`
 `artifacts/sets/fresh`, the expert items rebuilt on the Mac, for section 8; pass
 `--skip-envnull` without them.
 
+### Addendum (secondary arms, 2026-10-10)
+
+Scope: `gen_pt` and `dev_gen` from 9a1e9cb. All non-deciding. **The verdict above stands.**
+Script: `audit_addendum.py` (Mac, seconds). `audit_checks.py` section 8 now also scores
+pt_frozen, and its earlier output is unchanged on the refreshed files.
+
+**1. The gen_pt restart is clean.**
+- `logs/gen_pt.log` lists 65 completions with 65 distinct items, exactly the fresh item list,
+  each with the same note count as in the p95 log.
+  - Before the pause: 12 items, `bach_bwv852_fugue` to `chaminade_op61`. The 13th,
+    `chopin_op33_no3`, had started ("0/2"), and the log breaks off there.
+  - After the restart at 04:37:06 UTC 2026-10-10: the other 53, starting with
+    `chopin_op33_no3`, in sorted order, none repeated.
+- `pt_gen.py` skips any item whose output exists. It writes each output to `.tmp.npz` and
+  renames it only once the item is finished. So the killed item left no partial file, and no
+  item mixes samples from the two sessions.
+- No FAIL, Traceback or out-of-memory line appears in any log. stderr is captured, because
+  `gen_stage` pipes `2>&1` through tee.
+- None of the 4 per-item JSONs has an `error` entry. Their counts are p95 65, p100 65, dev 91
+  and pt 53.
+- Summary rows: pt_frozen has 65 rows in fresh_as_registered and 62 in fresh (3 pieces
+  excluded under A1).
+- The refresh left every primary arm unchanged. The frozen_p95, frozen_p100 and ridge rows, the
+  summary arms, the experts block and the headline all equal 2e90db7 exactly.
+- Checkpoint: the JSON records `C:/Users/Vuduc/r07/models/pianist-transformer-rendering`, K 16,
+  top-p 1.0, seed 0. That is the `run.sh` default. Job files and pieces are unchanged from
+  28c5a01 to 9a1e9cb.
+  - The JSON covers only the restart session (see 4).
+  - The progress bars are ASCII before the pause and Unicode after it, so the two sessions ran
+    under different console encodings.
+  - The time per batch is the same in both sessions, about 25-26 s.
+  - Nothing committed records the 12 pre-pause items' model, or the HF revision of the box
+    checkpoint (the Mac dry run used 8f156820). This is a box-only check.
+- Dev: 91 of 91 items were generated, and 90 are scored. Bartók Sz.56 is not scored because it
+  keeps 3 renditions after the match_share filter. 85 pieces are primary (80 without R3).
+
+**2. Reproduction and fix 6.** Every pt and dev median, CI, n, reading and paired difference in
+the run record reproduces exactly from the CSVs, and R²c = 2rb - b² holds per piece. Medians
+are given with work-cluster CIs.
+
+| Arm (pieces) | target | r | b | R²c | R²c at b = 1 | r² (best scale) |
+|---|---|---|---|---|---|---|
+| PT, fresh (56) | velocity | 0.650 [0.569, 0.701] | 1.073 [1.017, 1.157] | 0.061 [-0.127, 0.273] | 0.301 [0.139, 0.402] | 0.423 [0.324, 0.491] |
+| PT, fresh (56) | log IOI | 0.391 [0.316, 0.492] | 0.830 [0.676, 0.939] | -0.045 [-0.176, 0.078] | -0.218 [-0.367, -0.016] | 0.153 [0.100, 0.242] |
+| PT, as registered (59) | velocity / log IOI | 0.617 / 0.370 | 1.072 / 0.824 | 0.050 / -0.071 | 0.234 / -0.261 | 0.381 / 0.137 |
+| dev_gen, R10u (85) | velocity | 0.679 [0.620, 0.704] | 0.974 [0.935, 1.016] | 0.324 [0.254, 0.445] | 0.357 [0.239, 0.409] | 0.461 [0.384, 0.496] |
+| dev_gen, R10u (85) | log IOI | 0.524 [0.479, 0.555] | 1.124 [1.015, 1.238] | -0.173 [-0.304, -0.061] | 0.049 [-0.041, 0.109] | 0.275 [0.230, 0.308] |
+| dev_gen, no R3 overlap (80) | velocity / log IOI | 0.681 / 0.526 | 0.977 / 1.128 | 0.324 / -0.182 | 0.362 / 0.053 | 0.463 / 0.277 |
+| dev_gen, unseen 74 | velocity / log IOI | 0.681 / 0.518 | 0.962 / 1.074 | 0.330 / -0.104 | 0.362 / 0.036 | 0.463 / 0.268 |
+
+- **PT velocity: same shape as SyMuPe, and also an overshoot.** Paired against frozen_p95, r
+  differs by -0.008 [-0.043, 0.036]. At b = 1 it would read 0.301, which is inconclusive.
+- **PT log IOI: a pure shape failure.** r is 0.39, against 0.55 for SyMuPe (paired +0.127
+  [0.073, 0.162] for SyMuPe). Even at the experts' amplitude R²c would be -0.22, and the best
+  scale reaches only 0.15.
+- **"PT below the ridge on velocity" (-0.125 [-0.260, -0.020]) is the shrinkage artefact from
+  section 5.** On shape, PT beats the ridge: r +0.129 [0.074, 0.151] on velocity and +0.162
+  [0.075, 0.180] on log IOI, higher on 82% / 70% of pieces.
+- **PT H1b-axes.** The ratio is 0.467 [0.369, 0.655]. Null-adjusted against the envelope
+  sampler it is 0.20 [0.01, 0.30], and on 3 of 12 pieces PT is at or below the envelope.
+- **PT unseen-ness was not checked.** The fresh set was screened against PERiScoPe v1.0 pairs
+  (SyMuPe), not against PT's training data.
+- **The dev summary headline says "(frozen_p100, registered)".** That is the summariser's
+  template. The dev readings are not registered readings and must not be quoted as such.
+
+**3. The frozen-model statement holds at top-p 1.0, with a small shape share.**
+Here both sets use the same model and top-p: fresh p100 (56) against dev_gen on the unseen 74.
+
+| | fresh | dev | Mann-Whitney p |
+|---|---|---|---|
+| velocity r | 0.652 | 0.681 | 0.10 |
+| velocity b | 1.089 | 0.962 | 0.005 |
+| velocity target s.d. | 7.34 | 9.39 | 4e-5 |
+| velocity model s.d. | 7.84 | 9.23 | 0.008 |
+| velocity R²c | 0.098 | 0.330 | 0.001 |
+| log IOI r | 0.520 | 0.518 | 1.0 |
+| log IOI b | 1.214 | 1.074 | 0.32 |
+
+- **Velocity.**
+  - The target flattens by 22% and the model only by 15%.
+  - At b = 1 the gap is 0.303 against 0.362, so about 0.06 of the 0.23 drop is shape. The
+    shape difference is not significant.
+  - "Same shape, the velocity drop is amplitude" therefore holds. Word it as "mostly amplitude"
+    at top-p 1.0.
+- **Section 6 replicates with the box's own dev samples.**
+  - One scale chosen on dev_gen (velocity 0.625, the same as the 0.627 from the R-07 samples;
+    log IOI 0.456) gives fresh p100 0.350 [0.240, 0.444] and 0.242 [0.183, 0.302].
+  - Both are **inconclusive**.
+- **The negative log IOI at top-p 1.0 is a sampling effect, not a fresh-set effect.**
+  - On the same pieces, top-p 1.0 minus 0.95 raises log IOI b by 0.19 [0.16, 0.23] on dev and by
+    0.235 [0.191, 0.277] on fresh, while r falls by 0.02.
+  - Dev log IOI is therefore negative too (-0.17), against +0.144 at top-p 0.95 (R-07
+    samples).
+  - The dev_gen log IOI value is not comparable with R-07's 0.127 / 0.144.
+
+**4. Run record accuracy.**
+- **Accurate:**
+  - the timeline (02:32:11 start; 12 done at the pause, the 13th started; the 03:13:46 pause
+    fits the item durations summed from the log);
+  - the restart (04:36:57, against the log header at 04:37:06, the time `run.sh` takes to start);
+  - "only the item in progress was regenerated";
+  - 65 / 65 and 91 / 91;
+  - the primary numbers being unchanged.
+- **Imprecise:**
+  - "0 errors in every `_log_gen.json`" is true, but the PT JSON lists only the 53 items
+    generated after the restart. `pt_gen.py` writes its log at exit, and the killed process
+    never exited. The 12 pre-pause items are documented only by `logs/gen_pt.log`.
+  - Exit codes and `gen_complete` counts are not in any log, because `gen_stage` does not tee
+    them.
+  - `meta` was not re-run at the restart, so the box tree state (HEAD, diff) on 2026-10-10 is
+    not recorded.
+  - The reboot time cannot be verified from the logs.
+  - Post-audit correction 2 says the amendment block is at "lines 448-548". It now starts at
+    line 480. The anchor hash still gives 6215a057...4089, and `head -n 409` still gives
+    d679394f...5f09.
+
+**5. Post-audit correction 3 is closed.** `results_box/logs/` now holds every stage log:
+- meta, sets, ridge;
+- gen_frozen_p95 (header 01:56:55 UTC) and gen_frozen_p100 (02:12:31), both after the 01:51:49
+  driver start;
+- dev_r07 (with and without overlap);
+- summarize and summarize_as_registered (3 appended runs each, with identical piece lines);
+- gen_pt, dev_gen and the two summarize_dev logs.
+
+`gen_logs/` holds the per-item JSONs (ms per note). This also covers the per-item part of
+section 10.3. The output mtimes remain box-only. `summarize.log` is not valid UTF-8; read it as
+latin-1.
+
+**Still box-only:**
+- the model, k, top-p and seed stored in the 12 pre-pause PT `.npz` files, and the HF revision
+  of the PT checkpoint;
+- the other section 10 items.
+
+**Proposed addition to the EXPERIMENTS.md R-10 row (for the lead):** "Secondary, non-deciding,
+audited 2026-10-10: Pianist Transformer (top-p 1.0, 56 pieces) R²c 0.061 / -0.045, r 0.65 /
+0.39, b 1.07 / 0.83, R²c at b = 1 0.30 / -0.22: SyMuPe's velocity shape, a worse log IOI shape;
+it beats the ridge on r, +0.13 / +0.16. dev_gen (SyMuPe top-p 1.0, R10u 85): 0.324 / -0.173,
+r 0.68 / 0.52, b 0.97 / 1.12. Fresh vs dev at top-p 1.0: velocity r 0.65 vs 0.68 (p 0.10),
+b 1.09 vs 0.96, so the drop is mostly amplitude. A dev_gen scale gives 0.350 / 0.242
+(inconclusive). The gen_pt restart is clean (65 items, each once)."
+
 ## Post-audit corrections (2026-10-06)
 
 Text fixes 1-5 from `## Audit (2026-10-06, eval-auditor)`, section 9 (author, ml-researcher). The
@@ -991,3 +1132,40 @@ in general: the score-feature ridge's own velocity reading is **inconclusive (0.
 
 **6. Pending.** `gen_pt` (Pianist Transformer) and `dev_gen` are reported with the same r / b /
 R²c-at-b = 1 columns when the box pushes them. They do not decide.
+
+**6, closed (2026-10-10).** The box pushed `gen_pt` and `dev_gen` (9a1e9cb). The r, b, R²c, R²c
+at b = 1 and best-scale r² of both arms, with work-cluster CIs, are in the Audit's
+`### Addendum (secondary arms, 2026-10-10)`, table in item 2; I re-ran `audit_addendum.py` on the
+Mac and every number matches. Neither arm decides anything.
+- Pianist Transformer (frozen, top-p 1.0, 56 pieces): R²c velocity 0.061, log IOI -0.045; r 0.65 /
+  0.39.
+- dev_gen (frozen SyMuPe, top-p 1.0, R10u, 85 pieces): R²c velocity 0.324, log IOI -0.173.
+- **Fresh vs development at top-p 1.0 (same model, same top-p).** The velocity drop is mostly
+  amplitude: R²c falls by about 0.23 (0.330 on the 74 unseen dev pieces to 0.098 on fresh), and
+  at b = 1 the gap is 0.362 vs 0.303, so about 0.06 of it is shape (r 0.681 vs 0.652, p 0.10).
+  One scale chosen on dev_gen gives fresh 0.350 / 0.242, inconclusive on both targets.
+- **dev_gen's negative log IOI is a top-p effect.** On the same pieces top-p 1.0 raises log IOI b
+  by about 0.2 against top-p 0.95 (dev +0.19 [0.16, 0.23], fresh +0.235 [0.191, 0.277]) with r
+  almost unchanged. So dev_gen's -0.173 is not comparable with R-07's 0.144 (R-06 formula) or
+  0.127 (R-07 formula), which are top-p 0.95.
+- **Pianist Transformer vs the ridge.** Its R²c is below the ridge on velocity (-0.125 [-0.260,
+  -0.020]), but that is the ridge's shrinkage (b 0.44), as in correction 5. On shape it beats
+  the ridge: r +0.13 [0.07, 0.15] velocity, +0.16 [0.08, 0.18] log IOI. Its unseen status was
+  checked only against SyMuPe's pretraining pairs, not against Pianist Transformer's training
+  data.
+- **Dev summary headline.** `results_box/results/r10u_dev*/summary.json` say "H1b-consensus
+  (frozen_p100, registered): ...". "registered" there is the summariser's template wording. The
+  development readings are not registered readings; quote them as "dev_gen, frozen_p100:
+  velocity inconclusive, log IOI falsified". The run record does not quote them; the fresh
+  headline it quotes is registered.
+- **Run-record imprecisions** (Addendum item 4):
+  - "0 errors in every `_log_gen.json`" is true, but the Pianist Transformer JSON covers only
+    the 53 items generated after the restart. The 12 pre-pause items are documented only by
+    `logs/gen_pt.log`.
+  - Exit codes, `gen_complete` counts and the box git state at the 2026-10-10 restart are not
+    recorded (`meta` was not re-run).
+  - The amendment block now starts at line 480, not 448 as correction 2 says. The anchor-form
+    hash is unchanged (below).
+- Hashes re-checked 2026-10-10: `head -n 409 README.md` = d679394f...5f09; anchor form
+  `awk '/^## Pre-run amendments/{f=1} f&&n<101{print;n++}' README.md | shasum -a 256` =
+  6215a057...4089.

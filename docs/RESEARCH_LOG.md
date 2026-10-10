@@ -2571,7 +2571,8 @@ tested it on 56 pieces the model had never seen, against a yardstick that 16 rea
 easily (about 0.88). The model's average performance explains only 0.15 of the experts' average
 loudness curve and 0.07 of their timing. It gets the shape partly right (correlations of about 0.67
 and 0.55), but even with its loudness range corrected it would explain under half. It also does no
-better than a small model on simple score features, by this measure. The consequence is practical:
+better than a small model on simple score features, by this measure. A second model, Pianist
+Transformer, did no better: it matched SyMuPe on the shape of loudness and did worse on timing. The consequence is practical:
 judging interpretation needs real expert recordings of the same piece, which is how the report
 already works. A model's prediction can at most be a weak hint for pieces nobody has recorded.
 

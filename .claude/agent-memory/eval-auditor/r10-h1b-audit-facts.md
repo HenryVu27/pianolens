@@ -1,6 +1,6 @@
 ---
 name: r10-h1b-audit-facts
-description: R-10 H1b audit 2026-10-06 - hash recipes (amendment block moved), Mac-only recompute from committed CSVs via audit_checks.py, shape vs amplitude (r same as dev, b overshoot on flatter fresh consensus), dev-scale flips to inconclusive, envelope-surrogate floor 0.36 for axes, R-10b separation
+description: R-10 H1b audit 2026-10-06 + secondary-arms addendum 2026-10-10 (gen_pt restart check, PT/dev decomposition) - hash recipes (amendment block moved), Mac-only recompute from committed CSVs via audit_checks.py, shape vs amplitude (r same as dev, b overshoot on flatter fresh consensus), dev-scale flips to inconclusive, envelope-surrogate floor 0.36 for axes, R-10b separation
 metadata:
   type: project
 ---
@@ -40,6 +40,19 @@ R-10 audited 2026-10-06: Confirmed with caveats (scoped). Facts the docs lack:
   curves.
 - **Box-only checks** (K = 16 sample noise in b, stacking, mtimes, R-10b outputs, determinism,
   overshoot vs conditioning) are listed in the README Audit section 10.
-- `results_box/` has no logs, although the run record says it does.
+- `results_box/` logs arrived with 9a1e9cb (correction 3 closed). `summarize*.log` are appended
+  across runs (3 copies) and are not UTF-8 (read as latin-1, use grep -a).
+- **Addendum 2026-10-10 (secondary arms).** Use `audit_addendum.py`, which runs `git show 2e90db7`
+  for the unchanged check.
+  - Restart integrity: `pt_gen.py` writes `_log_gen.json` only at exit, so a killed run leaves no
+    JSON, and the restarted JSON lists only the post-restart items. Count items from the text log
+    (`name: N notes, X s`). Outputs are atomic (`.tmp.npz` then rename).
+  - The model path is in the JSON. The HF revision is not recorded on the box.
+  - PT: velocity shape same as SyMuPe (r 0.65); log IOI r 0.39, and R²c at b = 1 is -0.22. It
+    beats the ridge on r.
+  - dev_gen (SyMuPe top-p 1.0) on the unseen 74 against fresh p100: velocity r 0.681 vs 0.652
+    (p 0.10), b 0.962 vs 1.089. Top-p 1.0 adds about 0.2 to log IOI b on both sets.
+  - The dev summary headline template says "registered"; it is not.
+  - Bartók Sz.56 in R10u is generated but not scored (3 renditions).
 
 Related: [[r10-h1b-prerun-review-facts]], [[r07-symupe-finetune-audit-facts]], [[r02-dimensionality-audit-facts]] (envelope null).

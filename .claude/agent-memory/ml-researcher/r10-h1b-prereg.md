@@ -61,3 +61,7 @@ pre-registered, not run, waiting for the RTX 5080 box). Related: [[r07-finetune-
 - My lessons: register r / b / R²c-at-b=1 and a structure-free sampler floor up front; hash appended
   blocks by anchor, never by line numbers (inserting run-record lines above moved them).
 - Pending: gen_pt and dev_gen from the box, same r / b / R²c-at-b=1 columns (fix 6).
+- 2026-10-10: fix 6 closed. PT 0.061 / -0.045 (log IOI shape r 0.39 is the failure); dev_gen
+  (top-p 1.0) 0.324 / -0.173. Top-p 1.0 inflates log IOI b by ~0.2: never compare p100 log IOI
+  with p95 numbers. The summariser's headline says "registered" for any primary arm (template):
+  qualify dev headlines when quoting. Make `gen_stage` log exit codes next time.

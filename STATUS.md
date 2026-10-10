@@ -85,9 +85,9 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 
 ## In flight (2026-10-06)
 
-- **R-10** (H1b): audited 2026-10-06 (Confirmed with caveats). Author text fixes in progress;
-  Pianist Transformer (`gen_pt`) and `dev_gen` still running on the RTX 5080 (secondary,
-  non-deciding).
+- **R-10** (H1b): audited 2026-10-06 (Confirmed with caveats); the RTX box finished the
+  secondary arms 2026-10-10 (audited addendum: Pianist Transformer R²c 0.061 / -0.045, worse than
+  SyMuPe on timing shape; H1b reading unchanged). All post-audit fixes closed.
 - **R-11:** audited (Confirmed with caveats); author README text fixes in progress. Follow-ups
   BL-31 (anchor rule), BL-32 (note-level channels, OWNER input), BL-33 (MusicXML hands).
 - **R-07 follow-ups:** author text fixes (AUDIT section 9) after the origin/main merge.

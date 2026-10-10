@@ -25,5 +25,5 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [r05-context-shortcut.md](r05-context-shortcut.md): R-05 H8 simulated-context shortcut (supported, Provisional); reusable MuQ cache of 1,500 MAJEPPA renders x 4 contexts; zsh word-split trap
 - [r11-teacher-annotations.md](r11-teacher-annotations.md): R-11 tonebase pilot (Confirmed with caveats; post-audit fixes applied); PianoCoRe staff/empty-measure/target-grid traps, report tier path
 - [bl17-romantic-llm.md](bl17-romantic-llm.md): BL-17 run (68 blind annotators launched by me): simple 0.635 t [0.549, 0.720] INCONCLUSIVE, Confirmed with caveats; post-audit text fixes applied (what I overclaimed); reuse of R-08b/d code, concurrency limit 20, transcript audit script
-- [r10-h1b-prereg.md](r10-h1b-prereg.md): R-10: prereg, amendments, result (falsified, scoped: amplitude + partial shape), audit fixes; gen_pt/dev_gen pending
+- [r10-h1b-prereg.md](r10-h1b-prereg.md): R-10: prereg, amendments, result (falsified, scoped: amplitude + partial shape), audit fixes 1-6 closed (PT, dev_gen top-p 1.0 traps)
 - [r10b-captured-share.md](r10b-captured-share.md): R-10b, a duplicate R-10 design made on the RTX box without seeing the Mac's R-10; superseded, exploratory only. Finding worth keeping: span captured share has a high envelope-null floor (~0.58 at K=32).
