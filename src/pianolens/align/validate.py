@@ -74,6 +74,8 @@ def ground_truth_variant(part: Any, gt_score_ids: set[str]) -> tuple[str, float]
 @lru_cache(maxsize=4)
 def _load_part(score_path: str) -> tuple[Any, float]:
     t0 = time.perf_counter()
+    # parsed first on purpose: (n)ASAP ground-truth ids refer to the written notes, so tremolos
+    # are not expanded here (BL-26; to_part expands only when given the file path)
     part = to_part(pt.load_score(score_path))
     return part, time.perf_counter() - t0
 

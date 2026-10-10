@@ -673,3 +673,20 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - **BL-18b's interim rule stays interim.** On a second sample (DF-13's 16 pieces) rule P's
     clean strong rate is 1.49% / 1.86%, above the 1.25% band by point estimate (CIs include
     it), and not only because of one piece. Re-examine after DF-15 and BL-28.
+- **2026-10-10, lead: score loading (BL-26, BL-33, Op. 29 warning).** Accepted into
+  `align/_adapters.to_part`.
+  - **Tremolos:** strokes of an eighth or sixteenth are expanded; 32nds or faster and
+    `unmeasured` stay written, with the tremolo mark on every chord note (the number of strokes is
+    not written; standard engraving convention). The (n)ASAP ground-truth comparison still uses
+    the written notes. On the F-08 calibration set only the two D899/1 performances change; the
+    q99 tails of missed+extra per note (0.634 to 0.50) and error rate (0.207 to 0.171) were
+    driven by that one piece. Constants are not updated here; BL-28 takes them after DF-15.
+  - **Left-hand notes in wide upper-staff chords move to staff 2, on for all scores.** It is
+    structural and conservative (voice condition, octave spans), and 343 of 344 labelled played
+    notes on moved score notes are left hand. The thresholds were set with the PianoVAM labels in
+    view, so the 6.66% to 6.37% staff-vs-hand change is in-sample and is not claimed; the
+    held-out test is BL-34. BL-19, BL-19b and R-11 records stay as computed (printed staff).
+  - **Op. 29:** rule unchanged; a load note and a warning fire under a 1-semitone margin.
+  - Open from it: a new misalignment in D899/1 bars 82-84 (identical repeated chords) after
+    expansion; the tight and key-aware ornament rules are retested only in a pre-registered
+    BL-26 follow-up.

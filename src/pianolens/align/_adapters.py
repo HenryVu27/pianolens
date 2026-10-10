@@ -8,13 +8,51 @@ score; anything with a ``.note_array`` (array or method) is read as a performanc
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import partitura as pt
 
+from pianolens.align.tremolo import MUSICXML_SUFFIXES, load_musicxml_expanded
+
 _PERF_FIELDS = ("onset_sec", "duration_sec", "pitch", "id")
+_LOG = logging.getLogger(__name__)
+
+EXPAND_TREMOLOS = True
+"""Default of ``to_part(expand_tremolos=...)`` (BL-26). A switch for before/after measurements."""
+
+SPLIT_WIDE_UPPER_CHORDS = True
+"""Default of ``to_part(split_wide_chords=...)`` (BL-33). A switch for before/after measurements."""
+
+MAX_HAND_SPAN = 12
+"""Semitones one hand is taken to cover at one onset (an octave), for BL-33's chord split."""
+
+MIN_SPLIT_GAP = 8
+"""Smallest pitch gap (semitones) inside an upper-staff chord at which BL-33 splits it."""
+
+STAFF_MARGIN_WARN = 1.0
+"""DF-09 in-between staff: warn when its mean pitch is within this many semitones of the
+midpoint of the two main staves (Chopin Op. 29's "Flauta" part: 0.11)."""
+
+LOAD_NOTES_ATTR = "pianolens_load_notes"
+
+
+def load_notes(part: Any) -> list[str]:
+    """Notes :func:`to_part` recorded while building ``part`` (tremolos expanded, chord notes
+    moved to the lower staff, fragile staff choices). ``align`` copies them to the aligned
+    score's ``meta["load_notes"]``."""
+    return list(getattr(part, LOAD_NOTES_ATTR, None) or [])
+
+
+def _add_load_note(part: Any, msg: str) -> None:
+    notes = getattr(part, LOAD_NOTES_ATTR, None)
+    if notes is None:
+        notes = []
+        setattr(part, LOAD_NOTES_ATTR, notes)
+    if msg not in notes:
+        notes.append(msg)
 
 
 _STAFFED = (pt.score.GenericNote, pt.score.Clef, pt.score.Words, pt.score.Direction)
@@ -56,6 +94,9 @@ def normalise_piano_staves(part: Any) -> dict[int, int]:
     - Three or more: the two staves with the most notes are the main pair (ties: lower number
       first); the one printed higher -> 1, the other -> 2. Any other staff printed above the
       pair -> 1, below it -> 2, between them -> the main staff whose mean pitch is nearer.
+      When that staff's mean pitch is within ``STAFF_MARGIN_WARN`` semitones of the midpoint of
+      the two main staves, the choice is fragile: a warning is logged and recorded in
+      :func:`load_notes` (the rule itself is unchanged).
 
     Notes, clefs, words and directions are renumbered. Returns the mapping (old -> new).
     """
@@ -83,42 +124,158 @@ def normalise_piano_staves(part: Any) -> dict[int, int]:
                 mapping[s] = 2
             else:
                 mapping[s] = 1 if abs(mean[s] - mean[up]) <= abs(mean[s] - mean[lo]) else 2
+                margin = abs(mean[s] - (mean[up] + mean[lo]) / 2)
+                if margin < STAFF_MARGIN_WARN:
+                    msg = (f"staves: in-between staff {s} (mean pitch {mean[s]:.2f}) joins the "
+                           f"{'upper' if mapping[s] == 1 else 'lower'} staff by a margin of "
+                           f"{margin:.2f} semitone from the midpoint of staves {up} "
+                           f"({mean[up]:.2f}) and {lo} ({mean[lo]:.2f}); hand assignment of its "
+                           f"{count[s]} notes is fragile")
+                    _LOG.warning(msg)
+                    _add_load_note(part, msg)
     if any(k != v for k, v in mapping.items()):
         _set_staves(part, mapping)
     return mapping
 
 
-def to_part(score: Any) -> Any:
-    """Return a single merged partitura ``Part`` from a score-like input.
+def split_wide_upper_chords(
+    part: Any, max_span: int = MAX_HAND_SPAN, min_gap: int = MIN_SPLIT_GAP
+) -> tuple[int, int]:
+    """Move the low notes of too-wide upper-staff chords to the lower staff, in place (BL-33).
 
-    Staves are numbered upper = 1, lower = 2 (:func:`normalise_piano_staves`; multi-part scores
-    first get consecutive staff numbers in part order). This is the one place every aligned
-    score is built (``align_performance`` re-reads the score file through it), so tier B's hand
-    synchrony and even runs see the same numbering for every score. A partitura ``Part`` or
-    ``Score`` passed in is renumbered in place.
+    Some encodings write left-hand notes into the upper staff or upper part with no cross-staff
+    mark. Chopin's Waltz Op. 64/1 in PianoCoRe (two one-staff parts "rh" / "lh", every note in
+    voice 1) puts the left hand's chords in the "rh" part as members of the melody's chords, in 19
+    measures (29-33, 45-49, 117-121, 133-136): no staff, voice or cross-staff element marks them.
+    Schumann Op. 17 i mm. 41-49 (BL-19b) writes a left-hand voice on the upper staff. Rule:
+
+    Group the upper staff's (staff 1, after :func:`normalise_piano_staves`) non-grace notes by
+    onset. A group that spans more than ``max_span`` semitones (more than one hand covers) is
+    split at its largest pitch gap, if that gap is at least ``min_gap`` semitones. The notes
+    below the gap move to staff 2 when all of these hold:
+
+    - each side spans at most ``max_span``;
+    - with the lower staff's notes that start at the same onset, the moved notes still span at
+      most ``max_span`` (the left hand can take them);
+    - the moved notes are in voices that no remaining note of the group uses, or the upper staff
+      has a single voice throughout (no voice information, as in the waltz).
+
+    Tied continuations move with their note. Why these conditions: an octave is the usual limit
+    for an unrolled chord in one hand; the gap guard keeps close-spaced chords; a low part of a
+    one-voice chord in a multi-voice staff is mostly played by the right hand. Checked against
+    PianoVAM video hand labels (BL-19b notes, 30 pieces; the conditions were chosen with them in
+    view, so this is in-sample): 99.7% of 344 labelled played notes on moved score notes are
+    left-hand (98.1% of 53 without Schumann Op. 17 i); same-voice moves in multi-voice staves,
+    now excluded, were left-hand for 25% of 20. No voiceless staff in BL-19b had a wide chord, so
+    the voiceless case is checked on the waltz only. Returns (notes moved, chords split).
     """
-    if isinstance(score, str | Path):
-        score = pt.load_score(str(score))
+    notes = [n for n in part.notes_tied if not isinstance(n, pt.score.GraceNote)]
+    upper_voices = {n.voice for n in notes if n.staff is None or int(n.staff) == 1}
+    voiceless = len(upper_voices) <= 1
+    upper: dict[int, list[Any]] = {}
+    lower: dict[int, list[int]] = {}
+    for n in notes:
+        st = int(n.staff) if n.staff is not None else 1
+        if st == 1:
+            upper.setdefault(n.start.t, []).append(n)
+        elif st == 2:
+            lower.setdefault(n.start.t, []).append(int(n.midi_pitch))
+    if not upper or not lower:
+        return 0, 0
+    moved = chords = 0
+    for t, chord in upper.items():
+        ps = sorted(int(n.midi_pitch) for n in chord)
+        if ps[-1] - ps[0] <= max_span:
+            continue
+        gaps = np.diff(ps)
+        k = int(np.argmax(gaps))
+        if gaps[k] < min_gap:
+            continue
+        low, up = ps[: k + 1], ps[k + 1 :]
+        if up[-1] - up[0] > max_span or low[-1] - low[0] > max_span:
+            continue
+        lh = lower.get(t, [])
+        if lh and max(lh + low) - min(lh + low) > max_span:
+            continue
+        move = [n for n in chord if int(n.midi_pitch) <= low[-1]]
+        stay_voices = {n.voice for n in chord if int(n.midi_pitch) > low[-1]}
+        if not voiceless and stay_voices & {n.voice for n in move}:
+            continue
+        for n in move:
+            x = n
+            while x is not None:
+                x.staff = 2
+                x = x.tie_next
+        moved += len(move)
+        chords += 1
+    return moved, chords
+
+
+def _merged_part(score: Any) -> Any:
     if isinstance(score, pt.score.Part):
         normalise_piano_staves(score)
         return score
-    if isinstance(score, pt.score.Score | pt.score.PartGroup | list):
-        parts = score.parts if hasattr(score, "parts") else score
-        if len(parts) == 1 and isinstance(parts[0], pt.score.Part):
-            normalise_piano_staves(parts[0])
-            return parts[0]
-        _number_parts_consecutively(list(parts))
-        merged = pt.score.merge_parts(parts)
-        normalise_piano_staves(merged)
-        return merged
+    parts = score.parts if hasattr(score, "parts") else score
+    if len(parts) == 1 and isinstance(parts[0], pt.score.Part):
+        normalise_piano_staves(parts[0])
+        return parts[0]
+    _number_parts_consecutively(list(parts))
+    merged = pt.score.merge_parts(parts)
+    normalise_piano_staves(merged)
+    return merged
+
+
+def to_part(
+    score: Any, *, expand_tremolos: bool | None = None, split_wide_chords: bool | None = None
+) -> Any:
+    """Return a single merged partitura ``Part`` from a score-like input.
+
+    This is the one place every aligned score is built (``align_performance`` re-reads the score
+    file through it), so every consumer sees the same score:
+
+    - **Tremolos** (BL-26): a MusicXML file has its measured tremolo abbreviations written out
+      (:mod:`pianolens.align.tremolo`). Only a file path can be expanded; partitura objects
+      passed in have lost the tremolo type and marks.
+    - **Staves** are numbered upper = 1, lower = 2 (:func:`normalise_piano_staves`, DF-09;
+      multi-part scores first get consecutive staff numbers in part order), so tier B's hand
+      synchrony and even runs see the same numbering for every score.
+    - **Left-hand chords written in the upper staff** move to the lower staff
+      (:func:`split_wide_upper_chords`, BL-33).
+
+    What changed is recorded on the part (:func:`load_notes`). ``expand_tremolos`` /
+    ``split_wide_chords`` default to ``EXPAND_TREMOLOS`` / ``SPLIT_WIDE_UPPER_CHORDS``. A
+    partitura ``Part`` or ``Score`` passed in is changed in place.
+    """
+    expand = EXPAND_TREMOLOS if expand_tremolos is None else expand_tremolos
+    split = SPLIT_WIDE_UPPER_CHORDS if split_wide_chords is None else split_wide_chords
+    notes: list[str] = []
+    if isinstance(score, str | Path):
+        path = Path(score)
+        if expand and path.suffix.lower() in MUSICXML_SUFFIXES:
+            score, rep = load_musicxml_expanded(path)
+            if rep.n_groups:
+                notes.append(rep.describe())
+        else:
+            score = pt.load_score(str(path))
+    if isinstance(score, pt.score.Part | pt.score.Score | pt.score.PartGroup | list):
+        part = _merged_part(score)
+        for msg in notes:
+            _add_load_note(part, msg)
+        if split:
+            moved, chords = split_wide_upper_chords(part)
+            if moved:
+                _add_load_note(part, f"hands: {moved} notes of {chords} upper-staff chords wider "
+                                     "than an octave moved to the lower staff")  # fmt: skip
+        return part
+    kw = {"expand_tremolos": expand, "split_wide_chords": split}
     # pianolens.data.types.Score: prefer the source file (folded, so repeats can be chosen)
     src = getattr(score, "source_path", None)
     if src is not None and Path(src).is_file():
-        return to_part(Path(src))
+        return to_part(Path(src), **kw)
     for attr in ("part", "score", "partitura_score"):
         inner = getattr(score, attr, None)
         if inner is not None and inner is not score:
-            return to_part(inner)
+            return to_part(inner, **kw)
     raise TypeError(
         f"cannot read a score from {type(score).__name__}; a pianolens Score needs a "
         "source_path or a kept partitura part (keep_part=True)"

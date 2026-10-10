@@ -28,7 +28,7 @@ import numpy as np
 import partitura as pt
 from parangonar import DualDTWNoteMatcher
 
-from pianolens.align._adapters import to_part, to_performance_note_array
+from pianolens.align._adapters import load_notes, to_part, to_performance_note_array
 
 AlignmentList = list[dict[str, str]]
 
@@ -52,6 +52,8 @@ class AlignResult:
         candidates: ``{variant: match_ratio}`` for every variant that was actually aligned.
         unfolded_part: the unfolded partitura ``Part`` (needed by features that read
             measures, time signatures or directions).
+        load_notes: what building the score changed or found fragile (tremolos expanded, chord
+            notes moved to the lower staff, a close staff choice; ``_adapters.load_notes``).
     """
 
     alignment: AlignmentList
@@ -61,6 +63,7 @@ class AlignResult:
     n_variants: int
     candidates: dict[str, float] = field(default_factory=dict)
     unfolded_part: Any = None
+    load_notes: list[str] = field(default_factory=list)
 
     @property
     def n_match(self) -> int:
@@ -89,16 +92,20 @@ class AlignResult:
 
         ``like`` is the ``Score`` that was aligned; its ids and metadata are copied and
         ``meta["unfolded"]`` records the chosen variant. Use this score, not ``like``, with the
-        alignment: its note ids are the ones ``score_id`` refers to.
+        alignment: its note ids are the ones ``score_id`` refers to. ``meta["load_notes"]`` lists
+        :attr:`load_notes` when there are any.
         """
         from pianolens.data.types import score_from_partitura
 
+        meta = {**like.meta, "unfolded": self.variant}
+        if self.load_notes:
+            meta["load_notes"] = list(self.load_notes)
         return score_from_partitura(
             self.unfolded_part,
             score_id=like.score_id,
             piece_id=like.piece_id,
             source_path=like.source_path,
-            meta={**like.meta, "unfolded": self.variant},
+            meta=meta,
             keep_part=True,
         )
 
@@ -268,6 +275,7 @@ def align(
     if best is None:
         raise ValueError("score has no notes to align")
     best.candidates = candidates
+    best.load_notes = load_notes(part)
     return best
 
 
@@ -286,8 +294,9 @@ def _raise_recursion_limit() -> None:
 
 
 def load_score_part(path: str | Path) -> Any:
-    """Load a score file and merge its parts into one ``Part`` (piano staves are often split)."""
-    return to_part(pt.load_score(str(path)))
+    """Load a score file and merge its parts into one ``Part`` (piano staves are often split),
+    with MusicXML tremolos expanded (:func:`pianolens.align._adapters.to_part`)."""
+    return to_part(Path(path))
 
 
 def align_performance(score: Any, performance: Any, **kwargs: Any) -> Any:

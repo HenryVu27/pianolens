@@ -4,7 +4,8 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 `.claude/rules/` or `.claude/skills/`, not here.
 
 - [partitura-parangonar-traps.md](partitura-parangonar-traps.md) - API traps: grace fields,
-  repeats, stateful get_paths, unfold-twice crash, load_match tuple, Nakamura tool build/format.
+  repeats, stateful get_paths, unfold-twice crash, load_match tuple, Nakamura tool build/format,
+  parangonar ornament step re-matches every ornamented note (stale `pitch` bug).
 - [nasap-alignment-facts.md](nasap-alignment-facts.md) - (n)ASAP GT quirks and F-01 measured
   alignment accuracy / runtime.
 - [correctness-and-mistakes.md](correctness-and-mistakes.md) - F-02/D-08: MAESTRO-E generator
@@ -57,3 +58,5 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   re-matching / duplicate matches DF-15); FAIL audited, 100 ms stays; re-hash after last edit.
 - [bl19b-hand-labels.md](bl19b-hand-labels.md) - BL-19b: session take splitting (cut SW at gap runs), Italian Concerto
   catalogue = mvt 2 only, parangonar duplicate matches, staff mismatch 6.7% (systematic per note), D2 unstable.
+- [bl26-bl33-score-loading.md](bl26-bl33-score-loading.md) - tremolo expansion (doc_order map, chord-head marks,
+  ASAP score MIDI as check, D899/1 bars 82-84), LH-in-upper-staff split (voice rule, MuseScore voice 5+), Op. 29.

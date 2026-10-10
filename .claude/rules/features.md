@@ -60,3 +60,18 @@ paths:
   labels are unreliable when the same pitch repeats or appears in octaves.
 - **The Nakamura aligner is an optional cross-check only.** It crashes on about 9% of
   performances. Our aligner is the default.
+
+## parangonar ornament step (from BL-26, 2026-10-10)
+
+- **parangonar 3.3.3's ornament step re-matches every ornamented score note.** In
+  `CleanOrnamentMatcher` (matchers.py about lines 1370-1440) any matched score note with any
+  ornament is unmatched and re-matched to the earliest insertion within ±2 semitones in
+  [onset - 0.25 s, offset]. The same-pitch preference compares against a stale loop variable
+  (`pitch`), and the chosen insertion is not removed from the insertion list, so one performed
+  note can be given to two score notes (a likely source of DF-15). Tagging a written note as an
+  ornament therefore changes its match: do not tag written notes (expanded tremolo strokes drop
+  the mark for this reason).
+- **Score loading changes what `staff` means.** Since BL-26 / BL-33, `align/_adapters.to_part`
+  expands measured tremolos and moves left-hand notes written inside wide upper-staff chords to
+  staff 2. `staff` is the intended hand where the score shows it, not the printed staff. Results
+  computed before 2026-10-10 (BL-19, BL-19b, R-11) used the printed staff.

@@ -29,3 +29,12 @@
   broke da-capo pieces in validation run 1.
 - `RepeatIdentifier` is broken with numpy 2 (`np.row_stack` removed); don't use it.
 - Nakamura tool crashes (SIGABRT/SIGSEGV) on ~9% of ASAP single-path performances.
+
+# Found in BL-26 (2026-10-10)
+- parangonar 3.3.3 `CleanOrnamentMatcher` ornament step (matchers.py ~1370-1440): every matched
+  score note with ANY ornament is unmatched and re-matched to the earliest insertion within +-2
+  semitones in [onset - 0.25 s, offset]; the same-pitch preference compares against a stale loop
+  variable `pitch`, not the ornament's pitch, and the chosen insertion is not removed from the
+  insertion list. So tagging notes as ornaments changes their matches; do not tag written notes.
+- `pt.score.iter_parts(score)` fails on a `Score` (no `.children`); pass `score.parts`.
+- `pt.load_musicxml(io.BytesIO(...), force_note_ids="keep")` loads edited XML without a temp file.
