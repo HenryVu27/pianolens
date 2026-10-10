@@ -494,8 +494,10 @@ is compared with the same boundaries shifted by 2 bars. {_phrase_method(rep)}</l
 <li>No overall grade: how these measures combine into quality is an open research question
 (R-04, Phase 3). "What to practise" is ranked by tier; within a tier, wrong or
 missed notes come first, then control, then shaping; then by how far past the notable limit
-the value is. The same wrong note in the same bar in two or more takes is marked strong, unless
-the checker reports it for other pianists too (an artefact)
+the value is. The same wrong note in the same bar in two or more takes is marked strong when at
+least {cal.RECURRING_MIN_EXPERTS} expert recordings of the same score can be checked, unless the
+checker reports it for one of them too (an artefact); with fewer expert recordings it is listed
+but not marked strong
 {"; loudness items are excluded here because velocity is low confidence" if vlow
 else ""}. Text is filled from templates, not written by a language model.</li>
 </ul>"""

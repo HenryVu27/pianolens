@@ -312,3 +312,67 @@ unlikely.
   in the app catalogue, since per-hand features do not apply to them.
 - The C1 gap (-0.135 for `R`) is still open; BL-20 proposal 3 (bar-level wording in fast runs)
   remains the product mitigation.
+
+## Correction (2026-10-10, feature-engineer, DF-11)
+
+The audit above asked for five text fixes. They are applied here rather than by editing the
+audited sections, so the Results, Verdict and Threats above still read as audited. The
+pre-registration lives in `docs/specs/correctness-validation.md` and is untouched. Where this
+section and the text above disagree, this section holds. No rerun: every number below is from
+`artifacts/summary.json` (checked 2026-10-10) or from the audit section above, which says where
+it measured them.
+
+1. **N3 explanation (replaces "mostly ornaments played on the side that the MusicXML ornament
+   name does not predict" in the N3 paragraph and in "What it means").** The tight rule's N3
+   failure comes mainly from unexpanded tremolo notation, not from ornaments played on the
+   unexpected side. Of the 188 notes that `TR` re-flags (98 extra, 90 wrong pitch), 124 are in
+   Schubert D899/1 (2 performances), whose score carries 172 `tremolo` marks that abbreviate
+   repeated chords; the tight rule allows a tremolo only its own pitch, so it flags the other
+   written chord notes. That piece also supplies 1,309 of the 2,895 legacy-tolerated notes (45%
+   of the N3 denominator). Of the other 64 flags, 34 recur at the same bar in at least 2
+   performers of the same piece (Haydn 31-1 and 50-1, Liszt S.139/5): systematic ornament
+   realisation. At most 30 (1.0% of 2,895) are single-performer cases that could be real slips.
+   N3 still fails without Schubert D899/1: the note share is 4.0% (64 / 1,586, passes) but the
+   bar share is 8.4% (19 / 225, fails). The different-pitch figure is 57 of 201 matches (28.4%;
+   the N3 paragraph's "58" is a slip): 47 of 48 in Schubert D899/1 and 10 of 153 elsewhere.
+   "What it means" should read: tightening the whitelist would help, but as written it flags
+   real expert playing, mostly written-out tremolo chords in one score plus ornaments that
+   several pianists realise the same way.
+2. **DF-10 "0 dissolved" is structural, not empirical.** parangonar makes a different-pitch
+   match only in its ornament step, for score notes with a partitura `ornaments` entry and
+   pitches within ±2, and the legacy rule tolerates exactly those matches. So under the default
+   (`ornament_rule="legacy"`) the pitch check cannot dissolve anything, and the zero in the
+   DF-10 paragraph and in the Changes section follows from the code. The calibration jobs
+   (`asap_one`, `floor_one`) did not record `n_pitch_dissolved`, so for the 354 expert and 150
+   transcribed calibration performances the zero rests on this argument, not on a count. The
+   check matters only under the tight rule or another aligner.
+3. **Post-pass precision and the paired gain (add to Results).** From the audit: on the 370
+   dense-N injections whose bar is clean under both `L` and `R`, strict recall rises by
+   +0.022 [0.008, 0.037] (bootstrap by source, 2,000 resamples, seed 20260929; 9 gains, 1 loss).
+   Every post-pass swap, checked against the nASAP ground truth:
+
+   | Set | Swaps | Repair (new partner = ground truth) | Break (old partner = ground truth) | Neither | Score note unmatched in ground truth |
+   |---|---|---|---|---|---|
+   | Clean copies (rate 0) | 291 | 230 | 35 | 23 | 3 |
+   | Rate 0.05 copies | 382 | 302 | 46 | 32 | 2 |
+   | Clean copies, `gt_alignment` | 147 | 0 | 147 | 0 | 0 |
+
+   On real alignments about 79% of swaps repair an aligner error and about 12% move a correct
+   match (about 35 per 100 expert performances). The `gt_alignment` drop (0.840 -> 0.827) is
+   this false-move rate, not a flaw of that mode. The swaps rarely change error counts on clean
+   playing; they mostly change which note is named.
+4. **N4 for `R`.** Key-sensor: +0.02 points for notable-or-strong (3.667% -> 3.685%) as well
+   as for strong (0.675% -> 0.693%); the Verdict's "+0.01" is wrong. Transcribed floor: -0.01 /
+   0.00 as written. The BL-18 transcribed strong-tier limits
+   (`calibration.TRANSCRIBED_STRONG_LIMITS`) were **not recomputed** for `R`, although the
+   pre-registration says they are reported. What `summary.json` does show: the per-transcriber
+   transcribed false-flag rows are identical for `L` and `R` to 4 decimals except Transkun
+   notable-or-strong (2.994% -> 2.982%). The R2s limits are off by default since the BL-18
+   audit.
+5. **Threats (add).** (a) The N3 denominator is 45% one piece (Schubert D899/1, 1,309 of 2,895
+   notes), so N3 measures that score's tremolo notation as much as ornament playing. (b) Piano
+   four-hands duets in the catalogue (Fauré Op. 56/1, Dvořák Op. 72/2, Ravel *Ma mère l'Oye* 5)
+   get arbitrary hand splits under the DF-09 staff rule. Since DF-11 (2026-10-10) they are
+   detected from the score structure (`report/four_hands.py`), flagged in the app catalogue, and
+   their reports leave out hand synchrony with a plain-language note. BL-23's labeller results
+   do not use hands, so no number above changes.

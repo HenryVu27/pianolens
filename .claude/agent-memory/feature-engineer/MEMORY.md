@@ -51,5 +51,9 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [bl23-df09-df10.md](bl23-df09-df10.md) - DF-10 pitch check is a no-op under the legacy ornament rule; DF-09 staff fix in `to_part` (25 -> 0 zero-event scores); BL-23 tight whitelist fails genuine-ornament check, post-pass `reassign=True` is default.
 - [bl18b-interim-rules.md](bl18b-interim-rules.md) - interim R1(0) + passage-not-heard rule, BL-25 fast-repeat
   missed (score IOI < 100 ms), BL-20 fast-run wording; BL-18b FAIL on C4 = checker loss (DF-12).
+- [df11-four-hands.md](df11-four-hands.md) - DF-11 duet rule + catalogue look-alikes, Op. 29 Flauta 0.11-semitone margin,
+  old-vs-new report byte-identity recipe (symlink data/experiments/docs or R-02 cache drifts).
 - [df13-pairing-window.md](df13-pairing-window.md) - DF-13: only half the DF-12 unpaired loss is window-reachable (rest = aligner
   re-matching after injection); held-out FAIL (F1 clean pairs, Scarbo); relabel experts too.
+- [bl19b-hand-labels.md](bl19b-hand-labels.md) - BL-19b: session take splitting (cut SW at gap runs), Italian Concerto
+  catalogue = mvt 2 only, parangonar duplicate matches, staff mismatch 6.7% (systematic per note), D2 unstable.

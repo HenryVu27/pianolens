@@ -10,8 +10,12 @@ A piece is *supported* when the app has its score and can compare against expert
   reference count is the PianoCoRe count for the same canonical piece id (often 0); the ASAP
   performances are listed too because the report uses them for the per-bar expert check.
 
-Building the list reads the PianoCoRe metadata (about 2 s), so it is cached as
-``<app root>/catalog.json`` and rebuilt when a source file is newer.
+Each piece is also checked for piano four hands (DF-11,
+:func:`pianolens.report.four_hands.detect_four_hands`, from the score's structure): duets are
+marked in the picker and their reports leave out per-hand features.
+
+Building the list reads the PianoCoRe metadata and scans every score's staff layout (a few
+seconds), so it is cached as ``<app root>/catalog.json`` and rebuilt when a source file is newer.
 """
 
 from __future__ import annotations
@@ -26,7 +30,7 @@ from typing import Any
 __all__ = ["MIN_REFERENCES", "Piece", "build_catalog", "load_catalog", "resolve_score"]
 
 MIN_REFERENCES = 50
-CATALOG_VERSION = 1
+CATALOG_VERSION = 2  # 2: four_hands (DF-11)
 
 
 @dataclass(frozen=True)
@@ -40,6 +44,7 @@ class Piece:
     n_asap: int  # ASAP (Disklavier) performances of the same piece
     source: str  # "pianocore" or "asap": where the score comes from
     score: str  # PianoCoRe raw-zip path (source pianocore) or ASAP-relative MusicXML path
+    four_hands: bool = False  # piano duet (DF-11): per-hand features are left out of reports
 
 
 def _pretty(s: Any) -> str:
@@ -101,7 +106,37 @@ def build_catalog(
                 continue
             out[pid] = Piece(pid, _composer(r.composer), title, n, asap_n.get(pid, 0),
                              "pianocore", str(r.score_xml_path))
-    return sorted(out.values(), key=lambda p: (-p.n_references, p.composer, p.title))
+    pieces = _mark_four_hands(list(out.values()), pc_root, a_root)
+    return sorted(pieces, key=lambda p: (-p.n_references, p.composer, p.title))
+
+
+def _mark_four_hands(pieces: list[Piece], pianocore_root: Path, asap_root: Path) -> list[Piece]:
+    """Set ``four_hands`` from each piece's score (DF-11); an unreadable score falls back to the
+    known list inside :func:`detect_four_hands`."""
+    from pianolens.data import pianocore
+    from pianolens.report.four_hands import detect_four_hands
+
+    zf = None
+    if any(p.source == "pianocore" for p in pieces) and (pianocore_root /
+                                                           pianocore.RAW_ZIP).is_file():
+        zf = zipfile.ZipFile(pianocore_root / pianocore.RAW_ZIP)
+    out = []
+    try:
+        for p in pieces:
+            src: bytes | Path | None = None
+            if p.source == "pianocore" and zf is not None:
+                try:
+                    src = zf.read(pianocore.RAW_PREFIX + p.score)
+                except KeyError:
+                    src = None
+            elif p.source == "asap":
+                src = asap_root / p.score
+            fh = detect_four_hands(src, p.piece_id, quick=True).is_four_hands
+            out.append(Piece(**{**asdict(p), "four_hands": fh}) if fh else p)
+    finally:
+        if zf is not None:
+            zf.close()
+    return out
 
 
 def load_catalog(app_root: Path | str, **kw: Any) -> list[Piece]:

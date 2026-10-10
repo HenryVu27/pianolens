@@ -55,10 +55,12 @@ function initHome() {
       const refs = p.n_references ? `${p.n_references} references` : "no expert references";
       const el = h("div", { class: "piece", role: "option", tabindex: "0", "aria-selected": String(p.piece_id === pid.value) },
         h("div", { class: "t" }, h("span", { class: "c" }, p.composer), " ", p.title),
-        h("div", { class: "r" }, refs + (p.n_asap ? ` · ${p.n_asap} ASAP` : "")));
+        h("div", { class: "r" }, refs + (p.n_asap ? ` · ${p.n_asap} ASAP` : "") +
+          (p.four_hands ? " · piano four hands (no hand synchrony)" : "")));
       const pick = () => {
         pid.value = p.piece_id;
-        chosen.replaceChildren("Chosen: ", h("b", {}, `${p.composer}, ${p.title}`), ` (${refs})`);
+        chosen.replaceChildren("Chosen: ", h("b", {}, `${p.composer}, ${p.title}`), ` (${refs})`,
+          p.four_hands ? ". Piano four hands: one recording of both players; hand synchrony is not measured." : "");
         list.querySelectorAll(".piece").forEach(x => x.setAttribute("aria-selected", String(x === el)));
       };
       el.onclick = pick;

@@ -165,6 +165,10 @@ class ReportInputs:
             ``capture_model`` name, e.g. ``"Transkun V2"``, ``"Aria-AMT"``); None = unknown.
         paths: file paths for the header (``score``, ``performance``, ``takes``, ...).
         notes: extra provenance notes for the header.
+        four_hands: piano four-hands score (DF-11): the record of
+            :meth:`pianolens.report.four_hands.FourHands.as_report`, False for a known solo
+            score, or None to detect it from ``paths["score"]`` and ``piece_id``. A four-hands
+            report leaves out the per-hand features (hand synchrony) and says why.
     """
 
     ap: Any
@@ -182,6 +186,7 @@ class ReportInputs:
     transcriber: str | None = None
     paths: dict[str, Any] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
+    four_hands: dict[str, Any] | bool | None = None
 
 
 # =========================================================================== helpers
@@ -1368,6 +1373,10 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
         timing_summ["n_references"] = int(len(X))
 
     ctrl_summ, ctrl_bars, runs = _control_section(ap, tc, same_refs, labels, cfg, errors)
+    four_hands = _four_hands(inp)
+    if four_hands:  # DF-11: staff is not a hand in a duet, so per-hand values are left out
+        for k in four_hands["skipped"]:
+            ctrl_summ[k] = np.nan
     shaping = _shaping_section(ap, tc, cfg, errors) if cfg.shaping else {}
     takes = _takes_section(cres, inp.takes, labels, cfg, errors,
                            [*inp.correctness_refs, *inp_same]) if inp.takes else None
@@ -1487,12 +1496,26 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
         "bars": bars,
         "errors": errors,
     }
+    if four_hands:
+        rep["piece"]["four_hands"] = four_hands
     rep["confidence"]["notes"] = text.confidence_notes(rep)
     issues = collect_issues(rep)
     rep["issues"] = issues
     rep["practise"] = [d for d in issues if d["practise_eligible"]][: cfg.n_practise]
     rep["summary"] = text.summary_findings(rep)
     return rep
+
+
+def _four_hands(inp: ReportInputs) -> dict[str, Any] | None:
+    """The four-hands record of this report's score (DF-11), or None for a solo score."""
+    if isinstance(inp.four_hands, dict):
+        return inp.four_hands
+    if inp.four_hands is False:
+        return None
+    from pianolens.report.four_hands import detect_four_hands
+
+    score = inp.paths.get("score")
+    return detect_four_hands(score if score else None, inp.piece_id, quick=True).as_report()
 
 
 def replace_inputs(inp: ReportInputs, **kw: Any) -> ReportInputs:

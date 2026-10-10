@@ -91,6 +91,12 @@ def confidence_notes(rep: dict) -> list[str]:
         out.append(f"Transcribed input roughly doubles the apparent note-error rate "
                    f"({lo:.3f} to {hi:.3f} in D-10), so single flagged notes may be "
                    "transcription errors.")
+    fh = rep["piece"].get("four_hands")
+    if fh:
+        out.append("Piano four hands: this score is for two players at one piano. The recording "
+                   "is analysed as one performance of everything written, and hand synchrony "
+                   "is left out, because PianoLens tells the hands apart by the staff a note is "
+                   "written on, and with four hands that split is arbitrary (DF-11).")
     if conf.get("alignment_suspect"):
         mr = rep["correctness"].get("match_ratio")
         out.append(f"Only {_pct(mr)} of the notes could be matched to the score: the score may "
@@ -361,6 +367,10 @@ def _control_card(rep: dict) -> dict:
                  f"{abs(m):.0f} ms (median); after allowing for the louder hand sounding "
                  f"earlier, the spread is {c['hand_async_resid_sd_ms']:.0f} ms (SD). "
                  "Asynchronies within about 30 ms are hard to hear (Goebl et al. 2009).")
+    elif rep["piece"].get("four_hands"):
+        f.append("Hands together: not measured. This is a piece for piano four hands; the staves "
+                 "do not show which of the four hands plays each note, so left-hand and "
+                 "right-hand timing cannot be compared.")
     if c.get("pedal_available") and _ok(c.get("pedal_blur_fraction")):
         s = (f"Pedal: held through {_pct(c['pedal_blur_fraction'])} of "
              f"{int(c['n_harmony_changes'])} detected harmony changes (detector F1 0.76 against "
