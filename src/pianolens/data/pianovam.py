@@ -269,6 +269,8 @@ SCORE_CANDIDATES: dict[str, tuple[tuple[str, ...], str]] = {
     # PianoVAM piece id -> (app-catalogue piece ids, match kind). Title-level only (BL-24).
     # "unit": the title names the same piece or movement as the catalogue score.
     # "ambiguous": movement or number not in the title, or the catalogue unit differs.
+    # "mismatch": the title names a movement that no catalogue score holds (kept so BL-19b's
+    # recording list and null pairing reproduce).
     "pianovam:a_scriabin/sonata_no_2": (("scriabin_op19",), "unit"),
     "pianovam:c_debussy/clair_de_lune": (("debussy_l75_mv3",), "unit"),
     "pianovam:debussy/images_3_mouvement": (("debussy_l110_no3",), "unit"),
@@ -282,9 +284,10 @@ SCORE_CANDIDATES: dict[str, tuple[tuple[str, ...], str]] = {
     # title says "Waltz in A, B. 150"; B. 150 is the A minor waltz
     "pianovam:f_chopin/waltz_in_a_b_150": (
         ("pianocore:Chopin,_Frédéric/Waltz_No.19_in_A_minor,_Op.posth.",), "unit"),
-    # ASAP's movement is unknown (DATASETS.md); the PianoCoRe score is the whole concerto
-    "pianovam:j_s_bach/italian_concerto_mvt_1": (_ITALIAN, "ambiguous"),
-    "pianovam:j_s_bach/italian_concerto_mvt_3": (_ITALIAN, "ambiguous"),
+    # DF-14: both catalogue scores (PianoCoRe uses the ASAP file) hold the 2nd movement only,
+    # 49 bars of 3/4; PianoVAM recorded the 1st and 3rd, so no catalogue score matches
+    "pianovam:j_s_bach/italian_concerto_mvt_1": (_ITALIAN, "mismatch"),
+    "pianovam:j_s_bach/italian_concerto_mvt_3": (_ITALIAN, "mismatch"),
     "pianovam:j_s_bach/prelude_i_in_c": (("bach_bwv846_prelude",), "unit"),
     "pianovam:l_beethoven/piano_sonata_no_23_mvt_1": (("beethoven_op57_mv1",), "unit"),
     "pianovam:l_beethoven/piano_sonata_no_23_mvt_3": (("beethoven_op57_mv3",), "unit"),

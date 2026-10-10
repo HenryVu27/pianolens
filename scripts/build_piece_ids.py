@@ -11,7 +11,9 @@ Expert-Novice and NeuroPiano have free-text or local ids only and are not includ
 
 Columns: dataset, source_key, piece_id, canonical, composer, title, movement, n_performances.
 For PianoCoRe ``n_performances`` is the tier C row count and ``n_tier_a`` the tier A count
-(NaN for other datasets).
+(NaN for other datasets). ``movement`` is the source's own movement string; where the source
+has none but the score holds only part of the work (``piece_ids.PARTIAL_SCORES``, DF-14), it
+names that part. ``source_key`` always keeps the source's strings.
 
 Usage: uv run python scripts/build_piece_ids.py
 """
@@ -33,7 +35,7 @@ from pianolens.data import (
     tonebase,
     vienna4x22,
 )
-from pianolens.data.piece_ids import PIECE_ID_COLUMNS, PIECE_ID_TABLE
+from pianolens.data.piece_ids import PIECE_ID_COLUMNS, PIECE_ID_TABLE, score_movement
 
 ROOT = Path(__file__).resolve().parents[1]
 PC_COUNTS = ROOT / "data/processed/pianocore_piece_counts.csv"
@@ -154,6 +156,8 @@ def main() -> None:
         frames.append(df)
     table = pd.concat(frames, ignore_index=True)
     table["canonical"] = ~table["piece_id"].str.contains(":", regex=False)
+    table["movement"] = [score_movement(p, m) for p, m in zip(table["piece_id"],
+                                                              table["movement"], strict=True)]
     if "n_tier_a" not in table:
         table["n_tier_a"] = pd.NA
     table = table[list(PIECE_ID_COLUMNS)].astype({"n_performances": "int64"})

@@ -99,7 +99,12 @@ def test_fixture_summary():
 
 def test_score_candidates_keys_are_pianovam_ids():
     for pid, (cands, kind) in pianovam.SCORE_CANDIDATES.items():
-        assert pid.startswith("pianovam:") and cands and kind in ("unit", "ambiguous")
+        assert pid.startswith("pianovam:") and cands
+        assert kind in ("unit", "ambiguous", "mismatch")
+    # DF-14: the catalogue's Italian Concerto scores hold the 2nd movement only
+    mism = {k for k, (_, kind) in pianovam.SCORE_CANDIDATES.items() if kind == "mismatch"}
+    assert mism == {"pianovam:j_s_bach/italian_concerto_mvt_1",
+                    "pianovam:j_s_bach/italian_concerto_mvt_3"}
 
 
 # ---- hand labels on the real data

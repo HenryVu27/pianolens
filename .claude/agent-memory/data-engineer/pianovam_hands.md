@@ -22,6 +22,8 @@ Numbers (measured): 525,483 video notes, 80.1% L/R; 1,800 GT; 88.2% labelled, 99
 Noinfo is high in Minwook's recordings (Ballade 48%, Jeux d'eau 38%, Tombeau 36%, Op.101 37%).
 
 Catalogue: `pianovam.SCORE_CANDIDATES` (title level): 44 recordings / 29 titles, 29 / 21 "unit".
+DF-14: Italian Concerto mvt 1/3 kind is now `mismatch` (catalogue scores are mvt 2 only); 13
+"ambiguous" recordings remain.
 BL-19 said "about 20" and missed Clair de lune, Fur Elise, Appassionata, Op.101/iv, Ballade 1,
 Images Mouvement, Italian Concerto, Scriabin Op.19, B.150 waltz, Op.3/2, Clementi, Tombeau.
 

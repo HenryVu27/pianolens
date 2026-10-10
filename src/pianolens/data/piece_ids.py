@@ -74,6 +74,24 @@ def prefixed_piece_id(dataset: str, local_id: str) -> PieceId:
     return PieceId(f"{dataset}:{local_id}")
 
 
+PARTIAL_SCORES: dict[str, str] = {
+    # DF-14: the score holds only part of the work its source title names. Checked against the
+    # score itself (bars, metre, key) and the performances (DATASETS.md, DF-14 notes).
+    # The ids stay as they are; titles and movement fields name the part instead.
+    "bach_bwv971": "2. Andante",  # 49 bars of 3/4, one flat; PianoCoRe uses the ASAP score
+    "asap:Bach/Italian_concerto": "2. Andante",
+    "chopin_op22": "Grande polonaise brillante",  # 278 bars of 3/4 in E flat; no Andante spianato
+}
+"""Piece id -> the movement or part its score actually holds, for whole-work titles (DF-14)."""
+
+
+def score_movement(piece_id: str, movement: str | None = "") -> str:
+    """The movement label to show for ``piece_id``: the source's own ``movement`` when it has
+    one, else the :data:`PARTIAL_SCORES` part (DF-14), else ``""``."""
+    mv = "" if movement is None or movement != movement else str(movement)  # None / NaN
+    return mv or PARTIAL_SCORES.get(str(piece_id), "")
+
+
 def load_piece_id_table(path: Path | str = PIECE_ID_TABLE) -> pd.DataFrame:
     """The cross-dataset piece-id table: one row per (dataset, source_key) with the
     ``PieceId`` the loader assigns (columns ``PIECE_ID_COLUMNS``). ``canonical`` is False for

@@ -8,3 +8,5 @@
 - La campanella filed as Paganini "2"; mapped to liszt_s141_no3.
 - Haydn / Debussy / Ravel / Glinka / Mephisto / Italian Concerto keep `asap:` ids (no guessed
   catalogue numbers).
+- Italian_concerto is the 2nd movement only (49 bars 3/4); labelled "2. Andante" via
+  `piece_ids.PARTIAL_SCORES` (DF-14). Id unchanged.

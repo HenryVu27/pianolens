@@ -19,6 +19,11 @@ paths:
   PianoCoRe gets the same id. Build the mapping with composer + catalogue number (opus, BWV, K,
   D, WoO) + movement. Keep an explicit mapping table in `data/processed/piece_ids.parquet`.
   Unmatched items keep a dataset-prefixed id.
+- **A title is not the score's content.** Before using a whole-work title as the unit, check the
+  score's bars, metres and keys. DF-14 found 3 catalogue scores holding one part of a
+  multi-movement title. Record such scores in `piece_ids.PARTIAL_SCORES` (labels only, ids
+  stay). Raw PianoCoRe performance MIDI can hold more than the score (refined files are
+  cropped), so check note counts before reading `performance_midi_path`.
 - **Much of the "MIDI" is transcribed from audio.** Tag every performance with
   `provenance: {disklavier, transcribed, sensor, synthetic}`. Validation that needs exact timing
   uses Disklavier or sensor MIDI only.

@@ -30,7 +30,7 @@ from typing import Any
 __all__ = ["MIN_REFERENCES", "Piece", "build_catalog", "load_catalog", "resolve_score"]
 
 MIN_REFERENCES = 50
-CATALOG_VERSION = 2  # 2: four_hands (DF-11)
+CATALOG_VERSION = 3  # 2: four_hands (DF-11); 3: partial-score titles (DF-14)
 
 
 @dataclass(frozen=True)
@@ -71,6 +71,7 @@ def build_catalog(
 ) -> list[Piece]:
     """All supported pieces, most references first. Missing datasets contribute nothing."""
     from pianolens.data import asap, pianocore, pianocore_cache
+    from pianolens.data.piece_ids import score_movement
 
     pc_root = Path(pianocore_root or pianocore.DEFAULT_ROOT)
     c_root = Path(cache_root or pianocore_cache.DEFAULT_CACHE)
@@ -89,7 +90,9 @@ def build_catalog(
         for pid, g in idx.groupby("piece_id", sort=False):
             r = g.iloc[0]
             pid = str(pid)
-            out[pid] = Piece(pid, _pretty(r["composer"]), _pretty(r["title"]),
+            title = " - ".join(t for t in (_pretty(r["title"]), _pretty(score_movement(pid)))
+                               if t)  # fmt: skip
+            out[pid] = Piece(pid, _pretty(r["composer"]), title,
                              counts.get(pid, 0), len(g), "asap", str(r["xml_score"]))
     if pianocore.data_available(pc_root):
         md = pianocore.pianocore_index(pc_root, tier="a")
@@ -100,7 +103,8 @@ def build_catalog(
             n = counts.get(pid, 0)
             if n < min_references:
                 continue
-            title = " - ".join(t for t in (_pretty(r.composition), _pretty(r.movement)) if t)
+            mv = score_movement(pid, _pretty(r.movement))  # DF-14: partial scores named
+            title = " - ".join(t for t in (_pretty(r.composition), _pretty(mv)) if t)
             if pid in out:  # ASAP score kept (it is what find_score uses); nicer title
                 out[pid] = Piece(**{**asdict(out[pid]), "n_references": n, "title": title})
                 continue

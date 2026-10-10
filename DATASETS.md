@@ -67,9 +67,17 @@ Record quirks here: missing files, id mismatches, alignment problems.
 - **Piece ids:** 221 `PieceId`s (Schumann `Toccata` and `Toccata_repeat` share `schumann_op7`),
   201 canonical and 20 kept as `asap:<composer>/<title>` because the catalogue number is not
   certain from the title: Haydn sonatas (ASAP numbering unclear), Debussy, Ravel, Glinka, Bach
-  Italian Concerto (movement unknown), Liszt Mephisto Waltz (number not in title).
+  Italian Concerto (movement not in the title; the score is the 2nd movement, see below), Liszt
+  Mephisto Waltz (number not in title).
   ASAP's `Gran_Etudes_de_Paganini_2_La_campanella` maps to `liszt_s141_no3`: La campanella is
   No. 3 of S.141, the ASAP "2" does not match that.
+- **`Bach/Italian_concerto` is the 2nd movement only (DF-14, 2026-10-10).** `xml_score.musicxml`
+  is 49 bars of 3/4 with one flat, 1,085 notes (partitura): the Andante, not all of BWV 971. The
+  3 performances are that movement alone: 1,171-1,221 notes, last onset 261-297 s, and each GT
+  alignment matches 1,077 of the 1,085 score notes. The id stays `asap:Bach/Italian_concerto`;
+  the catalogue title and the loader's `meta["movement"]` say "2. Andante"
+  (`piece_ids.PARTIAL_SCORES`). No other ASAP title names a whole multi-movement work with a
+  one-movement score (all 221 checked).
 - **Performer ids are heuristic:** from the file name (`SunMeiting08` -> `asap:sunmeiting`,
   `Na_2009_02` -> `asap:na`). 322 ids. Same-surname pianists merge (e.g. `asap:huang`, 17
   performances), so leave-performer-out on ASAP is approximate.
@@ -157,6 +165,50 @@ Record quirks here: missing files, id mismatches, alignment problems.
 - **Provenance:** only 1,066 rows are not transcriptions (source ASAP, Disklavier). The rest are
   Aria-AMT (200,504 rows, Aria-MIDI), Transkun V2 (34,773, PERiScoPe), ATEPP (11,564) and
   ByteDance (2,139, GiantMIDI). No row has `performance_dataset` MAESTRO.
+- **Partial scores under whole-work titles (DF-14, 2026-10-10).** Two catalogue pieces carry a
+  whole-work title but their score holds one part. Ids stay; titles and movement labels now name
+  the part (`piece_ids.PARTIAL_SCORES`, used by the catalogue, `build_piece_ids.py` and the ASAP /
+  PianoCoRe loaders' `meta["movement"]`).
+  - `bach_bwv971` "Italian Concerto, BWV 971" -> "2. Andante". The score is the ASAP file
+    (`score_dataset` = `ASAP_midi_score`): 49 bars of 3/4, `score_note_count` 1,084 (partitura
+    reads 1,085 from the MusicXML). 157 rows, 135 tier A (all cached, 0 failed), 3 Disklavier (the
+    ASAP takes). 153 raw performances are the Andante alone (1,030-1,358 notes, 216-579 s). 4 tier
+    A PERiScoPe raw files hold the whole concerto: `PERiScoPe_48777871`, `_63671018`,
+    `_95292898`, `_1686937457` (6,326-6,432 notes, 726-825 s, raw precision 0.16-0.17). Their
+    refined files are cropped to the Andante (cached matched span 268-297 s, onsets monotone in
+    score order, refined recall 0.86-0.95), so the loader and the cache are right; code that
+    reads the raw MIDI of these 4 gets three movements against a one-movement score.
+  - `chopin_op22` "Andante spianato et Grande polonaise brillante, Op.22" -> "Grande polonaise
+    brillante". The score (MuseScore) is 278 bars, 3/4 only, E flat only: the Polonaise without
+    the Andante spianato (G major, 6/8). 498 rows, 453 tier A. 326 of the 453 tier A raw
+    performances have over 1.15 times the score's notes (median ratio 1.22, median 811 s), so
+    most raw files include the Andante spianato; the refined files are cropped (cached durations
+    503 / 556 / 621 s at the 5th / 50th / 95th percentile). Same raw-MIDI caveat.
+  - **Scan (catalogue, 805 entries).** 94 PianoCoRe entries have no movement in the title. The
+    multi-movement ones were checked against the score's bars, metres, keys and section words:
+    Op. 35, Op. 31/2, K. 545, BWV 826, BWV 903, Clementi Op. 36/1 and 36/3, Ravel Sonatine,
+    Scriabin Op. 19, Bartok Sz. 56 and *Valses nobles* hold the whole work (variation sets and
+    one-movement works were not flagged). ASAP: only the Italian concerto (above). For the 196
+    ASAP catalogue entries with PianoCoRe references of the same id, 11 score pairs differ by more
+    than 25% in note count (ratio 0.74-2.00); all are single movements or WTC preludes on both
+    sides by title, not checked further.
+  - **Outside the catalogue (not relabelled):** of the 19 PianoCoRe compositions that have both
+    a whole-title entry and movement entries, two whole-title scores are one part: Schubert
+    *Schwanengesang*, D.957 is one song (82 bars of 3/4, one flat, 1,220 notes; 3 rows, 1 tier
+    A), and Beethoven Op. 78 is 73 bars of 2/4 (1,356 notes; 7 rows, 4 tier A), fewer notes than
+    either PianoCoRe movement score (2,816 and 1,814). Which part each is was not identified.
+- **Schumann Op. 17 i, mm. 41-49 is the printed layout (DF-14, 2026-10-10).** All four Op. 17
+  pieces (mv1-3 and the whole-title `schumann_op17`) use one MuseScore user score (`MS_8284988`,
+  MuseScore 4.4.4, 2025-03-08). In mm. 41-48 the left hand's semiquaver figure is voice 2 on
+  staff 1 with stems down; staff 2 holds one bass note per bar, or nothing in m. 48 (staff 1
+  voice 1 rests there). The Peters edition prints it the same way (Werke fur Pianoforte solo,
+  rev. Alfred Dorffel, fingering Adolf Ruthardt, "Neu revidierte Ausgabe", plate 8641, Leipzig,
+  catalogued c. 1900; public domain; Internet Archive `31761040729832`,
+  https://archive.org/details/31761040729832, printed pp. 4-5): the figure sits on the upper
+  staff, stems down, and the lower staff of m. 48 is empty. So the encoding is faithful and
+  staff is simply not hand in this passage. The first edition and the Clara Schumann edition
+  (IMSLP #289793 / #00714) were not checked: IMSLP downloads sit behind a captcha. ASAP has no
+  Op. 17.
 - **Refined alignment format.** `*_refined_align.npz` holds `perf_idx` (one entry per refined
   score note) and an `interpolated` mask. The index order is the MIDI notes sorted by (tick,
   pitch) in each file, not partitura note ids (partitura numbers score-MIDI notes by voice). The
@@ -289,6 +341,9 @@ values among the A rows.
 - tonebase (D-14, 2026-10-01): 21 annotated scores keyed by PDF path; 18 share an id with
   PianoCoRe (7 canonical; PianoCoRe gives the other 11 `pianocore:`-prefixed ids, and the join
   uses the exact id), 3 keep `tonebase:` ids. The rebuild left the other 7,018 rows identical.
+- DF-14 (2026-10-10): `movement` names the part for the 3 `PARTIAL_SCORES` rows whose source has
+  no movement (`asap:Bach/Italian_concerto`, `bach_bwv971`, `chopin_op22`); `source_key` keeps
+  the source strings. The rebuild changed only those 3 cells of 7,039 rows.
 - `make_piece_id` folds accents with NFKD (D-07). Recomputing every id for ASAP, PianoCoRe
   (5,625 keys), MazurkaBL, Batik, Vienna and PercePiano before and after the change: 0 ids changed.
 - **MAJEPPA ids changed (D-07):** they were all `majeppa:<score_id>`; now a score whose title has
@@ -402,9 +457,11 @@ values among the A rows.
     practising.
   - **Catalogue overlap (title only, not aligned).** 44 recordings of 29 titles have a candidate
     score in the app catalogue (`SCORE_CANDIDATES`). In 29 recordings (21 titles) the title names
-    the same piece or movement. In 15 (Schumann Op. 17 x7, K. 545 x2, K. 310, Clementi Op. 36 x2,
-    Tombeau de Couperin, Italian Concerto x2) the movement or number is unknown, or the catalogue
-    unit differs. Five of these recordings have manual labels: Clair de lune, Op. 18, Schumann
+    the same piece or movement. In 13 (Schumann Op. 17 x7, K. 545 x2, K. 310, Clementi Op. 36 x2,
+    Tombeau de Couperin) the movement or number is unknown, or the catalogue unit differs
+    (`ambiguous`). In 2 (Italian Concerto mvt 1 and mvt 3) no catalogue score holds the movement:
+    both catalogue scores are the 2nd movement (DF-14, `mismatch`; BL-19b found no take in
+    either). Five of these recordings have manual labels: Clair de lune, Op. 18, Schumann
     Op. 17, Jeux d'eau (Minwook), Gymnopédie 1 (beginner), 750 notes in all. The recordings are
     practice sessions with fragments and restarts.
   - **`Noinfo` may not be random.** It is high in some candidate recordings: Chopin Ballade 1 at

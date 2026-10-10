@@ -33,6 +33,7 @@ from pianolens.data.piece_ids import (
     MOZART_SONATA_K,
     make_piece_id,
     prefixed_piece_id,
+    score_movement,
 )
 from pianolens.data.types import (
     AlignedPerformance,
@@ -208,7 +209,8 @@ def load_asap_score(row: pd.Series, root: Path | str = DEFAULT_ROOT, keep_part: 
         score_id=row["score_id"],
         piece_id=PieceId(row["piece_id"]),
         source_path=path,
-        meta={"composer": row["composer"], "title": row["title"], "unfolded": "maximal"},
+        meta={"composer": row["composer"], "title": row["title"],
+              "movement": score_movement(row["piece_id"]), "unfolded": "maximal"},  # fmt: skip
         keep_part=keep_part,
     )
 
@@ -227,6 +229,7 @@ def load_asap_performance(row: pd.Series, root: Path | str = DEFAULT_ROOT) -> Pe
         meta={
             "composer": row["composer"],
             "title": row["title"],
+            "movement": score_movement(row["piece_id"]),  # DF-14: "" unless a partial score
             "robust_note_alignment": row["robust_note_alignment"],
             "maestro_midi": None if pd.isna(row["maestro_midi_performance"])
             else row["maestro_midi_performance"],

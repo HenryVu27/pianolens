@@ -302,3 +302,15 @@ def test_wrong_piece_stops_run_and_override_is_recorded(tmp_path):
     store.start = lambda j: None
     assert _retry(store, jid, ignore_wrong_piece=True)
     assert store.job(jid)["spec"]["ignore_wrong_piece"] is True
+
+
+@pytest.mark.skipif(not (REPO / "data" / "raw" / "asap").is_dir(), reason="needs ASAP")
+def test_catalog_names_partial_scores():
+    """DF-14: whole-work titles whose score holds one part name that part; ids stay."""
+    from pianolens.app.catalog import load_catalog
+
+    cat = {p.piece_id: p for p in load_catalog(REPO / "data" / "interim" / "app")}
+    assert cat["asap:Bach/Italian_concerto"].title == "Italian concerto - 2. Andante"
+    if "bach_bwv971" in cat:  # PianoCoRe present
+        assert cat["bach_bwv971"].title.endswith(" - 2. Andante")
+        assert cat["chopin_op22"].title.endswith(" - Grande polonaise brillante")

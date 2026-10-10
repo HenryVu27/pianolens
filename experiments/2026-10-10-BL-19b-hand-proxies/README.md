@@ -665,3 +665,11 @@ eval-auditor (section above, scratch `bl19b/`); the others come from `summary.js
    After the change it is **4,249**, the same on two reruns. Median (1), maximum (24) and notes
    in runs of 10 or more (671) are unchanged, and so is every other `posthoc.json` value.
    `posthoc.py` is outside the pre-registration; its new sha256 prefix is `35e806a97428b81f`.
+
+### Lead note (2026-10-10, after DF-14)
+
+The Schumann Op. 17 i notation was checked against a printed edition (DF-14, data-engineer):
+the Peters edition (Dörffel / Ruthardt, plate 8641, catalogued 1900; Internet Archive
+31761040729832) also prints the mm. 41-48 left-hand figure on the upper staff with stems down,
+under a whole-bar rest in m. 48. It is an engraving choice, not an encoding error: staff simply
+does not equal hand there. The first edition and the Clara Schumann edition were not checked.

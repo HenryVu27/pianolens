@@ -40,7 +40,12 @@ import numpy as np
 import pandas as pd
 import partitura as pt
 
-from pianolens.data.piece_ids import fold_accents, make_piece_id, prefixed_piece_id
+from pianolens.data.piece_ids import (
+    fold_accents,
+    make_piece_id,
+    prefixed_piece_id,
+    score_movement,
+)
 from pianolens.data.types import (
     ALIGNMENT_DTYPE,
     AlignedPerformance,
@@ -320,7 +325,8 @@ class PianoCoRe:
                 score_id=f"{DATASET}:{rel}",
                 piece_id=row["piece_id"],
                 meta={"composer": row["composer"], "composition": row["composition"],
-                      "movement": _nan_to_str(row["movement"]), "format": "refined_midi"},
+                      "movement": score_movement(row["piece_id"], _nan_to_str(row["movement"])),
+                      "format": "refined_midi"},
             )  # fmt: skip
         return self._score_cache[rel]
 

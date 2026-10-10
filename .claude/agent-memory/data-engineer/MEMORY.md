@@ -14,6 +14,7 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [dcml_romantic.md](dcml_romantic.md) — shared `data/dcml.py`, 5 Romantic corpora: spanners, text markup, gap ties, ms3 unfold bugs (D-13)
 - [rach3_takes_bl16.md](rach3_takes_bl16.md) — Hanon book structure, take-splitting DP, p3 asynchrony, no same-day beginner takes, BL-16 numbers
 - [pianovam_hands.md](pianovam_hands.md) — BL-24 hand labels: chord row order != notes (match pitch+onset), counts, Noinfo, catalogue candidates
+- [partial_scores_df14.md](partial_scores_df14.md) — DF-14: whole-work titles holding one part, raw vs refined PianoCoRe cropping, Op. 17 engraving, IA for PD prints
 - [skypiano.md](skypiano.md) — SKY-Piano not released, license unclear; where to re-check (D-09, BL-11)
 - types.py contract lives in `src/pianolens/data/types.py`; builders `performance_from_partitura`,
   `score_from_partitura` are the only sanctioned way to wrap partitura objects. D-07 added
