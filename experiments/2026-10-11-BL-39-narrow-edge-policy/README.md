@@ -1,5 +1,5 @@
 # BL-39: narrower edge-bar policy for partial recordings
-Ticket: BL-39 (from the BL-37 audit)    Hypothesis: none from the plan (report rule)    Status: Provisional
+Ticket: BL-39 (from the BL-37 audit)    Hypothesis: none from the plan (report rule)    Status: Confirmed with caveats (eval-auditor 2026-10-11)
 
 ## Question
 With `align(..., partial=True)` and BL-37's fixes, the first or last recorded bar of a trimmed
@@ -254,8 +254,9 @@ OMP_NUM_THREADS=1 uv run python scripts/eval_edge_narrow_bl39.py --set heldout -
 ## Results
 
 **Held-out: FAIL by the registered rule; no policy is adopted (k = 0).** Only E2 fails.
-- Values are means over the 16 pieces, in points, with the piece-bootstrap 95% interval and the
-  t-interval.
+- Values are means over the 16 pieces (15 for O1 / O2: Chopin Op. 10 No. 7 has no injected
+  bar where every expert has at most 1 missed note; corrected after the audit), in points, with
+  the piece-bootstrap 95% interval and the t-interval.
 - "LOO" is the leave-one-piece-out range.
 
 | Row | k = 0 | k = 1 | **Candidate** | Candidate bootstrap / t | LOO | Bar |
@@ -291,13 +292,22 @@ OMP_NUM_THREADS=1 uv run python scripts/eval_edge_narrow_bl39.py --set heldout -
   - Joint resampling of held-out pieces passes every row in 40% of resamples (E2 is the only
     row below 1).
   - Dev resampling had said 74%, and the pre-registration called FAIL a live outcome.
+- **O2 on the bars the policy can act on** (added after the audit, fix 2; audit section 3).
+  - The pooled O2 dilutes the cost: 147 of the 443 lead-omission bars are not N's edge bar, and
+    no policy acts there.
+  - On the 296 that are N's edge, 3 omitted first (last) notes are caught 58.4% of the time at
+    k = 0, **8.8% under the candidate** and 1.4% at k = 1.
+  - Inner omissions on N-edge bars (275): 62.9% at k = 0, 60.4% under the candidate, 0.7% at
+    k = 1.
+  - O2 is a disclosure, not a harm row: every policy passed its -50 bar on held-out, including
+    k = 2 (-46.96), its only dev bite.
 - **Sabotages (information):**
   - k = 2 fails O1 (-50.8); O2 -47.0 passes this time.
   - The second-onset sabotage passes every row on held-out (O1 -6.9 against -8; E2 +0.15). This
     is post hoc and does not change the verdict; on dev it failed O1 (-16.2).
 - **No wrong-piece probe** (not cheap; BL-40).
 
-## Verdict (Provisional)
+## Verdict: Confirmed with caveats (eval-auditor 2026-10-11)
 **FAIL by the pre-registered rule.** The candidate fails E2: partly played cut bars are +1.67 pt
 above uncut, against a bar of +1.5. Every harm row and every no-regression row passes. The
 registered outcome applies:
@@ -309,25 +319,48 @@ registered outcome applies:
 What the data show, without changing the verdict:
 - **The narrow rule does what it was built to do on omissions.** Inner omissions are caught
   about as often as at k = 0 (50.5% vs 51.6%; k = 1 15.1%).
-- **The cost is concentrated on the bar's own first or last notes, as disclosed** (lead
-  omissions 20.8% vs 50.5% at k = 0).
-- **Cut bars fall from 19.6% to 3.0% strong,** but not to the uncut 1.33%. The residual is notes
-  the cut copy's alignment loses inside the recorded part, which this rule cannot reach (dev
-  inspection, one bar in detail).
+- **The cost falls on the bar's own first or last notes.** Pooled, lead omissions are caught
+  20.8% vs 50.5% at k = 0. On N's own edge bars it is 8.8% vs 58.4% (k = 1 1.4%), so where the
+  candidate acts it hides lead omissions almost as fully as k = 1 (corrected after the audit).
+- **Cut bars fall from 19.6% to 3.0% strong,** but not to the uncut 1.33%.
+- **The residual is a mis-paired anchor** (corrected after the audit, fix 1; audit section 5).
+  - The earlier text said the cut copy's alignment loses notes inside the recorded part,
+    "which this rule cannot reach". That does not hold on held-out units.
+  - Of the 394 missed notes the candidate still counts in the 33 strong cut bars:
+
+    | Class | Share |
+    |---|---|
+    | performed note removed by the cut, but inside the boundary | 46% |
+    | performed note re-paired with another score note in the same bar | 30% |
+    | already missed in the uncut copy | 22% |
+    | paired in another bar | 1% |
+    | kept but unmatched (the mechanism the earlier text stated) | 1 note |
+
+  - In 32 of 33 bars, the matched note that sets the boundary is paired with a different
+    performed note than in the uncut copy. Repeated pitches slide into the unplayed part of the
+    bar and move the anchor.
+  - With an oracle anchor (from the uncut copy; post hoc, an upper bound, not a production rule)
+    E2 would be **-0.58**.
+  - So a narrow rule with a robust anchor might reach this residual. That is untested.
 - The E2 failure margin is 0.17 pt, and 4 single-piece drops flip it.
 
 ## Threats to validity
 - **The truncation control is synthetic.** Its start and end cuts fall at a random time inside a
   bar, and that is where E2's partly played cut bars come from. A learner's take that starts or
   stops at a bar line has no such bar. How often real takes do either is not measured.
-- **E2's per-piece values come from few cut bars** (about 67 per piece). A single strong bar
-  moves a piece by 1.5-6 pt, so the pooled bar of +1.5 sits inside the sampling noise (40%
-  resample pass on held-out, 74% on dev).
+- **E2's per-piece values come from 56-76 cut bars per piece.** One strong bar moves a piece by
+  1.3-1.8 pt (corrected after the audit; D. 760/1's +6.25 is 4 strong bars against 0 uncut). So
+  the pooled bar of +1.5 sits inside the sampling noise: 40% resample pass on held-out, 74% on
+  dev, one-sided t-test against +1.5 p = 0.40 (audit).
 - **O1 / O2 inject 3 omitted notes per edge bar.** Other omission sizes were not tested.
   "Lead" and "inner" are defined by score onset in the clean copy.
-- **The sabotage variants** were chosen on dev to make the harm rows bite. On held-out, the
-  second-onset sabotage would have passed. O1's bar (-8) admits a rule that hides some inner
-  omissions; it bit for that sabotage on dev only.
+- **The sabotage variants** were chosen on dev to make the harm rows bite.
+  - **O1 does not bite for a boundary one onset too wide** (added after the audit, fix 3). On
+    held-out the second-onset sabotage gave O1 -6.94 [-9.25, -4.65], passing the -8 bar, with 7
+    of its 15 pieces at or below -8 on their own; it catches inner omissions 44.6% vs 51.6% at
+    k = 0.
+  - O1 separates whole-bar policies (k = 1 -36.5, k = 2 -50.8) from narrow ones; it does not
+    police the boundary's width.
 - **The policy is evaluated offline** with the script's tier function. BL-37's audit checked
   that this function equals `report.build._correctness_section` for the "bar" rule; the
   "outside" rule in production is tested on synthetic scores only.
@@ -338,9 +371,10 @@ What the data show, without changing the verdict:
    put to Henry (BL-37 audit). The code for the "outside" rule stays in `report.build`, off by
    default (`edge_low_confidence_rule="bar"`, `edge_low_confidence_bars` 0).
 2. **If a later ticket retries:**
-   - E2 needs either a per-bar statistic robust to small cut-bar counts, or a fix for the
-     alignment loss inside the recorded part of a cut bar. The residual is alignment, not policy
-     (dev inspection).
+   - Target anchor robustness, not a wider boundary (corrected after the audit). The residual is
+     anchor mis-pairing in 32 of 33 residual bars, and an oracle anchor gives E2 -0.58 (post hoc
+     upper bound). For example, reject out-of-order anchor matches.
+   - A per-bar statistic robust to small cut-bar counts would also help.
    - Any retry needs a fresh held-out draw: BL-39's held-out set is now seen.
 3. **Machine:** the Mac has 16 GB of RAM, not 48 GB (CLAUDE.md says 48). Alignment runs should
    use 5-6 workers. Eval scripts should write per-target results incrementally so a run can be
@@ -557,3 +591,45 @@ The caveats concern the write-up, not the verdict:
   - (e) Family equals corpus.
 - **If a retry is wanted,** the evidence points at anchor robustness, not at a wider boundary.
   It needs a fresh draw.
+
+### Corrections after the audit (2026-10-11)
+
+By `feature-engineer`, applying the audit's author fixes 1-5 (fix 6 is done in code; see below).
+- The pre-registration is not edited. Its anchor hash was re-checked after every edit and is
+  still `7e85dcd871005374...bc39`.
+- The verdict is unchanged: FAIL by the pre-registered rule, Confirmed with caveats; no edge
+  policy, k = 0, flags off.
+- Numbers below are the audit's measurements, cited by section. I did not re-run them.
+
+1. **Mechanism** (fix 1). The Verdict and "For the lead" 2 now give the audit's classification
+   of the 394 counted missed notes in the 33 strong cut bars:
+   - 46% were removed by the cut but sit inside the boundary;
+   - 30% were re-paired within the bar;
+   - 22% were already missed uncut;
+   - 1% were paired in another bar;
+   - 1 note fits the mechanism the earlier text stated.
+
+   The anchor is paired differently from the uncut copy in 32 of 33 bars, and an oracle anchor
+   gives E2 -0.58 (post hoc upper bound). The claims "which no narrow rule reaches" and "the
+   residual is alignment, not policy" are dropped.
+
+   The pre-registration's dev block also says, from one dev bar, that the cut copy lost notes
+   inside the recorded part. That block is anchored and stays as registered; on held-out units
+   it does not hold.
+2. **O2** (fix 2). It is now also reported on the 296 N-edge lead-omission bars: 58.4% caught at
+   k = 0, 8.8% under the candidate, 1.4% at k = 1. O2 is called a disclosure that every policy
+   passed on held-out, including k = 2.
+3. **O1's bite** (fix 3). Threats now says O1 does not bite for a boundary one onset too wide:
+   the second-onset sabotage gave -6.94, with 7 of 15 pieces at or below -8.
+4. **Per-bar effect and piece count** (fix 4). One strong cut bar moves a piece by 1.3-1.8 pt
+   (56-76 bars per piece), not 1.5-6. O1 / O2 are means over 15 pieces.
+5. **Status** (fix 5). The Status line and the Verdict heading read "Confirmed with caveats
+   (eval-auditor 2026-10-11)".
+6. **Production gaps** (fix 6, done in code instead of BACKLOG, at the lead's request):
+   - `edge_low_confidence_rule` now raises ValueError unless it is "bar" or "outside";
+   - `edge_outside_basis` defaults to the registered "score_le";
+   - the report summary records the rule and basis when an edge policy is on;
+   - `report/text.py` describes the outside rule correctly.
+
+   Default output is unchanged. All of this sits behind `edge_low_confidence_bars` > 0, which
+   stays 0.

@@ -99,11 +99,19 @@ def confidence_notes(rep: dict) -> list[str]:
                    "written on, and with four hands that split is arbitrary (DF-11).")
     nr = not_recorded_text(rep.get("recorded_span"))
     if nr:
-        el = (rep["correctness"].get("edge_low_confidence") or {}).get("bars") or []
-        if el:  # BL-37
+        ec = rep["correctness"].get("edge_low_confidence") or {}
+        el = ec.get("bars") or []
+        if el and ec.get("rule") == "outside":  # BL-39
+            nr += (" In the bars where the recording starts or stops (" + ", ".join(el) + "), "
+                   "missed notes due before the first played note (or after the last) are shown "
+                   "but not ranked; missed notes inside the played part of those bars still "
+                   "count.")
+        elif el:  # BL-37
             nr += (" Missed notes in the bars next to where the recording starts or stops ("
                    + ", ".join(el) + ") are shown but not ranked: a recording that starts or "
                    "stops there often loses them.")
+        else:  # no edge policy (BL-39 audit): say what the first / last bar may show
+            nr += " " + edge_caveat_text(rep.get("recorded_span"))
         out.append(nr)
     if conf.get("alignment_suspect"):
         mr = rep["correctness"].get("match_ratio")
@@ -167,6 +175,20 @@ def not_recorded_text(rs: dict | None) -> str | None:
     return (f"Not recorded: {' and '.join(parts)}. The recording covers "
             f"{rs.get('bars_label', 'part of the piece')}, and only those bars are graded. The "
             "bars not recorded are not counted as mistakes and are not in the practise list.")
+
+
+def edge_caveat_text(rs: dict | None) -> str:
+    """BL-39 audit: with a trimmed span and no edge policy, the bar where the recording starts
+    (ends) may list notes as missed when the recording starts (ends) partway through it."""
+    pos = {d.get("position") for d in (rs or {}).get("not_recorded") or []}
+    if pos == {"start"}:
+        return ("The first recorded bar may list notes as missed if the recording starts "
+                "partway through that bar.")
+    if pos == {"end"}:
+        return ("The last recorded bar may list notes as missed if the recording ends partway "
+                "through that bar.")
+    return ("The first and last recorded bars may list notes as missed if the recording starts "
+            "or ends partway through them.")
 
 
 def not_heard_text(nh: dict) -> str:

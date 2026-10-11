@@ -65,4 +65,4 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [bl36-partial.md](bl36-partial.md) - BL-36 partial recordings (Confirmed w/ caveats): span DTW design, numbers, edge-bar harm, tie-split defect (xfail), snap/margin
   tuning, harm bite check (tightened H1/H2), report wiring behind `PARTIAL_DEFAULT`.
 - [bl37-edge-bars.md](bl37-edge-bars.md) - BL-37 Confirmed w/ caveats (k=1 hides omissions: inject the error type a policy acts on), fixes, BL-38 guard.
-- [bl39-narrow-edge.md](bl39-narrow-edge.md) - BL-39 FAIL (E2 +1.67 vs 1.5): narrow outside-notes rule, O1/O2 omission rows, 16 GB RAM, no-resume trap.
+- [bl39-narrow-edge.md](bl39-narrow-edge.md) - BL-39 FAIL, Confirmed w/ caveats: residual = anchor mis-pairing (classify all units!), O2 on acting bars, 16 GB RAM.

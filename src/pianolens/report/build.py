@@ -77,6 +77,13 @@ _TIER_RANK = {"none": 0, "notable": 1, "strong": 2}
 CATEGORY_RANK = {"correctness": 0, "control": 1, "interpretation": 2, "too_flat": 2}
 
 
+EDGE_RULES = ("bar", "outside")
+"""``ReportConfig.edge_low_confidence_rule`` values (BL-37 "bar", BL-39 "outside")."""
+EDGE_BASES = ("score", "score_le", "time")
+"""``ReportConfig.edge_outside_basis`` values (:func:`edge_outside_notes`); BL-39 registered
+``"score_le"``."""
+
+
 @dataclass(frozen=True)
 class ReportConfig:
     """Settings of :func:`build_report`.
@@ -123,7 +130,8 @@ class ReportConfig:
         edge_low_confidence_rule: which missed notes of those bars are low confidence. ``"bar"``
             (BL-37): all of them. ``"outside"`` (BL-39): only those due before the first note
             matched in the bar on a start side (after the last one on an end side),
-            :func:`edge_outside_notes`, with ``edge_outside_basis`` / ``edge_outside_tol_sec``.
+            :func:`edge_outside_notes`, with ``edge_outside_basis`` (default ``"score_le"``,
+            as registered in BL-39) / ``edge_outside_tol_sec``. Other values raise ValueError.
     """
 
     interpretation: InterpretationConfig = field(default_factory=InterpretationConfig)
@@ -150,8 +158,16 @@ class ReportConfig:
     fast_run_max_ioi_sec: float = cal.FAST_RUN_MAX_IOI_SEC
     edge_low_confidence_bars: int = 0
     edge_low_confidence_rule: str = "bar"
-    edge_outside_basis: str = "score"
+    edge_outside_basis: str = "score_le"
     edge_outside_tol_sec: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.edge_low_confidence_rule not in EDGE_RULES:
+            raise ValueError(f"edge_low_confidence_rule must be one of {EDGE_RULES}, "
+                             f"not {self.edge_low_confidence_rule!r}")
+        if self.edge_outside_basis not in EDGE_BASES:
+            raise ValueError(f"edge_outside_basis must be one of {EDGE_BASES}, "
+                             f"not {self.edge_outside_basis!r}")
 
 
 @dataclass(eq=False)
@@ -838,7 +854,11 @@ def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
     s["n_bars_not_heard"] = int(sum(len(r) for r in runs))
     if cfg.edge_low_confidence_bars:
         s["edge_low_confidence"] = {"n_bars": cfg.edge_low_confidence_bars,
-                                    "bars": [labels[i] for i in edge]}
+                                    "bars": [labels[i] for i in edge],
+                                    "rule": cfg.edge_low_confidence_rule}
+        if cfg.edge_low_confidence_rule == "outside":
+            s["edge_low_confidence"].update(basis=cfg.edge_outside_basis,
+                                            tol_sec=cfg.edge_outside_tol_sec)
     s["fast_repeat_low_confidence"] = bool(fast_repeat)
     s["fast_repeat_max_ioi_sec"] = cfg.fast_repeat_max_ioi_sec
     s["n_missed_fast_repeat"] = int(b["n_missed_fast_repeat"].sum())

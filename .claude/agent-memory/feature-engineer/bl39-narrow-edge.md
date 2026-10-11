@@ -45,3 +45,14 @@ Related: [[bl37-edge-bars]], [[bl36-partial]].
   inspected: Op. 22/2 bar 53), not policy. A retry needs a per-bar-robust E2 or an alignment fix.
 - Run-time traps: run was cut by an API usage limit AFTER outputs were written -> write-up from
   files; eval scripts must write per-target results incrementally (resume).
+
+## Audit (2026-10-11): Confirmed with caveats, FAIL stands
+- My miss (again): I named the E2 residual's mechanism from ONE dev bar ("alignment loses notes
+  inside the recorded part"). On held-out units: 46% of counted missed notes were removed by the
+  cut but inside the boundary, 30% re-paired in-bar, 1 note fit my mechanism; the anchor was
+  mis-paired in 32/33 bars; oracle anchor E2 -0.58. Lesson: classify ALL residual units against
+  the uncut copy before naming a mechanism; one inspected unit is an anecdote.
+- Pooled O2 diluted the cost (a third of bars not N's edge): on N-edge bars 8.8% vs 58.4%.
+  Report harm rows on the bars the policy can act on.
+- O1 (-8) does not bite for a boundary one onset too wide (sabotage -6.94 held-out).
+- Retry direction: anchor robustness (reject out-of-order anchor matches), fresh draw.

@@ -213,7 +213,8 @@ def test_report_grades_only_recorded_bars_and_lists_the_rest_once():
     assert notes == ["Not recorded: bars 1-20 (before the recording starts) and bars 31-40 "
                      "(after it ends). The recording covers bars 21-30, and only those bars "
                      "are graded. The bars not recorded are not counted as mistakes and are "
-                     "not in the practise list."]
+                     "not in the practise list. The first and last recorded bars may list "
+                     "notes as missed if the recording starts or ends partway through them."]
     html = render_html(to_jsonable(rep))
     assert html.count("Not recorded: bars 1-20") == 1
     # without span detection the same recording grades all 40 bars and has no record
@@ -501,3 +502,79 @@ def test_edge_outside_notes_marks_only_notes_before_the_first_played_one():
     ap2 = align_performance(sc2, pf2, partial=True)
     assert ap2.score.meta["recorded_span"]["whole"]
     assert not edge_outside_notes(ap2.score, correctness(ap2), 1).any()
+
+
+def test_edge_rule_config_is_validated_and_defaults_to_the_registered_basis():
+    from pianolens.report import ReportConfig
+
+    assert ReportConfig().edge_outside_basis == "score_le"  # BL-39 registered basis
+    assert ReportConfig().edge_low_confidence_rule == "bar"
+    with pytest.raises(ValueError):
+        ReportConfig(edge_low_confidence_rule="outsde")
+    with pytest.raises(ValueError):
+        ReportConfig(edge_outside_basis="onset")
+
+
+def _late_start_case():
+    """A recording that starts on the third note of an 8-note bar 21 (see the narrow-rule test)."""
+    bars = _bars()
+    rng = np.random.default_rng(9)
+    dense = [int(p) for p in rng.integers(55, 80, 8)]
+    events = []
+    for b, bar in enumerate(bars):
+        if b == 20:
+            events += [(80 + 0.5 * i, [p]) for i, p in enumerate(dense)]
+        else:
+            events += [(4 * b + i, [int(p)]) for i, p in enumerate(bar)]
+    part = make_part(events)
+    played = [p for i, p in enumerate(dense) if i >= 2]
+    played += [int(p) for r in range(21, 30) for p in bars[r]]
+    sc, pf = _project_types(part, make_perf(np.arange(len(played)) * 0.4 + 1.0, played))
+    return part, events, align_performance(sc, pf, partial=True)
+
+
+def test_summary_and_text_name_the_edge_rule():
+    from pianolens.report import ReportConfig, ReportInputs, build_report
+
+    _, _, ap = _late_start_case()
+    inp = ReportInputs(ap=ap, provenance="synthetic", four_hands=False)
+    out = build_report(inp, ReportConfig(shaping=False, edge_low_confidence_bars=1,
+                                         edge_low_confidence_rule="outside"))
+    ec = out["correctness"]["edge_low_confidence"]
+    assert ec["rule"] == "outside" and ec["basis"] == "score_le" and ec["tol_sec"] == 0.0
+    note = [n for n in out["confidence"]["notes"] if n.startswith("Not recorded")][0]
+    assert "due before the first played note" in note and "still count" in note
+    bar = build_report(inp, ReportConfig(shaping=False, edge_low_confidence_bars=1))
+    assert bar["correctness"]["edge_low_confidence"]["rule"] == "bar"
+    assert "basis" not in bar["correctness"]["edge_low_confidence"]
+    note = [n for n in bar["confidence"]["notes"] if n.startswith("Not recorded")][0]
+    assert "often loses them" in note
+
+
+def test_no_edge_policy_adds_a_plain_caveat_only_for_a_trimmed_span():
+    """BL-39 audit: partial=True at k = 0 says the edge bar may list notes as missed; no tier
+    changes, and nothing is added for a whole recording."""
+    from pianolens.report import ReportConfig, ReportInputs, build_report
+
+    part, events, ap = _late_start_case()
+    cfg = ReportConfig(shaping=False)
+    rep = build_report(ReportInputs(ap=ap, provenance="synthetic", four_hands=False), cfg)
+    assert "edge_low_confidence" not in rep["correctness"]
+    note = [n for n in rep["confidence"]["notes"] if n.startswith("Not recorded")][0]
+    assert note.endswith("The first and last recorded bars may list notes as missed if the "
+                         "recording starts or ends partway through them.")
+    assert rep["bars"][0]["correctness"]["n_missed_low_confidence"] == 0
+    sc2, pf2 = _project_types(part, make_perf(np.arange(len(events)) * 0.4 + 1.0,
+                                              [e[1][0] for e in events]))
+    whole = build_report(ReportInputs(ap=align_performance(sc2, pf2, partial=True),
+                                      provenance="synthetic", four_hands=False), cfg)
+    assert not any("may list notes as missed" in n for n in whole["confidence"]["notes"])
+
+
+def test_edge_caveat_text_names_the_side():
+    from pianolens.report.text import edge_caveat_text
+
+    assert edge_caveat_text({"not_recorded": [{"position": "start"}]}).startswith(
+        "The first recorded bar")
+    assert edge_caveat_text({"not_recorded": [{"position": "end"}]}).startswith(
+        "The last recorded bar")
