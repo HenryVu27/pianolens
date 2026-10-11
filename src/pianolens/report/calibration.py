@@ -122,6 +122,12 @@ TRANSCRIBED_STRONG_LIMITS_UNKNOWN: dict[str, float] = {
 #: them (80% missed is above every candidate limit).
 NOT_HEARD_MIN_BARS = 3
 NOT_HEARD_MISSED_SHARE = 0.8
+#: BL-27 (BL-18b audit item 5): runs separated by at most NOT_HEARD_MERGE_GAP graded bars merge,
+#: and a run within that many graded bars of the first or last graded bar extends to it, when
+#: every bar in between has at least NOT_HEARD_GAP_MISSED_SHARE of its graded notes missed.
+#: 0 = no merging (the BL-18 rule).
+NOT_HEARD_MERGE_GAP = 0
+NOT_HEARD_GAP_MISSED_SHARE = 0.5
 
 #: BL-25 (from BL-21, audited): on transcribed input a missed note whose same-pitch predecessor in
 #: the score is due less than FAST_REPEAT_MAX_IOI_SEC earlier (expected onsets at the played

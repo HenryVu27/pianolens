@@ -68,9 +68,14 @@ paths:
   ornament is unmatched and re-matched to the earliest insertion within ±2 semitones in
   [onset - 0.25 s, offset]. The same-pitch preference compares against a stale loop variable
   (`pitch`), and the chosen insertion is not removed from the insertion list, so one performed
-  note can be given to two score notes (a likely source of DF-15). Tagging a written note as an
-  ornament therefore changes its match: do not tag written notes (expanded tremolo strokes drop
-  the mark for this reason).
+  note can be given to two score notes. Tagging a written note as an ornament therefore changes
+  its match: do not tag written notes (expanded tremolo strokes drop the mark for this reason).
+- **Duplicate matches come from two parangonar steps (DF-15, measured 2026-10-10).** The ornament
+  step above, and the per-pitch DTW step (`unique_alignments`), which can give one performed note
+  to two same-pitch score notes. Per-pitch DTW dominates on ASAP and Chopin-heavy sets, the
+  ornament step on ornament-heavy scores. `correctness()` resolves them
+  (`resolve_duplicates=True`); any other consumer of a raw parangonar alignment must not assume
+  matches are one-to-one in either direction.
 - **Score loading changes what `staff` means.** Since BL-26 / BL-33, `align/_adapters.to_part`
   expands measured tremolos and moves left-hand notes written inside wide upper-staff chords to
   staff 2. `staff` is the intended hand where the score shows it, not the printed staff. Results

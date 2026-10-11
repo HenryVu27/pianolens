@@ -35,7 +35,8 @@ metadata:
 - Trap: DEFAULT_ROOTs and the R-02 curve cache (`interpretation.R02_CURVES`) are
   `parents[3]`-relative. Symlink `data`, `experiments`, `docs` into <scratch>/old, or the old
   run rebuilds references from PianoCoRe and every interpretation float drifts ~1e-8.
-- Same code twice is exactly deterministic (threaded vs 1 thread identical). Use the same
+- Same code twice is deterministic for most reports, NOT all: Henry 03 op9no3 Aria differs
+  run to run in tier B/C floats at ~1e-10 (seen 2026-10-10, [[df15-bl27]]). Compare with tolerance. Use the same
   scratch dir for scores/MIDI in both runs (paths are in the JSON).
 
 ## BL-23 README

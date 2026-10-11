@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -419,3 +420,148 @@ def test_error_window_follows_local_onset_error():
     sn, pn, pairs = wrong_pitch_case(1, 0.15)
     pn["onset_sec"][29] += 0.08  # quarter 14: more than 3 onsets away
     assert not _paired(correctness(aligned(sn, pn, pairs), wrong_pitch_window="error"))
+
+
+# --------------------------------------------------------------------------- DF-15 duplicates
+
+
+def test_duplicate_performed_note_keeps_nearest_score_note():
+    """p0 (pitch 60 at 0 s) is matched to s0 (q 0) and to s10 (q 5, also pitch 60, due at 2.5 s),
+    whose own note was never played: s0 keeps p0, s10 is missed (DF-15)."""
+    sn, pn, pairs, _ = build()
+    assert sn["pitch"][0] == sn["pitch"][10]
+    keep = pn["id"] != "p10"
+    pn = pn[keep]
+    pairs[10] = ("match", "s10", "p0")
+    old = correctness(aligned(sn, pn, pairs), resolve_duplicates=False)
+    assert old.summary["n_missed"] == 0  # the bug: both score notes counted correct
+    res = correctness(aligned(sn, pn, pairs))
+    s = res.score_notes.set_index("score_id")
+    assert s.loc["s0", "label"] == "correct" and s.loc["s0", "performance_id"] == "p0"
+    assert s.loc["s10", "label"] == "missed"
+    assert res.summary["n_missed"] == 1 and res.summary["n_correct"] == len(sn) - 1
+    assert res.summary["n_duplicate_matches_resolved"] == 1
+    assert res.summary["n_duplicate_rematched"] == 0
+    assert res.params["resolve_duplicates"] is True
+    assert res.bars["n_missed"].tolist() == [0, 1, 0, 0]
+
+
+def test_duplicate_same_pitch_wins_over_timing_and_loser_rematches():
+    """Ornament-step duplicate: p4 (62) is given to the trills s2 (61, q 1) and s4 (62, q 2);
+    s2's own note p2 is left as an insertion. s4 keeps p4 (same pitch). By default s2 is then
+    missed and p2 tolerated next to the trill; with ``duplicate_rematch`` s2 takes p2 back."""
+    sn, pn, pairs, part = build(ornamented=("s2", "s4"))
+    assert (sn["pitch"][2], sn["pitch"][4]) == (61, 62)
+    pairs[2] = ("match", "s2", "p4")
+    pairs.append(("insertion", "", "p2"))
+    dflt = correctness(aligned(sn, pn, pairs, part))
+    d = dflt.score_notes.set_index("score_id")
+    assert d.loc["s4", "performance_id"] == "p4" and d.loc["s2", "label"] == "missed"
+    assert dflt.summary["n_duplicate_rematched"] == 0
+    assert dflt.params["duplicate_rematch"] is False
+    res = correctness(aligned(sn, pn, pairs, part), duplicate_rematch=True)
+    s = res.score_notes.set_index("score_id")
+    assert s.loc["s4", "performance_id"] == "p4" and s.loc["s4", "label"] == "correct"
+    assert s.loc["s2", "performance_id"] == "p2" and s.loc["s2", "label"] == "correct"
+    assert res.summary["n_duplicate_matches_resolved"] == 1
+    assert res.summary["n_duplicate_rematched"] == 1
+    assert res.summary["n_missed"] == 0 and res.summary["n_extra"] == 0
+    # without the free note the trill s2 is missed even with re-matching on
+    pn2 = pn[pn["id"] != "p2"]
+    res2 = correctness(aligned(sn, pn2, pairs[:-1], part), duplicate_rematch=True)
+    assert res2.score_notes.set_index("score_id").loc["s2", "label"] == "missed"
+    assert res2.summary["n_duplicate_rematched"] == 0
+
+
+def test_duplicate_score_note_keeps_nearest_performed_note():
+    """s10 is matched to its note p10 (2.5 s) and to a re-strike x0 (2.8 s) of the same key:
+    p10 stays correct, x0 becomes an extra."""
+    sn, pn, pairs, _ = build()
+    y = int(sn["pitch"][10])
+    pn = np.concatenate([pn, np.array([(2.8, 0.05, y, 30, "x0")], dtype=P_DTYPE)])
+    pairs.append(("match", "s10", "x0"))
+    old = correctness(aligned(sn, pn, pairs), resolve_duplicates=False)
+    assert old.summary["n_extra"] == 0
+    res = correctness(aligned(sn, pn, pairs))
+    n = res.notes.set_index("performance_id")
+    assert n.loc["p10", "label"] == "correct" and n.loc["p10", "score_id"] == "s10"
+    assert n.loc["x0", "label"] == "extra"
+    assert res.summary["n_extra"] == 1 and res.summary["n_duplicate_matches_resolved"] == 1
+
+
+def test_duplicate_loser_can_become_wrong_pitch():
+    """s10's note was played a semitone high (p10) and the aligner gave s10 the note of s0 as
+    well: after resolution s10 is missed and pairs with p10 as a wrong pitch."""
+    sn, pn, pairs, _ = build()
+    pn["pitch"][10] += 1
+    pairs[10] = ("match", "s10", "p0")
+    pairs.append(("insertion", "", "p10"))
+    res = correctness(aligned(sn, pn, pairs))
+    s = res.score_notes.set_index("score_id")
+    assert s.loc["s10", "label"] == "wrong_pitch" and s.loc["s10", "performance_id"] == "p10"
+    assert res.summary["n_duplicate_matches_resolved"] == 1
+
+
+def test_no_duplicates_leaves_labels_unchanged():
+    sn, pn, pairs = absorbed_case()
+    a = correctness(aligned(sn, pn, pairs))
+    b = correctness(aligned(sn, pn, pairs), resolve_duplicates=False)
+    assert a.notes.equals(b.notes) and a.score_notes.equals(b.score_notes)
+    assert a.summary["n_duplicate_matches_resolved"] == 0
+
+
+def test_resolve_duplicate_matches_tie_and_order():
+    """Two unison score notes (same pitch, same onset) share one performed note: the lower
+    score index wins; the result does not depend on the order of the candidate list."""
+    from pianolens.align.postpass import resolve_duplicate_matches
+
+    q = np.array([0.0, 1.0, 1.0, 2.0])
+    sp = np.array([60, 62, 62, 64])
+    pt = np.array([0.0, 0.5, 1.0])
+    pp = np.array([60, 62, 64])
+    pairs = [(0, 0), (2, 1), (1, 1), (3, 2)]
+    free_p, free_s = np.zeros(3, bool), np.zeros(4, bool)
+    r = resolve_duplicate_matches(q, sp, pt, pp, pairs, free_p, free_s)
+    assert sorted(r.kept) == [(0, 0), (1, 1), (3, 2)] and r.dropped == [(2, 1)]
+    r2 = resolve_duplicate_matches(q, sp, pt, pp, pairs[::-1], free_p, free_s)
+    assert sorted(r2.kept) == sorted(r.kept) and r2.dropped == r.dropped
+    # re-match is opt-in: a free same-pitch note next to the loser is used only on request
+    free_p2 = np.zeros(4, bool)
+    free_p2[3] = True
+    pt2, pp2 = np.append(pt, 0.51), np.append(pp, 62)
+    assert resolve_duplicate_matches(q, sp, pt2, pp2, pairs, free_p2, free_s).rematched == []
+    assert resolve_duplicate_matches(q, sp, pt2, pp2, pairs, free_p2, free_s,
+                                     rematch=True).rematched == [(2, 3)]
+    none = resolve_duplicate_matches(q, sp, pt, pp, [(0, 0), (1, 1)], free_p, free_s)
+    assert none.kept == [(0, 0), (1, 1)] and not none.dropped and not none.rematched
+
+
+ASAP_ROOT = Path(__file__).resolve().parents[2] / "data" / "raw" / "asap"
+
+
+@pytest.mark.skipif(not (ASAP_ROOT / "Scriabin" / "Etudes_op_8" / "11" / "Shi08M.mid").is_file(),
+                    reason="needs ASAP")
+def test_duplicate_resolution_real_case():
+    """Regression on real data (DF-15): in ASAP Scriabin Op. 8 No. 11 (Shi08M) parangonar gives
+    performed note n268 to score notes n300-1 and n309-1. The nASAP ground truth pairs n268 with
+    n309-1 and has n300-1 unplayed: after resolution n300-1 is missed, and the matching is
+    one-to-one in both directions."""
+    from pianolens.align import align_performance
+    from pianolens.data import asap
+
+    idx = asap.asap_index()
+    row = idx[idx["performance_id"] == "asap:Scriabin/Etudes_op_8/11/Shi08M"].iloc[0]
+    ap = align_performance(asap.load_asap_score(row), asap.load_asap_performance(row))
+    pairs = [(s, p) for lab, s, p in ap.alignment.pairs.tolist() if lab == "match"]
+    assert {s for s, p in pairs if p == "n268"} == {"n300-1", "n309-1"}
+    old = correctness(ap, resolve_duplicates=False).score_notes.set_index("score_id")
+    assert old.loc["n300-1", "label"] == old.loc["n309-1", "label"] == "correct"
+    res = correctness(ap)
+    s = res.score_notes.set_index("score_id")
+    assert s.loc["n309-1", "label"] == "correct" and s.loc["n309-1", "performance_id"] == "n268"
+    assert s.loc["n300-1", "label"] == "missed"
+    assert res.summary["n_duplicate_matches_resolved"] == 3
+    matched = res.score_notes[res.score_notes["label"] == "correct"]
+    assert matched["performance_id"].is_unique
+    n = res.notes[res.notes["label"] == "correct"]
+    assert n["score_id"].is_unique

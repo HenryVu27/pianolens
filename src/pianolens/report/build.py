@@ -108,7 +108,8 @@ class ReportConfig:
             None = automatic: True for transcribed input (A-01, ``rules/audio.md``).
         not_heard: "passage not heard" rule (``calibration.NOT_HEARD_*``; :func:`not_heard_runs`):
             runs of mostly missed bars are one low-confidence item, not correctness tiers.
-            None = automatic: True for transcribed input.
+            None = automatic: True for transcribed input. ``not_heard_merge_gap`` and
+            ``not_heard_gap_share`` merge run fragments and extend runs to the edges (BL-27).
         fast_repeat_low_confidence: BL-25: missed notes on same-pitch repeats due less than
             ``fast_repeat_max_ioi_sec`` after the previous one are shown but not counted towards
             tiers. None = automatic: True for transcribed input.
@@ -133,6 +134,8 @@ class ReportConfig:
     not_heard: bool | None = None
     not_heard_min_bars: int = cal.NOT_HEARD_MIN_BARS
     not_heard_missed_share: float = cal.NOT_HEARD_MISSED_SHARE
+    not_heard_merge_gap: int = cal.NOT_HEARD_MERGE_GAP
+    not_heard_gap_share: float = cal.NOT_HEARD_GAP_MISSED_SHARE
     fast_repeat_low_confidence: bool | None = None
     fast_repeat_max_ioi_sec: float = cal.FAST_REPEAT_MAX_IOI_SEC
     fast_run_max_ioi_sec: float = cal.FAST_RUN_MAX_IOI_SEC
@@ -523,24 +526,50 @@ def fast_run_notes(notes: pd.DataFrame, max_ioi_sec: float = cal.FAST_RUN_MAX_IO
 
 def not_heard_runs(n_missed: Sequence[int], n_notes: Sequence[int],
                    min_bars: int = cal.NOT_HEARD_MIN_BARS,
-                   share: float = cal.NOT_HEARD_MISSED_SHARE) -> list[list[int]]:
+                   share: float = cal.NOT_HEARD_MISSED_SHARE,
+                   merge_gap: int = cal.NOT_HEARD_MERGE_GAP,
+                   gap_share: float = cal.NOT_HEARD_GAP_MISSED_SHARE) -> list[list[int]]:
     """"Passage not heard" (BL-18 audit): runs of at least ``min_bars`` consecutive graded bars
     (bars with ``n_notes > 0``, in performed order) in each of which at least ``share`` of the
     graded notes are missed. Bars without graded notes are skipped: they neither break nor extend
-    a run. Returns the bar indices (graded bars only) of each run. Unit: share of notes."""
+    a run. Returns the bar indices (graded bars only) of each run. Unit: share of notes.
+
+    BL-27 (``merge_gap`` > 0): two runs separated by at most ``merge_gap`` graded bars are one
+    run when every bar between them has at least ``gap_share`` of its graded notes missed; a run
+    that starts (ends) within ``merge_gap`` graded bars of the first (last) graded bar is
+    extended to it under the same condition. A recording that is cut leaves its last bars partly
+    found, which otherwise splits one missing passage into several items."""
+    graded = [i for i, n in enumerate(n_notes) if n > 0]
+    frac = [n_missed[i] / n_notes[i] for i in graded]
     runs, cur = [], []
-    for i, (m, n) in enumerate(zip(n_missed, n_notes, strict=True)):
-        if n <= 0:
-            continue
-        if m / n >= share:
-            cur.append(i)
+    for k, f in enumerate(frac):
+        if f >= share:
+            cur.append(k)
         else:
             if len(cur) >= min_bars:
                 runs.append(cur)
             cur = []
     if len(cur) >= min_bars:
         runs.append(cur)
-    return runs
+    if merge_gap > 0 and runs:
+        def missing(ks: range) -> bool:
+            return all(frac[k] >= gap_share for k in ks)
+
+        merged = [runs[0]]
+        for r in runs[1:]:
+            gap = range(merged[-1][-1] + 1, r[0])
+            if len(gap) <= merge_gap and missing(gap):
+                merged[-1] = merged[-1] + list(gap) + r
+            else:
+                merged.append(r)
+        head = range(0, merged[0][0])
+        if len(head) <= merge_gap and missing(head):
+            merged[0] = list(head) + merged[0]
+        tail = range(merged[-1][-1] + 1, len(frac))
+        if len(tail) <= merge_gap and missing(tail):
+            merged[-1] = merged[-1] + list(tail)
+        runs = merged
+    return [[graded[k] for k in r] for r in runs]
 
 
 def expert_bar_limits(expert_tables: Sequence[pd.DataFrame], labels: Sequence[str],
@@ -665,7 +694,8 @@ def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
         b["n_experts"] = expert["n_experts"].to_numpy(int)
     b["not_heard"] = False
     runs = not_heard_runs(b["n_missed"].to_numpy(int), b["n_score_notes"].to_numpy(int),
-                          cfg.not_heard_min_bars, cfg.not_heard_missed_share) if not_heard else []
+                          cfg.not_heard_min_bars, cfg.not_heard_missed_share,
+                          cfg.not_heard_merge_gap, cfg.not_heard_gap_share) if not_heard else []
     graded = np.flatnonzero(b["n_score_notes"].to_numpy(int) > 0)
     nh = []
     for run in runs:
@@ -681,7 +711,9 @@ def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
     s = dict(c.summary)
     s["not_heard"] = nh
     s["not_heard_rule"] = {"applied": bool(not_heard), "min_bars": cfg.not_heard_min_bars,
-                           "missed_share": cfg.not_heard_missed_share}
+                           "missed_share": cfg.not_heard_missed_share,
+                           "merge_gap": cfg.not_heard_merge_gap,
+                           "gap_share": cfg.not_heard_gap_share}
     s["n_bars_not_heard"] = int(sum(len(r) for r in runs))
     s["fast_repeat_low_confidence"] = bool(fast_repeat)
     s["fast_repeat_max_ioi_sec"] = cfg.fast_repeat_max_ioi_sec
@@ -1383,8 +1415,9 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
     if takes and takes["promoted"]:  # recurring errors -> a "strong" correctness item
         rec = takes["recurring"]
         tiers = cbars["tier"].to_numpy(object)
+        heard = ~cbars["not_heard"].to_numpy(bool)
         for i, lab in enumerate(labels):
-            if lab in rec:
+            if lab in rec and heard[i]:  # BL-27: never override "passage not heard"
                 tiers[i] = "strong"
         cbars["tier"] = tiers
         corr_summary["n_bars_strong"] = int((cbars["tier"] == "strong").sum())

@@ -71,6 +71,17 @@ at least ``wrong_pitch_window_sec`` and at most ``ADAPTIVE_WINDOW_MAX_SEC``:
 Pair costs stay in units of ``wrong_pitch_window_sec`` for every rule, so "closest first" means
 closest in seconds.
 
+**Duplicate matches** (``resolve_duplicates``, DF-15, on by default since 2026-10-10). The aligner
+(parangonar 3.3.3) sometimes matches one performed note to two score notes, or one score note to
+two performed notes, through its per-pitch DTW step and its ornament step. Counting all of them
+correct hides a missed (or extra) note. Before labelling, the matches are made one-to-one by
+:func:`pianolens.align.postpass.resolve_duplicate_matches`: same pitch first, then the onset
+nearest the score note's expected onset (estimated from the unique matches), then score order.
+The score note that loses is missed (and may become a wrong pitch through the pairing below) and
+the performed note that loses is extra. ``duplicate_rematch=True`` lets a loser take a free note of
+the same pitch within the BL-23 window (100 ms) of its expected onset instead; it is off because
+it was not supported against the nASAP reference (19 of 42 re-matches agreed).
+
 **Missed notes are reliable per bar, not per note.** Which duplicate of a repeated or doubled
 pitch was skipped is often ambiguous (deletion F1 0.75 in F-01, DECISIONS 2026-09-27). Read
 ``bars["n_missed"]`` rather than individual missed ids.
@@ -194,8 +205,11 @@ class CorrectnessResult:
             ``pianolens.align.match_ratio`` and ``alignment_suspect`` = match_ratio < 0.8
             (docs/specs/alignment-validation.md: below that, do not trust the labels);
             ``n_ornament_matches`` (different-pitch matches kept by the ornament rule),
-            ``n_pitch_dissolved`` (different-pitch matches dissolved, DF-10) and
-            ``n_reassigned`` (post-pass swaps).
+            ``n_pitch_dissolved`` (different-pitch matches dissolved, DF-10),
+            ``n_reassigned`` (post-pass swaps), ``n_duplicate_matches_resolved`` (aligner
+            matches removed to make the matching one-to-one, DF-15) and
+            ``n_duplicate_rematched`` (notes that lost such a match and took a free same-pitch
+            note instead; 0 unless ``duplicate_rematch``).
         params: the parameters used.
     """
 
@@ -332,6 +346,8 @@ def correctness(
     ornament_rule: str = "legacy",
     reassign: bool = True,
     wrong_pitch_window: str = "fixed",
+    resolve_duplicates: bool = True,
+    duplicate_rematch: bool = False,
 ) -> CorrectnessResult:
     """Label every note of an aligned performance correct / extra / missed / wrong pitch.
 
@@ -353,6 +369,11 @@ def correctness(
             check, ``experiments/2026-09-29-BL-23-aligner-ornaments/``).
         wrong_pitch_window: per-note window rule, one of :data:`WINDOW_RULES` (module
             docstring, "Window rules"). ``"fixed"`` uses ``wrong_pitch_window_sec`` everywhere.
+        resolve_duplicates: make the aligner's matches one-to-one before labelling (DF-15;
+            module docstring, "Duplicate matches"). Default True; False reproduces the labels
+            before 2026-10-10.
+        duplicate_rematch: with ``resolve_duplicates``, let a losing note take a free
+            same-pitch note within 100 ms (off by default; module docstring).
 
     Returns:
         :class:`CorrectnessResult`. Unmatched ids that are not in the note arrays are ignored
@@ -395,7 +416,8 @@ def correctness(
     p_partner = np.full(len(pn), -1, dtype=int)
     n_unknown = 0
     dissolved: list[tuple[int, int]] = []
-    n_orn_match = 0
+    cands: list[tuple[int, int, str]] = []
+    last_orn: set[int] = set()  # performed notes whose last entry is an "ornament" label
     for lab, sid, pid in al.pairs.tolist():
         i = s_pos.get(sid, -1) if sid else -1
         j = p_pos.get(pid, -1) if pid else -1
@@ -407,12 +429,38 @@ def correctness(
                 if not pitch_allowed(i, int(p_pitch[j] - s_pitch[i])):
                     dissolved.append((i, j))
                     continue
-                n_orn_match += 1
-            tag = "correct" if lab == "match" else "interpolated"
-            s_label[i], p_label[j] = tag, tag
-            s_partner[i], p_partner[j] = j, i
+            cands.append((i, j, "correct" if lab == "match" else "interpolated"))
+            last_orn.discard(j)
         elif lab == "ornament" and j >= 0:
             p_label[j] = "ornament"
+            last_orn.add(j)
+
+    # DF-15: one performed note matched to several score notes (or the reverse) -> one-to-one
+    n_dup_dropped = n_dup_rematched = 0
+    if resolve_duplicates and cands:
+        from pianolens.align.postpass import resolve_duplicate_matches
+
+        in_pair_s = np.zeros(len(sn), bool)
+        in_pair_p = np.zeros(len(pn), bool)
+        for i, j, _ in cands:
+            in_pair_s[i], in_pair_p[j] = True, True
+        res = resolve_duplicate_matches(sn["onset_quarter"], s_pitch, p_on, p_pitch,
+                                        [(i, j) for i, j, _ in cands],
+                                        ~in_pair_p & (p_label == "extra"), ~in_pair_s,
+                                        rematch=duplicate_rematch)
+        if res.dropped:
+            kept = set(res.kept)
+            cands = [c for c in cands if (c[0], c[1]) in kept]
+            cands += [(i, j, "correct") for i, j in res.rematched]
+            n_dup_dropped, n_dup_rematched = len(res.dropped), len(res.rematched)
+    n_orn_match = 0
+    for i, j, tag in cands:
+        if tag == "correct" and p_pitch[j] != s_pitch[i]:
+            n_orn_match += 1
+        s_label[i], p_label[j] = tag, tag
+        s_partner[i], p_partner[j] = j, i
+    for j in last_orn:  # an "ornament" entry after a match keeps its label, as listed
+        p_label[j] = "ornament"
 
     n_reassigned = 0
     if reassign:
@@ -537,6 +585,8 @@ def correctness(
         "n_ornament_matches": n_orn_match,
         "n_pitch_dissolved": len(dissolved),
         "n_reassigned": n_reassigned,
+        "n_duplicate_matches_resolved": n_dup_dropped,
+        "n_duplicate_rematched": n_dup_rematched,
         "accuracy": n["correct"] / graded if graded else float("nan"),
         "error_rate": (n["wrong_pitch"] + n["missed"] + n_extra) / graded if graded
         else float("nan"),
@@ -549,7 +599,9 @@ def correctness(
     params = {"wrong_pitch_window_sec": wrong_pitch_window_sec, "max_semitones": max_semitones,
               "allow_octave": allow_octave, "ornaments": ornaments,
               "ornament_rule": ornament_rule, "reassign": reassign,
-              "wrong_pitch_window": wrong_pitch_window}  # fmt: skip
+              "wrong_pitch_window": wrong_pitch_window,
+              "resolve_duplicates": resolve_duplicates,
+              "duplicate_rematch": duplicate_rematch}  # fmt: skip
     return CorrectnessResult(notes_df, score_df, bars, summary, params)
 
 

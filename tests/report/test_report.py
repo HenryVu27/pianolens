@@ -737,3 +737,47 @@ def test_wrong_notes_in_fast_run_worded_per_bar():
     key = ("wrong_pitch", "n32", 73)
     assert _describe_error(key, {"n32": 72}, {key}) == "a wrong note in this fast run"
     assert "instead of" in _describe_error(key, {"n32": 72})
+
+
+def test_recurring_error_never_overrides_not_heard(refs):
+    """BL-27 guard: the recurring wrong note of bar 4 sits in a "passage not heard" run (bars
+    1-4 otherwise unplayed in this take, transcribed input). It stays listed as recurring, but the
+    bar keeps no tier and no practise item."""
+    ap = _take(0)
+    ap.performance.provenance = "transcribed"
+    wrong = [i for i, (b, _, _, st, _) in enumerate(NOTES)
+             if st == 1 and 4 * REC_BAR <= b < 4 * REC_BAR + 4][0]
+    ap = _drop_notes(ap, [i for i, (b, *_) in enumerate(NOTES) if b < 16 and i != wrong])
+    inp = ReportInputs(ap=ap, provenance="transcribed", same_score_refs=refs,
+                       same_score_provenance="disklavier", takes=[_take(1), _take(2)])
+    rep = to_jsonable(build_report(inp, CFG))
+    rb = rep["bars"][REC_BAR]["correctness"]
+    assert rep["takes"]["promoted"] and rep["takes"]["recurring_error_bars"] == [str(REC_BAR + 1)]
+    assert rb["not_heard"] and rb["recurring"] and rb["tier"] == "none"
+    assert rep["correctness"]["not_heard"][0]["bars"] == [0, 1, 2, 3]
+    assert not any(d["category"] == "correctness" and REC_BAR in d["bars"]
+                   for d in rep["issues"])
+
+
+def test_not_heard_runs_merge_and_edges():
+    """BL-27: fragments split by up to 2 mostly-missed bars merge; a run ending within 2 graded
+    bars of the edge extends to it; a heard bar (under half missed) blocks both."""
+    from pianolens.report.build import not_heard_runs
+
+    n = [10] * 12
+    miss = [0, 0, 10, 10, 10, 6, 10, 9, 10, 0, 10, 7]  # bar 5 at 60%; bars 9-11 tail
+    assert not_heard_runs(miss, n, merge_gap=0) == [[2, 3, 4], [6, 7, 8]]
+    assert not_heard_runs(miss, n, merge_gap=2) == [[2, 3, 4, 5, 6, 7, 8]]  # 9 is heard
+    tail = [0, 0, 0, 0, 0, 10, 10, 10, 7, 6]  # cut recording: last two bars partly found
+    assert not_heard_runs(tail, [10] * 10, merge_gap=2) == [[5, 6, 7, 8, 9]]
+    assert not_heard_runs(tail, [10] * 10, merge_gap=0) == [[5, 6, 7]]
+    head = [6, 10, 10, 10, 0, 0, 0]  # opening: first bar partly found
+    assert not_heard_runs(head, [10] * 7, merge_gap=2) == [[0, 1, 2, 3]]
+    blocked = [0, 0, 10, 10, 10, 4, 10, 10, 10]  # bar 5 only 40% missed: heard
+    assert not_heard_runs(blocked, [10] * 9, merge_gap=2) == [[2, 3, 4], [6, 7, 8]]
+    far = [0, 0, 10, 10, 10, 6, 6, 6, 10, 10, 10]  # gap of 3 bars: too long
+    assert not_heard_runs(far, [10] * 11, merge_gap=2) == [[2, 3, 4], [8, 9, 10]]
+    skip = [10, 10, 0, 10, 6, 10, 10, 10]  # bar 2 has no graded notes: indices are bar rows
+    got = not_heard_runs(skip, [10, 10, 0, 10, 10, 10, 10, 10], merge_gap=2)
+    assert got == [[0, 1, 3, 4, 5, 6, 7]]
+    assert not_heard_runs([0, 0], [4, 4], merge_gap=2) == []

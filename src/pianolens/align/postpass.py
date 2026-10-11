@@ -1,4 +1,25 @@
-"""Post-alignment reassignment of same-pitch matches (BL-23).
+"""Post-alignment corrections: duplicate-match resolution (DF-15) and reassignment of same-pitch
+matches (BL-23).
+
+**Duplicate matches (DF-15, :func:`resolve_duplicate_matches`).** parangonar 3.3.3 can return
+one performed note matched to two or more score notes, or one score note matched to two or more
+performed notes. Two steps do it: the per-pitch DTW step (``unique_alignments`` lets a DTW path
+row that maps one score onset to two performed onsets keep both), and the ornament step, which
+re-matches every ornamented score note to the earliest insertion within ±2 semitones without
+removing the chosen insertion from its list (``.claude/rules/features.md``). Counting every such
+match as correct hides a missed note (or an extra note). Rule: the candidate matches are made
+one-to-one greedily, best first, by (1) the smaller pitch distance between the performed and the
+score note (same pitch first), (2) the smaller distance between the performed onset and the
+score note's expected onset estimated without the duplicated matches (:func:`loo_expected_onsets`
+over the matches that are unique in both directions), (3) the earlier score onset, (4) the
+earlier performed onset, (5) the lower score index and then performed index. The score note
+that loses stays unmatched (missed, or a wrong pitch through the usual pairing) and the performed
+note that loses stays unmatched (extra, ornament or wrong pitch). Optional, off by default
+(``rematch``): a note that loses every candidate may take an unmatched note of the same pitch
+whose onset lies within ``window_sec`` of the score note's expected onset (the BL-23 window;
+closest first, each note once). Off because it was not supported against the nASAP reference
+alignments: 19 of 42 such re-matches on 1,060 ASAP performances agreed with the reference (lead,
+2026-10-10).
 
 parangonar's ``DualDTWNoteMatcher`` matches notes pitch by pitch along an onset time map. In a
 dense run, a wrong key that equals a nearby written pitch can take that written note's match
@@ -25,10 +46,13 @@ DualDTW (Peter et al., TISMIR 2023, landscape section 1.1).
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
 import numpy as np
 
-__all__ = ["REASSIGN_MARGIN_SEC", "REASSIGN_WINDOW_SEC", "loo_expected_onsets",
-           "reassign_same_pitch"]  # fmt: skip
+__all__ = ["REASSIGN_MARGIN_SEC", "REASSIGN_WINDOW_SEC", "DuplicateResolution",
+           "loo_expected_onsets", "reassign_same_pitch",
+           "resolve_duplicate_matches"]  # fmt: skip
 
 REASSIGN_MARGIN_SEC = 0.03
 """A swap must bring the match at least this much closer to its expected onset (seconds). Equal
@@ -141,3 +165,133 @@ def reassign_same_pitch(
         used_s.add(i)
         used_p.update((j, jn))
     return swaps
+
+
+@dataclass
+class DuplicateResolution:
+    """Output of :func:`resolve_duplicate_matches`; indices into the score / performed notes.
+
+    Attributes:
+        kept: ``(score index, performed index)`` matches kept, one-to-one, in input order.
+        dropped: candidate matches removed because their score or performed note was kept with
+            another partner.
+        rematched: new same-pitch matches of a note that lost every candidate.
+    """
+
+    kept: list[tuple[int, int]] = field(default_factory=list)
+    dropped: list[tuple[int, int]] = field(default_factory=list)
+    rematched: list[tuple[int, int]] = field(default_factory=list)
+
+
+def resolve_duplicate_matches(
+    s_quarter: np.ndarray,
+    s_pitch: np.ndarray,
+    p_onset: np.ndarray,
+    p_pitch: np.ndarray,
+    pairs: list[tuple[int, int]],
+    p_free: np.ndarray,
+    s_free: np.ndarray,
+    *,
+    rematch: bool = False,
+    window_sec: float = REASSIGN_WINDOW_SEC,
+) -> DuplicateResolution:
+    """Make candidate matches one-to-one by the module rule ("Duplicate matches", DF-15).
+
+    Args:
+        s_quarter, s_pitch: score onsets (quarters) and MIDI pitches.
+        p_onset, p_pitch: performed onsets (seconds) and MIDI pitches.
+        pairs: candidate matches ``(score index, performed index)``; a note may appear in more
+            than one.
+        p_free: performed notes outside ``pairs`` that may take a re-match (unmatched notes, not
+            interpolated or tolerated ones).
+        s_free: score notes outside ``pairs`` that may take a re-match (unmatched notes).
+        rematch: let a note that lost every candidate take a free same-pitch note (module
+            docstring; off by default).
+        window_sec: re-match window around the expected onset (default the BL-23 window).
+
+    Without duplicates every pair is kept and nothing else happens. Unit: seconds.
+    """
+    out = DuplicateResolution()
+    if not pairs:
+        return out
+    s_quarter = np.asarray(s_quarter, dtype=float)
+    s_pitch = np.asarray(s_pitch, dtype=int)
+    p_onset = np.asarray(p_onset, dtype=float)
+    p_pitch = np.asarray(p_pitch, dtype=int)
+    s_cnt: dict[int, int] = {}
+    p_cnt: dict[int, int] = {}
+    for i, j in pairs:
+        s_cnt[i] = s_cnt.get(i, 0) + 1
+        p_cnt[j] = p_cnt.get(j, 0) + 1
+    dup = [(i, j) for i, j in pairs if s_cnt[i] > 1 or p_cnt[j] > 1]
+    if not dup:
+        out.kept = list(pairs)
+        return out
+    unique = np.full(len(s_pitch), -1, dtype=int)
+    for i, j in pairs:
+        if s_cnt[i] == 1 and p_cnt[j] == 1:
+            unique[i] = j
+    cand_s = np.array(sorted({i for i, _ in dup}), dtype=int)
+    exp = dict(zip(cand_s.tolist(),
+                   loo_expected_onsets(s_quarter, unique, p_onset, cand_s).tolist(),
+                   strict=True))  # fmt: skip
+
+    def cost(ij: tuple[int, int]) -> tuple:
+        i, j = ij
+        e = exp[i]
+        dt = abs(p_onset[j] - e) if np.isfinite(e) else np.inf
+        return (abs(int(p_pitch[j]) - int(s_pitch[i])), dt, s_quarter[i], p_onset[j], i, j)
+
+    used_s = {i for i, j in pairs if s_cnt[i] == 1 and p_cnt[j] == 1}
+    used_p = {j for i, j in pairs if s_cnt[i] == 1 and p_cnt[j] == 1}
+    keep = {(i, int(unique[i])) for i in used_s}
+    for i, j in sorted(set(dup), key=cost):
+        if i in used_s or j in used_p:
+            continue
+        keep.add((i, j))
+        used_s.add(i)
+        used_p.add(j)
+    out.kept = [(i, j) for i, j in pairs if (i, j) in keep]
+    seen: set[tuple[int, int]] = set()
+    for ij in pairs:
+        if ij not in keep and ij not in seen:
+            out.dropped.append(ij)
+            seen.add(ij)
+    # notes that lost every candidate may take a free same-pitch note near the expected onset
+    lost_s = sorted({i for i, _ in out.dropped} - used_s)
+    lost_p = sorted({j for _, j in out.dropped} - used_p)
+    if not rematch or (not lost_s and not lost_p):
+        return out
+    partner = np.full(len(s_pitch), -1, dtype=int)
+    for i, j in out.kept:
+        partner[i] = j
+    free_p = np.asarray(p_free, bool).copy()
+    free_p[lost_p] = True
+    free_p[sorted(used_p)] = False
+    free_s = np.asarray(s_free, bool).copy()
+    free_s[lost_s] = True
+    free_s[sorted(used_s)] = False
+    lost_p_set = set(lost_p)
+    opts: list[tuple[float, int, int]] = []
+    s_idx = np.flatnonzero(free_s)
+    if len(s_idx) == 0:
+        return out
+    e_free = loo_expected_onsets(s_quarter, partner, p_onset, s_idx)
+    p_idx = np.flatnonzero(free_p)
+    lost_s_set = set(lost_s)
+    for i, e in zip(s_idx.tolist(), e_free.tolist(), strict=True):
+        if not np.isfinite(e):
+            continue
+        same = p_idx[p_pitch[p_idx] == s_pitch[i]]
+        d = np.abs(p_onset[same] - e)
+        for j, dj in zip(same.tolist(), d.tolist(), strict=True):
+            if dj <= window_sec and (i in lost_s_set or j in lost_p_set):
+                opts.append((dj, i, j))
+    opts.sort()
+    for _, i, j in opts:
+        if i in used_s or j in used_p:
+            continue
+        out.rematched.append((i, j))
+        used_s.add(i)
+        used_p.add(j)
+    return out

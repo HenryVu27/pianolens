@@ -54,6 +54,7 @@ from lxml import etree
 
 __all__ = [
     "MUSICXML_SUFFIXES",
+    "TREMOLO_MARK_CHORD",
     "TREMOLO_MAX_MEASURED_LEVEL",
     "TremoloGroup",
     "TremoloReport",
@@ -64,6 +65,11 @@ __all__ = [
 ]
 
 MUSICXML_SUFFIXES = (".xml", ".musicxml", ".mxl")
+
+TREMOLO_MARK_CHORD = True
+"""Copy the ``"tremolo"`` mark of an unexpanded tremolo to every note of its chord (BL-26
+convention). False keeps the marks where the score wrote them. A switch for the comparison
+against the nASAP reference alignments (lead, 2026-10-10)."""
 
 TREMOLO_MAX_MEASURED_LEVEL = 2
 """Highest stroke level (beams + marks) read as a measured tremolo; 2 = sixteenth strokes.
@@ -321,15 +327,18 @@ def _mark_tremolo(n: Any) -> None:
     n.ornaments = orn
 
 
-def expand_tremolos(score: Any, groups: list[TremoloGroup]) -> TremoloReport:
+def expand_tremolos(score: Any, groups: list[TremoloGroup],
+                    mark_chord: bool | None = None) -> TremoloReport:
     """Rewrite the parts of a partitura ``Score`` loaded from the MusicXML that ``groups`` came
     from (:func:`read_tremolos`): measured tremolos become their strokes, the rest keep their
-    written notes with the ``"tremolo"`` mark on every chord note. In place; returns the counts.
+    written notes with the ``"tremolo"`` mark on every chord note (``mark_chord``, default
+    :data:`TREMOLO_MARK_CHORD`; False leaves the marks as written). In place; returns the counts.
 
     The strokes split the written span evenly (an integer number of divisions each, see
     :func:`load_musicxml_expanded`); a stroke that would not be whole is not expanded.
     """
     rep = TremoloReport(n_groups=len(groups))
+    mark_chord = TREMOLO_MARK_CHORD if mark_chord is None else mark_chord
     parts = {p.id: p for p in pt.score.iter_parts(getattr(score, "parts", score))}
     cache: dict[str, dict[int, Any]] = {}
     for g in groups:
@@ -358,8 +367,9 @@ def expand_tremolos(score: Any, groups: list[TremoloGroup]) -> TremoloReport:
                 skip = "stroke not a whole number of divisions"
         if skip:
             rep.kept[skip] += 1
-            for n in members:
-                _mark_tremolo(n)
+            if mark_chord:
+                for n in members:
+                    _mark_tremolo(n)
             continue
         d = span // n_str
         layers = [first, second] if second else [first]

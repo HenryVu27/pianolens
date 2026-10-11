@@ -138,7 +138,7 @@ def timeline_svg(rep: dict) -> str:
     if rep.get("takes"):
         rows.append(("Errors in takes", lambda b: (
             "strong" if b["correctness"].get("recurring") and rep["takes"].get("promoted")
-            else "none",
+            and not b["correctness"].get("not_heard") else "none",  # BL-27
             b.get("takes_with_errors") or None,
             f"flagged notes in {b.get('takes_with_errors', 0)} of {rep['takes']['n_takes']} "
             "takes" + ("; recurring: " + "; ".join(

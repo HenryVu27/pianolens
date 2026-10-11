@@ -152,9 +152,13 @@ def test_report_leaves_out_per_hand_features_for_duets():
     card = next(c for c in duet["summary"] if c["title"] == "Control")
     assert any(s.startswith("Hands together: not measured") for s in card["findings"])
     assert "Piano four hands" in render_html(duet)
-    # everything that is not per hand is unchanged
+    # everything that is not per hand is unchanged, except the practice advice wording
     for k in ("correctness", "tempo", "bars", "issues", "practise", "evenness_runs"):
-        assert duet[k] == solo[k]
+        d, s = json.dumps(duet[k]), json.dumps(solo[k])
+        assert "hands separately" not in d
+        assert d.replace("parts separately", "hands separately") == s
+    assert "hands separately" in json.dumps(solo["issues"])  # the case is exercised
+    assert "parts separately" in json.dumps(duet["issues"])
     # an explicit False skips detection
     forced = to_jsonable(build_report(ReportInputs(ap=_target(), piece_id="faure_op56_mv1",
                                                    four_hands=False), CFG))

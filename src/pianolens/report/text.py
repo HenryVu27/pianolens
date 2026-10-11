@@ -193,6 +193,8 @@ def issue_text(item: dict, rep: dict) -> str:
                 _n(w, "wrong note") if w else "")
         parts = [p for p in (wtxt, _n(m, "missed note") if m else "",
                              _n(e, "extra note") if e else "") if p]
+        # DF-11: in a piano four-hands duet the staves do not show the hands
+        apart = "parts separately" if rep["piece"].get("four_hands") else "hands separately"
         rec = [(bars[i]["label"], r) for i in idx for r in bars[i]["correctness"].get(
             "recurring", [])]
         if rec:
@@ -202,13 +204,13 @@ def issue_text(item: dict, rep: dict) -> str:
             this_take = f" This take: {', '.join(parts)}." if parts else ""
             return (f"{where}: the same mistake recurs across your takes ({what}). A mistake "
                     f"repeated in several takes is learned, not a slip.{this_take} Relearn "
-                    f"{this} slowly, hands separately, with the right notes.")
+                    f"{this} slowly, {apart}, with the right notes.")
         down = any(bars[i]["correctness"].get("expert_check") == "down_tiered" for i in idx)
         xc = rep["correctness"].get("expert_check") or {}
         dn = (f" {expert_words(xc.get('provenance')).capitalize()} of this score also show "
               "errors here, so this is ranked one tier lower." if down else "")
         return (f"{where}: {', '.join(parts)}; {range_w} for the note checker.{dn} Play {this} "
-                "slowly, hands separately, until every note is secure.")
+                f"slowly, {apart}, until every note is secure.")
     if cat == "interpretation":
         dev = _span_mean(rep, idx, ch, "dev_mean")
         if ch == "tempo":

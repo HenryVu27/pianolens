@@ -60,3 +60,5 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   catalogue = mvt 2 only, parangonar duplicate matches, staff mismatch 6.7% (systematic per note), D2 unstable.
 - [bl26-bl33-score-loading.md](bl26-bl33-score-loading.md) - tremolo expansion (doc_order map, chord-head marks,
   ASAP score MIDI as check, D899/1 bars 82-84), LH-in-upper-staff split (voice rule, MuseScore voice 5+), Op. 29.
+- [df15-bl27.md](df15-bl27.md) - DF-15 duplicate matches: both parangonar steps, resolution rule, ASAP GT 553/58, effect
+  (+1.3 pt targeted strong, stop line), BL-27 guard + prepared truncation control, report nondeterminism.
