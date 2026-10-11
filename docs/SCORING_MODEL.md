@@ -65,13 +65,13 @@ Correctness needs extra care because the note checker is not perfect: it also fl
 
 A played note left unmatched becomes a wrong pitch when it lies within 100 ms of the time a still-unmatched written note was expected and within 2 semitones of it or an octave away; otherwise it is an extra note, or a tolerated ornament. A written note left unmatched is missed.
 
-A bar is judged on two numbers: the count of wrong-pitch notes, and missed plus extra notes per graded score note. The bar's tier is the higher of the two. The global limits, measured on the 100 clean expert performances, are in `src/pianolens/report/calibration.py`.
+A bar is judged on two numbers: the count of wrong-pitch notes, and missed plus extra notes per graded score note. The bar's tier is the higher of the two. The global limits, measured on the 100 clean expert performances, are in `src/pianolens/report/calibration.py`. They were recomputed on 2026-10-10 with the current checker (BL-28): the 99th percentile of missed plus extra notes per note fell from 0.634 to 0.50, because the old tail came from one piece whose tremolo abbreviations were not yet written out; the phone-input limits barely moved (0.158 to 0.161, 0.286 unchanged).
 
 | Quantity | Notable if more than | Strong if more than |
 |---|---|---|
 | Wrong-pitch notes in the bar | 1 | 2 |
-| Missed plus extra notes per note (MIDI input) | 0.267 | 0.634 |
-| Missed notes per note (phone input, extras ignored) | 0.158 | 0.286 |
+| Missed plus extra notes per note (MIDI input) | 0.25 | 0.50 |
+| Missed notes per note (phone input, extras ignored) | 0.161 | 0.286 |
 
 So one wrong note in a bar is shown but never flagged (7.1 percent of expert bars have one), two are notable and three are strong.
 
@@ -81,7 +81,7 @@ Several refinements sit on top. The first and the last apply to any input; the o
 - **Strong on transcribed input: more than the worst expert (interim).** With only up to 15 expert transcriptions at a bar, a 99th percentile interpolated between the two largest values made a learner who merely equalled the worst expert strong, and strong bars ran above 1 percent. The code now takes the strong limit at a bar as the value of rank 0.99 × (n + 1), rounded up, among the n experts there. With fewer than 99 experts that rank does not exist, which is always the case here, so the limit becomes the worst expert's value at that bar plus a margin of 0 notes. In plain terms: on transcribed input, a bar checked against experts is strong only when it has more wrong notes, or a higher missed-note rate, than every expert transcription at that bar, and also more than the global strong limit. Notable is unchanged, and so is key-sensor input. The per-transcriber strong limits tried in BL-18 are switched off.
 - **Passage not heard.** A run of at least 3 consecutive graded bars in each of which at least 80 percent of the written notes were not found is not treated as mistakes. It is reported once, as a low-confidence item: "Passage not heard: bars ... (at the start or end of the recording, when it is). This passage was not played, or it may be missing from the recording." Its bars get no correctness tier. Bars without graded notes neither break nor extend a run. The rule exists because such runs in the expert transcriptions came from recordings that start late or are cut, and no per-bar limit could move them. One known weakness is open: a bar just under 80 percent splits a run into fragments, so a cut ending can show as two or three items without the "at the end" note (BL-27, not yet changed). A recurring mistake across takes never promotes a "not heard" bar to strong (BL-27 guard, 2026-10-10).
 - **Extra notes are ignored.** Phone transcriptions of the owner's playing produced 15 to 29 percent extra notes on three of five recordings, many on fixed high pitches. A later analysis (BL-22) found that these are mostly a second, independent sound in those recordings: a recurring stepwise melody between G6 and G7, about 3 notes per second, with the same phrases in all three recordings and no relation to the notes being played. It is not a fault of the phone or the transcriber, and overtones of played notes are at most a small share. Where the melody comes from, in the room or added when the video was edited, is undetermined until a listening check. Transcribed extras are unreliable in general anyway, so the rule does not depend on that explanation: on transcribed input, extras stay visible but never count towards a tier or a practice item.
-- **Fast repeated notes (BL-25).** Transcribers often merge a key struck again very quickly into one note: on microphone recordings of a player piano, only a third of same-key repeats closer than 80 ms were found, against 98 percent of other notes, and the loss sits below about 100 ms. So on transcribed input, a missed note whose previous written note of the same pitch was due less than 100 ms earlier (at the tempo you played) is shown on the timeline and in a confidence note but does not count towards any tier. The expert tables used today do not carry this count, so only your side is reduced, which errs towards fewer flags (BL-28).
+- **Fast repeated notes (BL-25).** Transcribers often merge a key struck again very quickly into one note: on microphone recordings of a player piano, only a third of same-key repeats closer than 80 ms were found, against 98 percent of other notes, and the loss sits below about 100 ms. So on transcribed input, a missed note whose previous written note of the same pitch was due less than 100 ms earlier (at the tempo you played) is shown on the timeline and in a confidence note but does not count towards any tier. Since BL-28 (2026-10-10) the cached expert transcription tables carry this count too, so the same notes are set aside for the experts as for you.
 - **Fast runs are judged per bar (BL-20).** Where played notes follow each other less than 100 ms apart, the checker is more reliable about the bar than about which notes were wrong: the aligner absorbs or mispairs 6.9 to 8.3 percent of wrong keys there, against 2.5 percent in slow passages. Wrong notes in such runs are worded per bar ("2 wrong notes in this fast run") and never as "D instead of C". Tiers do not change. Even the bar is not guaranteed on transcribed input: 21 to 24 percent of injected wrong notes in fast runs were not counted at all (BL-18b audit, DF-12).
 - **Recurring mistakes.** With several takes, the same wrong pitch at the same written note in at least two takes is treated as learned, not a slip, and its bar becomes strong. Mistakes the checker also reports for any expert recording of that score are removed first, and promotion needs at least 2 such recordings. Missed and extra notes never count as recurring.
 
@@ -106,9 +106,9 @@ Bar 52 of the owner's phone recording of the Chopin Nocturne discussed later sho
 
 - The checker found 1 wrong note, 12 missed notes and 2 extra notes among 60 graded score notes. The wrong note sits in a fast run.
 - Wrong notes: 1 is not more than the limit of 1, so this quantity is not tiered.
-- The recording is transcribed from a phone, so the 2 extras are set aside. None of the missed notes falls on a fast repeat, so all 12 count. Missed notes per note: 12 / 60 = 0.20. That is more than 0.158 (notable) and less than 0.286 (strong), so the bar is **notable**.
+- The recording is transcribed from a phone, so the 2 extras are set aside. None of the missed notes falls on a fast repeat, so all 12 count. Missed notes per note: 12 / 60 = 0.20. That is more than 0.161 (notable) and less than 0.286 (strong), so the bar is **notable**.
 - The per-bar check ran against 15 expert transcriptions of the same score. The bar still cleared the raised limits, so the flag was confirmed rather than written off as an edition artefact.
-- Magnitude: 0.20 / 0.158, about 1.27.
+- Magnitude: 0.20 / 0.161, about 1.24.
 - The sentence produced: "Bar 52: 1 wrong note in this fast run (the checker is more reliable about the bar than about which notes), 12 missed notes; outside the usual expert range for the note checker. Play this bar slowly, hands separately, until every note is secure."
 
 It did not reach the practice list, because three strong findings outranked every notable one.
@@ -160,7 +160,7 @@ Column key. **Compared against**: score, experts (with which set), a published o
 | Metric | What it measures | Unit | Good looks like | Compared against | From MIDI | From phone audio | In the report? |
 |---|---|---|---|---|---|---|---|
 | Wrong notes per bar, `n_wrong_pitch` | Played notes that replace a written note | count | At most 1 per bar | Score; clean experts (limits 1 / 2); per-bar experts (on transcribed input, strong needs more than every expert at the bar) | Trusted (bar-level precision at least 0.996) | Low confidence (transcription roughly doubles apparent errors; 16 to 19 percent of wrong notes go uncounted, DF-12) | yes, flagged |
-| Missed notes per bar, `n_missed` | Written notes with no played partner, judged per bar | count; rate per note | Under 0.267 per note with extras, 0.158 without | Score; clean experts; per-bar experts | Trusted per bar, not per note | Low confidence (fast repeats and quiet inner notes can be lost) | yes, flagged |
+| Missed notes per bar, `n_missed` | Written notes with no played partner, judged per bar | count; rate per note | Under 0.25 per note with extras, 0.161 without | Score; clean experts; per-bar experts | Trusted per bar, not per note | Low confidence (fast repeats and quiet inner notes can be lost) | yes, flagged |
 | Extra notes per bar, `n_extra` | Played notes with no written note, not ornaments | count | Counted with missed notes (limit above) | Score; clean experts | Trusted | Not trusted (in three of the owner's recordings, mostly a second, independent melody, BL-22) | yes, shown only |
 | Wrong notes in fast runs, `n_wrong_fast_run` | Wrong notes where played notes are under 100 ms apart | count | Not judged separately | Nothing (wording rule) | Trusted per bar, not per note | Same, and more of them go uncounted | yes, worded per bar |
 | Missed notes on fast repeats, `n_missed_fast_repeat` | Missed notes whose previous same-pitch written note was due under 100 ms earlier | count | Not judged | Score | Counted like any missed note | Low confidence; not counted towards tiers | yes, confidence note and timeline |
@@ -273,7 +273,7 @@ This is the current report (rebuilt on 2026-09-29 with the code described above)
 |---|---|---|---|---|
 | 32 | 2 (1 in a fast run) | 4 | 33 | 2 wrong notes, more than the limit of 1 |
 | 39 | 2 | 0 | 46 | 2 wrong notes |
-| 45 | 0 | 5 | 30 | 5 / 30 = 0.167 missed per note, above 0.158 |
+| 45 | 0 | 5 | 30 | 5 / 30 = 0.167 missed per note, above 0.161 |
 | 52 | 1 (in a fast run) | 12 | 60 | 12 / 60 = 0.20 missed per note |
 | 69 | 1 | 4 | 21 | 4 / 21 = 0.19 missed per note |
 

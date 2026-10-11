@@ -186,11 +186,12 @@ def test_html_is_self_contained(report, tmp_path):
 
 @pytest.mark.parametrize("wrong, missed_extra, n, tier", [
     (0, 0, 10, "none"), (1, 0, 10, "none"), (2, 0, 10, "notable"), (3, 0, 10, "strong"),
-    (0, 2, 10, "none"), (0, 3, 10, "notable"), (0, 7, 10, "strong"),
+    (0, 2, 10, "none"), (0, 3, 10, "notable"), (0, 5, 10, "notable"), (0, 6, 10, "strong"),
+    (0, 7, 10, "strong"),
 ])  # fmt: skip
 def test_correctness_tiers_follow_expert_calibration(wrong, missed_extra, n, tier):
-    """Expert bars: >= 1 wrong note in 7%, >= 2 in 2.1%, >= 3 in 0.85%; missed + extra per note
-    95th percentile 0.267, 99th 0.634 (scripts/calibrate_report_f08.py)."""
+    """Expert bars: >= 1 wrong note in 7.1%, >= 2 in 2.2%, >= 3 in 0.88%; missed + extra per note
+    95th percentile 0.25, 99th 0.50 (BL-28, scripts/rebuild_calibration_bl28.py)."""
     assert _correctness_tier(wrong, missed_extra, n)[0] == tier
 
 
@@ -420,7 +421,7 @@ def _with_extra_notes(ap, bar: int, k: int):
 
 def test_extra_notes_are_not_practised_on_transcribed_input():
     """A-01 / rules/audio.md: extra notes from phone / transcribed input are low confidence.
-    8 extras in a 12-note bar (0.67 per note, beyond the expert 99th percentile of 0.634) are
+    8 extras in a 12-note bar (0.67 per note, beyond the expert 99th percentile of 0.50) are
     strong on key-sensor input, but not ranked on transcribed input; still in the timeline."""
     bar = 8
     reps = {}

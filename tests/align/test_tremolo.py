@@ -129,7 +129,7 @@ def test_triplet_stroke_count_uses_written_value(tmp_path):
     assert rep.n_notes_added == 2
 
 
-def test_unmeasured_and_fast_tremolos_are_kept_with_marks_on_every_chord_note(tmp_path):
+def test_unmeasured_and_fast_tremolos_are_kept_with_marks_as_written(tmp_path, monkeypatch):
     m1 = [_note(60, 4, "quarter", "a", tremolo=("unmeasured", 0)),
           _note(64, 4, "quarter", "b", chord=True), _rest(12, "half")]  # fmt: skip
     m2 = [_note(62, 4, "quarter", "c", tremolo=("single", 3)),  # 32nds: unmeasured by convention
@@ -142,7 +142,13 @@ def test_unmeasured_and_fast_tremolos_are_kept_with_marks_on_every_chord_note(tm
     part = score.parts[0]
     assert rep.n_expanded == 0 and rep.n_notes_added == 0
     assert len(part.notes_tied) == 4
-    assert all("tremolo" in (n.ornaments or []) for n in part.notes_tied)
+    marked = sorted(n.midi_pitch for n in part.notes_tied if "tremolo" in (n.ornaments or []))
+    assert marked == [60, 62]  # only the notes the score marked (default since 2026-10-10)
+    import pianolens.align.tremolo as tr
+
+    monkeypatch.setattr(tr, "TREMOLO_MARK_CHORD", True)  # the earlier BL-26 convention
+    part2 = load_musicxml_expanded(path)[0].parts[0]
+    assert all("tremolo" in (n.ornaments or []) for n in part2.notes_tied)
 
 
 def test_tied_tremolo_is_not_expanded(tmp_path):

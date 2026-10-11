@@ -878,3 +878,33 @@ wording "meets C1-C3 on one new sample of 12 pieces" therefore needs "not met by
 on DF-13's 16 pieces (1.49 / 1.86%)". R1(0) + run rule stays interim, not confirmed. This does
 not favour R0 (worse on C1 in BL-18b); it points to a piece-difficulty-aware limit or more
 references.
+
+**Note added 2026-10-10 (feature-engineer, BL-28; outside every pre-registration above).**
+Calibration rebuilt with the current checker: DF-15 duplicate resolution (re-match off), BL-26
+tremolo expansion (mark copy off), BL-33 hand split, and BL-25 fast-repeat counts in every expert
+table. Script `scripts/rebuild_calibration_bl28.py`, outputs `data/interim/bl28/`
+(`run1_before_constants_written.log` holds the old-vs-new run made before `calibration.py` was
+changed). The lead adopted the new values after the 10% stop line fired on two constants.
+- F-08 (100 clean D-08 copies), old -> new: missed + extra per note q95 0.267 -> 0.25, q99
+  0.634 -> 0.50; error rate q95 0.164 -> 0.162, q99 0.207 -> 0.171; missed per note q95
+  0.158 -> 0.161, q99 0.286 unchanged; wrong-pitch q95 / q99 1 / 2, error rate q50 0.0465 and
+  the share-of-bars median 0.420 unchanged. Both q99 moves come from Schubert D899/1's unexpanded
+  tremolos in the old run: without its two performances the new values are the same.
+- F-08c key-sensor (40 copies, 5,482 bars), notable+ / strong, global -> checked: 6.8/1.7% ->
+  3.7/0.67% before; 6.9/1.7% -> 3.7/0.71% with the old limits on the new tables; 7.4/2.0% ->
+  4.0/0.88% with the new limits. Transcribed floor 11.8/3.0% -> 5.3/1.4%, unchanged at that
+  precision. D-08 rate 0.05, injected bars kept tiered by the check: 85.4% (85.5% before).
+- A-01 floor (150 transcriptions, leave-one-out, extras not counted), rule P clean strong /
+  notable+, old cached tables -> new tables and limits: Transkun V2 0.404 / 2.848% -> 0.404 /
+  2.837%; Aria-AMT 1.506 / 6.929% -> 1.483 / 6.929%. With BL-25 now on both sides (the report's
+  path): strong 0.357% (Transkun V2) and 1.390% (Aria-AMT), against 0.404 / 1.506% when only the
+  target was reduced. Family q99 limits (0.308 / 0.771) and the "not heard" runs (Aria-AMT 9 runs,
+  55 bars in 6 transcriptions; Transkun V2 3 runs, 13 bars) unchanged.
+- Henry's A-01 reports (`data/interim/reports/henry_bl28/`, against today's pre-DF-15 code): 6 of
+  10 unchanged in tiers. Op. 64 No. 2 (Aria-AMT): bar 118 notable -> strong and now a practise
+  item; the worst expert transcription there had 10 of 11 notes missed, mostly fast repeats, and
+  with BL-25 on the expert side it counts 3 of 11, below Henry's 5 of 11. Op. posth. (Transkun V2):
+  bars 5 and 11 none -> notable (DF-15: 2 duplicate matches resolved, 2 more missed notes);
+  (Aria-AMT) bar 13 none -> notable (DF-15, 1). Op. 9 No. 1 (Transkun V2): the whole-take error
+  rate tier notable -> strong (error rate q99 0.207 -> 0.171). No "passage not heard" item
+  appears or disappears.

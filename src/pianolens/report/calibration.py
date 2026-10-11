@@ -18,25 +18,29 @@ MIN_TIER_REFERENCES = 10
 #: **clean expert playing**: the rate-0 copies of the D-08 mistake set (100 (n)ASAP
 #: performances, 62 pieces, 12,940 bars). Its "errors" are real slips plus alignment and
 #: ground-truth noise; on average 42% of an expert performance's bars have at least one.
-#: Measured by ``scripts/calibrate_report_f08.py`` on 2026-09-28 (raw output in
-#: ``data/interim/reports/calibration/``). Bars are tiered on the two most reliable
-#: quantities: the number of wrong-pitch notes (bar-level precision 0.996 or higher on D-08,
-#: ``docs/specs/correctness-validation.md``) and missed + extra notes per graded score note.
+#: Bars are tiered on the two most reliable quantities: the number of wrong-pitch notes
+#: (bar-level precision 0.996 or higher on D-08, ``docs/specs/correctness-validation.md``) and
+#: missed + extra notes per graded score note.
+#: First measured by ``scripts/calibrate_report_f08.py`` on 2026-09-28. **Recomputed for BL-28 on
+#: 2026-10-10** (``scripts/rebuild_calibration_bl28.py``, ``data/interim/bl28/``) with the
+#: current checker: DF-15 duplicate resolution (re-match off), BL-26 tremolo expansion (mark copy
+#: off) and BL-33 hand split. Old -> new where a value moved: missed_extra_per_note q95 0.267 ->
+#: 0.25, q99 0.634 -> 0.50; error_rate q95 0.164 -> 0.162, q99 0.207 -> 0.171; missed_per_note
+#: q95 0.158 -> 0.161. The old q99 tails came from Schubert D899/1's unexpanded tremolo
+#: abbreviations (a loader defect fixed by BL-26); the new values are the same with or without
+#: its two performances (lead, 2026-10-10: adopt).
 CORRECTNESS_EXPERT_BARS: dict[str, float] = {
     "n_performances": 100,
     "n_bars": 12940,
-    "wrong_pitch_q95": 1.0,  # 7.1% of expert bars have >= 1, 2.1% >= 2, 0.85% >= 3
+    "wrong_pitch_q95": 1.0,  # 7.1% of expert bars have >= 1, 2.2% >= 2, 0.88% >= 3
     "wrong_pitch_q99": 2.0,
-    "missed_extra_per_note_q95": 0.267,
-    "missed_extra_per_note_q99": 0.634,
-    # per performance; 5-95%: 0.113-0.820. BL-23 (2026-09-29): 0.421 -> 0.420 after the
-    # same-pitch reassignment became the correctness default; every other value in this dict
-    # and the tier limits are unchanged at the precision shown (rerun in
-    # experiments/2026-09-29-BL-23-aligner-ornaments/, variant R).
+    "missed_extra_per_note_q95": 0.25,  # 0.267 before BL-28
+    "missed_extra_per_note_q99": 0.50,  # 0.634 before BL-28
+    # per performance; BL-23 (2026-09-29) moved it 0.421 -> 0.420; BL-28 unchanged
     "share_bars_with_error_median": 0.420,
     "error_rate_q50": 0.0465,  # (wrong + missed + extra) / graded notes, per performance
-    "error_rate_q95": 0.164,
-    "error_rate_q99": 0.207,
+    "error_rate_q95": 0.162,  # 0.164 before BL-28
+    "error_rate_q99": 0.171,  # 0.207 before BL-28
 }
 
 #: Recurring errors across repeated takes (DECISIONS 2026-09-28, after F-08; F-08b). An error
@@ -57,11 +61,11 @@ RECURRING_MIN_TAKES = 2
 RECURRING_KINDS: tuple[str, ...] = ("wrong_pitch",)
 RECURRING_MIN_EXPERTS = 2
 
-#: Missed notes per graded score note in a bar, on the same expert set (clean D-08 copies,
-#: ``correctness_bars.parquet`` of ``scripts/calibrate_report_f08.py``; 27% of expert bars have
-#: a missed note). Used instead of missed + extra when extra notes are low confidence
-#: (transcribed / phone input, A-01; ``rules/audio.md``).
-CORRECTNESS_EXPERT_BARS["missed_per_note_q95"] = 0.158
+#: Missed notes per graded score note in a bar, on the same expert set (clean D-08 copies; 28% of
+#: expert bars have a missed note). Used instead of missed + extra when extra notes are low
+#: confidence (transcribed / phone input, A-01; ``rules/audio.md``). BL-28 (2026-10-10): q95
+#: 0.158 -> 0.161, q99 0.286 unchanged.
+CORRECTNESS_EXPERT_BARS["missed_per_note_q95"] = 0.161
 CORRECTNESS_EXPERT_BARS["missed_per_note_q99"] = 0.286
 
 #: Per-bar expert check for single-take reports (F-08c). A bar's correctness tier is set against
@@ -73,21 +77,24 @@ CORRECTNESS_EXPERT_BARS["missed_per_note_q99"] = 0.286
 #: artefact. At least EXPERT_CHECK_MIN_REFS experts must cover the bar, otherwise the bar keeps
 #: the global tier. Calibrated by ``scripts/calibrate_expert_check_f08c.py`` (2026-09-28; see
 #: ``docs/specs/report-validation.md``, section 4). A bar must exceed both limits, so the
-#: joint rate is below either alone. Notable / strong share of expert bars, global -> checked:
-#:   key-sensor (40 clean D-08 copies, 28 pieces, 5-15 other ASAP experts): 6.8/1.7% -> 3.7/0.67%
-#:   (per-bar q95 instead of q80: 2.8/0.67%);
+#: joint rate is below either alone. Notable / strong share of expert bars, global -> checked,
+#: as recomputed for BL-28 (2026-10-10, current checker and limits; 2026-09-28 values in
+#: brackets):
+#:   key-sensor (40 clean D-08 copies, 28 pieces, 5-15 other ASAP experts, 5,482 bars):
+#:   7.4/2.0% -> 4.0/0.88% [6.8/1.7% -> 3.7/0.67%; per-bar q95 instead of q80: 2.8/0.67%];
 #:   transcribed (150 A-01 floor transcriptions, leave-one-out, extras not counted):
-#:   11.8/3.0% -> 5.3/1.4%.
-#: Injected D-08 mistakes (rate 0.05): 85.5% of the bars tiered without the check stay tiered
-#: (74.9% with q95).
+#:   11.8/3.0% -> 5.3/1.4% [unchanged at this precision].
+#: Injected D-08 mistakes (rate 0.05): 85.4% of the bars tiered without the check stay tiered
+#: [85.5%; 74.9% with q95].
 EXPERT_CHECK_MIN_REFS = 5
 EXPERT_CHECK_Q = (0.80, 0.99)
 
 #: BL-18 (``docs/specs/report-validation.md``, section 5;
 #: ``scripts/calibrate_strong_tier_bl18.py``).
 #: On transcribed input the strong tier ran above its nominal 1% (A-01 floor, leave-one-out:
-#: Transkun V2 0.58%, Aria-AMT 2.25%). Two changes, for transcribed input only (key-sensor input
-#: keeps the F-08c rule, 0.67% strong):
+#: Transkun V2 0.58%, Aria-AMT 2.25%; BL-28 recompute 0.60% / 2.25%). Two changes, for
+#: transcribed input only (key-sensor input keeps the F-08c rule, 0.67% strong; 0.88% after
+#: BL-28):
 #: 1. Per-bar strong limit (``build.expert_bar_limits``, ``strong_margin``): the finite-sample
 #:    order statistic of rank ceil(0.99 (n + 1)). With fewer than 99 experts (always, at up to 15)
 #:    that rank does not exist, so a bar is strong only with more than the worst expert there
@@ -96,6 +103,7 @@ EXPERT_CHECK_Q = (0.80, 0.99)
 #:    percentile of the family's A-01 floor bars (75 transcriptions per family, 5 Chopin pieces,
 #:    8,685 bars, extras not counted). The wrong-pitch limit equals the key-sensor one; missed
 #:    notes per note do not (key-sensor 0.286). An unknown family gets the larger limits.
+#:    BL-28 (2026-10-10): both family limits unchanged with the current checker.
 #: **After the BL-18 audit (DECISIONS 2026-09-29, "lead: BL-18 after audit")** the implemented
 #: R1(2) + R2s was returned: it cut strong detection of injected mistakes to 0.16 of R0's, and the
 #: Aria-AMT limit 0.771 is set by runs of fully missed bars (Aria-MIDI segment truncation; 0.422
@@ -117,9 +125,9 @@ TRANSCRIBED_STRONG_LIMITS_UNKNOWN: dict[str, float] = {
 #: graded notes missed, is reported once as "passage not heard (not played, or not in the
 #: recording)", a low-confidence item, and its bars get no correctness tier. Bars without graded
 #: notes neither break nor extend a run. Measured: dev (A-01 floor) 55 such bars in 6 of 75
-#: Aria-AMT transcriptions (0.63% of bars), mostly at the start or end of the piece (Aria-MIDI
-#: segments cut from longer videos); held-out 15 bars in 4 of 109. No per-bar limit can move
-#: them (80% missed is above every candidate limit).
+#: Aria-AMT transcriptions (0.63% of bars; unchanged in the BL-28 rebuild), mostly at the start or
+#: end of the piece (Aria-MIDI segments cut from longer videos); held-out 15 bars in 4 of 109.
+#: No per-bar limit can move them (80% missed is above every candidate limit).
 NOT_HEARD_MIN_BARS = 3
 NOT_HEARD_MISSED_SHARE = 0.8
 #: BL-27 (BL-18b audit item 5): runs separated by at most NOT_HEARD_MERGE_GAP graded bars merge,

@@ -24,9 +24,14 @@ only when it is measured: type ``single`` / ``start``+``stop`` with at least one
 level of at most 2 (sixteenths). Type ``unmeasured``, and strokes of 32nds or faster (level 3+),
 are read as unmeasured: engraving practice uses three or more strokes for an unmeasured tremolo
 ("as fast as possible"; Gould, *Behind Bars*, 2011, chapter on tremolos), and the number of notes
-a pianist plays is then not written. Those keep their written notes, and the ``"tremolo"`` mark is
-copied to every note of the chord, so the correctness ornament rule tolerates the re-strikes of
-each chord note (before, only the note carrying the XML mark, usually the chord's first, did).
+a pianist plays is then not written. Those keep their written notes, and the ``"tremolo"`` mark
+stays where the score wrote it (usually the chord's first note; ``TREMOLO_MARK_CHORD``). Copying
+it to every chord note (the BL-26 convention until 2026-10-10) sent those notes through
+parangonar's ornament step (``.claude/rules/features.md``) and did not do better against the
+nASAP reference alignments (ASAP Ravel "Une barque", 3 performances: 21 repairs vs 23 breaks
+for dropping the copy), so the lead chose the copy off. Side effect: re-strikes of the unmarked
+chord notes are no longer tolerated as ornament notes (extra notes; on transcribed input extras
+never count towards tiers).
 Expanded strokes drop the ``"tremolo"`` mark: they are ordinary written notes now.
 
 Not expanded (and counted): tied tremolo notes, grace notes, rests, two-note tremolos whose
@@ -66,10 +71,10 @@ __all__ = [
 
 MUSICXML_SUFFIXES = (".xml", ".musicxml", ".mxl")
 
-TREMOLO_MARK_CHORD = True
-"""Copy the ``"tremolo"`` mark of an unexpanded tremolo to every note of its chord (BL-26
-convention). False keeps the marks where the score wrote them. A switch for the comparison
-against the nASAP reference alignments (lead, 2026-10-10)."""
+TREMOLO_MARK_CHORD = False
+"""Copy the ``"tremolo"`` mark of an unexpanded tremolo to every note of its chord (the BL-26
+convention until 2026-10-10). False (default) keeps the marks where the score wrote them
+(``scripts/compare_tremolo_marks_bl26.py``; module docstring)."""
 
 TREMOLO_MAX_MEASURED_LEVEL = 2
 """Highest stroke level (beams + marks) read as a measured tremolo; 2 = sixteenth strokes.

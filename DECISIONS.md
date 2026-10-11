@@ -690,3 +690,19 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   - Open from it: a new misalignment in D899/1 bars 82-84 (identical repeated chords) after
     expansion; the tight and key-aware ornament rules are retested only in a pre-registered
     BL-26 follow-up.
+- **2026-10-10, lead: DF-15, tremolo marks, BL-28 recalibration.**
+  - **DF-15 on by default:** duplicate aligner matches are made one-to-one (nASAP reference:
+    557 repairs vs 61 breaks over 1,061 performances). The losing note's same-pitch re-match is
+    off (19 of 42 agreed with the reference). The 0.25 pt stop fired only on detection (DF-13
+    held-out 3-wrong bars strong +1.37 pt); clean rule P rates moved at most 0.05 pt.
+  - **Tremolo mark copy off** (`TREMOLO_MARK_CHORD = False`): copying the mark to every chord note
+    of an unexpanded tremolo fed written notes into parangonar's ornament step and changed
+    "Scarbo"'s alignments (the cause of DF-15's 0.2 pt baseline gap against DF-13). Against the
+    nASAP reference it was a wash (21 repairs, 23 breaks), so the tie rule picks off.
+  - **BL-28: the new F-08 constants are adopted** although two moved more than 10%
+    (`missed_extra_per_note_q99` 0.634 to 0.50, `error_rate_q99` 0.207 to 0.171). Both old tails
+    came from D899/1's unexpanded tremolos, a loader bug fixed in BL-26; the new values are the
+    same with or without D899/1. Effect: key-sensor clean expert bars strong after the check
+    0.71% to 0.88% (under the nominal 1%), notable+ +0.26 pt; transcribed limits and rule P rates
+    essentially unchanged (largest move -0.12 pt). BL-27 is registered and scored against these
+    constants.
