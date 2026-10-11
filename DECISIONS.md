@@ -762,3 +762,15 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   last, at the end), pre-registered with an omission-injection row. Before `partial` goes on in
   the app, the wrong-piece stop (0.5) needs revisiting: 2 of 1,376 short wrong-score excerpts
   reach it (BL-40).
+- **2026-10-11, lead: BL-39 narrow edge policy.** FAIL by the pre-registered rule (E2, partly
+  played cut bars +1.67 pt vs +1.5), Confirmed with caveats (eval-auditor 2026-10-11). The
+  registered outcome applies: no edge policy, no fallback to k = 1. The narrow rule fixed inner
+  omissions (O1 -1.10 vs k = 1's -36.48) but hides lead omissions on the aligner's edge bar
+  (caught 58.4% to 8.8%). The audit corrected the mechanism: the leftover cut-bar flags come
+  from the boundary's anchor note being mispaired (32 of 33 bars), not from alignment loss; an
+  oracle anchor would pass, so any retry targets anchor robustness on a fresh draw, not a wider
+  boundary. **Option for Henry:** `partial=True` with no edge policy (k = 0): whole recordings
+  identical (304 / 304, 310 / 310), never-played bars tiered 0.08% vs 9.3% today, cost: bars the
+  recording starts or ends partway through are strong about 20% vs 1.3% uncut (replicated on two
+  fresh draws). A text-only caveat for those bars is being added (no tier change). Still open
+  before the app uses it: BL-40 (wrong-piece stop for excerpts); all evidence is synthetic cuts.
