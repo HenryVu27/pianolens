@@ -3227,7 +3227,7 @@ performances and the ratings used to build and test each stage.</p>
 <p><strong>The verdict is FAIL by the pre-registered rule.</strong> The rule registered for a FAIL was to go back to the old rule, R0. The lead did not apply it, and recorded the deviation in DECISIONS. The auditor accepted this as a disclosed deviation from a pre-registered action, not as a new reading of the verdict. The reasons are two. First, C4 could not tell the rules apart. The tested bars were chosen where every expert had at most 1 wrong note, and the global strong limit is 2, so whenever the checker counts all 3 wrong notes the bar is strong under R0 and R1(0) alike (100% in both families). R0 scored the same on C4 (71.6% and 68.6%); the two rules differ on 1 of 1,130 and 3 of 1,125 bars. So C4 measured the note checker, not the rule. Second, R0 fails C1 on Aria-AMT (2.09%), so going back would restore the original flaw and fix nothing. The design error in C4 was shared by the BL-18 audit that proposed it.</p>
 <p>So R1(0) plus "passage not heard" stays the interim default, <strong>Provisional</strong>: it meets C1 to C3 on one new sample of 12 pieces, which is not a confirmation. Transkun V2 passes C1 on the point estimate only (its t-interval runs from 0.09% to 0.59%), and its C3 bootstrap interval touches the 0.75 floor. The run rule mattered: without it, Aria-AMT would have been at 1.55% strong, above the band.</p>
 <p>The number a learner should know follows from this: <strong>on transcribed input, about 7 in 10 bars with 3 wrong notes become strong</strong>, because of the note checker (DF-12), not the tier rule. The checker did not count 16% (Transkun V2) and 19% (Aria-AMT) of the injected wrong notes as wrong, against 2.5% to 8.3% on Disklavier playing in BL-20. The auditor followed all 6,765 injected notes. About 80% to 84% were counted. Most of the rest were left unpaired and shown as an extra note plus a missed one, and 75% to 84% of those sat more than 100 ms from the time the checker expected the written note (median 141 and 180 ms, against 12 to 13 ms for counted notes). So the main cause is the 100 ms wrong-pitch window meeting worse onset estimates on transcriptions (DF-13), not aligner absorption. A smaller group, 4% to 5%, was matched as correct to another written note of the new pitch in the same bar, a collision the injection did not avoid. The loss is broad: 21% to 24% in fast runs and 16% to 19% elsewhere.</p>
-<p>The auditor also merged the "not heard" fragments: in 8 of the 10 transcriptions with runs, the missing passage is the ending, which supports truncated source videos. Unmerged, a cut ending shows as two or three separate items. Merging them was tested on 16 new pieces (BL-27, 2026-10-11) and failed its pre-registered rule: it reports a cut-off passage as one item 17 points more often, but it also swallowed bars that had been played, just above the limit, mostly in one piece where the aligner had shifted the played part onto an earlier repeat. The merge stays off. The same test exposed a larger problem: when a recording covers only part of a piece, the current rule marks 12.9% of the never-played bars strong, and in 244 of 572 cut copies the unplayed strong bars outnumber the played ones. Aligning partial recordings properly (BL-36) is now the priority. A future confirmation will come after a DF-12 fix, on new pieces, with a rule-relative criterion (the strong share on targeted bars at least 0.95 of R0's) and the end-to-end share tracked as a measurement of the checker.</p>
+<p>The auditor also merged the "not heard" fragments: in 8 of the 10 transcriptions with runs, the missing passage is the ending, which supports truncated source videos. Unmerged, a cut ending shows as two or three separate items. Merging them was tested on 16 new pieces (BL-27, 2026-10-11) and failed its pre-registered rule: it reports a cut-off passage as one item 17 points more often, but it also swallowed bars that had been played, just above the limit, mostly in one piece where the aligner had shifted the played part onto an earlier repeat. The merge stays off. The same test exposed a larger problem: when a recording covers only part of a piece, the current rule marks 12.9% of the never-played bars strong, and in 244 of 572 cut copies the unplayed strong bars outnumber the played ones. Aligning partial recordings properly (BL-36) is now the priority. BL-36 (2026-10-11) passed its pre-registered test on 16 new pieces: the aligner first finds which bars were recorded, by matching the order of played pitches against the score with both ends left open, then aligns only those bars and lists the rest once as "not recorded". On cut copies it found the recorded span 99.7% of the time (today 61%), never-played bars marked strong fell from 12.1% to 0.27%, and played bars were graded as in the uncut copy 99.6% of the time (today 95%). Whole recordings give exactly today's output, measured on 93 of 93 and on the owner's 10 takes. The audit found a harm no registered row covered: the first or last recorded bar is marked strong 12.3% of the time against 1.1% for the same bar uncut (today's pipeline 23.3%). Part of it is a note tied across the edge of the trimmed score, which is counted as one missed plus one extra. The detection stays off until that is fixed and tested on new pieces (BL-37). A future confirmation will come after a DF-12 fix, on new pieces, with a rule-relative criterion (the strong share on targeted bars at least 0.95 of R0's) and the end-to-end share tracked as a measurement of the checker.</p>
 <p><strong>Other places the sources show rates above nominal:</strong></p>
 <ul>
 <li><strong>Bars without the expert check.</strong> Where fewer than 5 experts cover a bar, the global limits apply, and on these calibration sets they run hot. Key-sensor expert bars came out at 6.8% notable-or-strong and 1.7% strong; transcribed ones at 11.8% and 3.0%. This applies to pieces with a single ASAP performance (such as Chopin Op. 10 No. 3, which is why three of the sample reports had no check), to key-sensor input on PianoCoRe-only pieces, and to any thinly covered bar.</li>
@@ -5007,6 +5007,11 @@ it each time.</p>
 <td>Merging the fragments swallows played bars mainly at the cut, and the failure is one piece's noise</td>
 <td>The swallowed bars sat 40 to 176 bars after the cut, inside a stretch the aligner had moved 116 bars onto an earlier repeat. The current rule already mislabels much of that stretch, and the bigger problem is reports on partial recordings, not the merge</td>
 </tr>
+<tr>
+<td>BL-36</td>
+<td>The extra strong flags on played bars come from blur in how the test copies were cut</td>
+<td>327 of the 332 bars lost no notes. They sit on the first or last recorded bar (12.3% strong against 1.1% uncut), partly a tie across the trimmed edge, and should carry over to real takes. Whole-recording identity had been assumed in the run; the audit measured it (93 of 93)</td>
+</tr>
 </tbody>
 </table>
 <h2 id="part-5-where-things-stand">Part 5. Where things stand</h2>
@@ -5077,10 +5082,12 @@ it each time.</p>
   pairing window was tested and failed (DF-13): it recovers only part of the loss and adds
   wrong-note labels on clean playing. Part of the other half was the aligner giving one played
   note to two written notes, fixed in DF-15; re-pairing wrong pitches the aligner moved is untried.</li>
-<li><strong>Recording only part of a piece.</strong> The aligner assumes the whole piece was played. On cut
-  copies, 12.9% of never-played bars are marked strong, and a start cut can shift the played part
-  onto an earlier repeat (BL-27 audit). Until partial recordings are handled (BL-36), a report on
-  an excerpt should be read with care.</li>
+<li><strong>Recording only part of a piece.</strong> By default the aligner assumes the whole piece was played.
+  On cut copies, 12.9% of never-played bars are marked strong, and a start cut can shift the played
+  part onto an earlier repeat (BL-27 audit). A tested fix finds the recorded bars first (BL-36: never-played
+  bars marked strong fall to 0.27%), but it is off until its edge bars are fixed: the first and last
+  recorded bars are marked strong about 12% of the time (BL-37). Skips and false starts inside a take
+  are untested.</li>
 <li><strong>Which hand played a note.</strong> The staff is wrong for 6.66% of notes against real video hand
   labels (BL-19b). Per-hand feedback stays off until hands are assigned by a tested model (BL-34).</li>
 </ul>
@@ -5122,8 +5129,8 @@ it each time.</p>
 <td>How large the audio shortcut is outside simulation (H8)</td>
 </tr>
 <tr>
-<td>Align partial recordings: find the recorded span, or ask the learner for the bar range</td>
-<td>Reports on excerpts that do not blame unplayed bars (BL-36)</td>
+<td>Fix the edge bars of a partial recording and test on new pieces, then decide whether partial detection goes on by default</td>
+<td>Reports on excerpts that do not blame unplayed bars (BL-36 passed; BL-37)</td>
 </tr>
 <tr>
 <td>A pre-registered re-pairing step for wrong pitches the aligner moved, then recheck the strong rule on transcribed input on new pieces</td>
@@ -5329,6 +5336,12 @@ for audio, P for the product, D for a data check, BL for a backlog item that bec
 <td>BL-27</td>
 <td>Should "passage not heard" fragments be merged?</td>
 <td>FAIL by the pre-registered rule; Confirmed with caveats; merge stays off</td>
+<td>Part 2, report chapter</td>
+</tr>
+<tr>
+<td>BL-36</td>
+<td>Can the aligner find which bars a partial recording covers?</td>
+<td>PASS by the pre-registered rule; Confirmed with caveats; off until the edge bars are fixed (BL-37)</td>
 <td>Part 2, report chapter</td>
 </tr>
 </tbody>
