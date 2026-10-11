@@ -360,12 +360,19 @@ def pianocore_expert_midis(piece_id: str, capture_model: str | None = None, n: i
     """Up to ``n`` raw PianoCoRe tier A transcriptions of a piece (seeded draw), as
     ``(id, MIDI bytes)``. ``capture_model`` (e.g. ``"Transkun V2"``, ``"Aria-AMT"``) restricts
     them to one transcriber; otherwise any transcription. Ids or performance ids in ``exclude``
-    are left out."""
+    are left out.
+
+    BL-38 (DECISIONS 2026-10-11, BL-35 entry): raw files that :func:`pianocore.raw_guard`
+    rejects (much more music than the score, e.g. Op. 22 with its Andante spianato) are dropped
+    **before** the seeded choice, so the piece keeps a full reference set; an app report is not
+    a registered experiment. Pieces in ``piece_ids.SCORE_VERSION_MISMATCH`` get no references.
+    """
     import zipfile
 
     from pianolens.data import pianocore as pcm
+    from pianolens.data.piece_ids import SCORE_VERSION_MISMATCH
 
-    if not pcm.data_available():
+    if not pcm.data_available() or piece_id in SCORE_VERSION_MISMATCH:
         return []
     idx = pcm.PianoCoRe().index
     rows = idx[(idx["piece_id"] == piece_id) & idx["is_transcription"].astype(bool)]
@@ -373,6 +380,8 @@ def pianocore_expert_midis(piece_id: str, capture_model: str | None = None, n: i
         rows = rows[rows["capture_model"] == capture_model]
     ex = set(exclude)
     rows = rows[~rows["id"].isin(ex) & ~rows["performance_id"].isin(ex)].sort_values("id")
+    if len(rows):
+        rows = rows[(pcm.raw_guard(rows) == "").to_numpy()]
     if not len(rows):
         return []
     pick = np.sort(np.random.default_rng(seed).choice(len(rows), size=min(n, len(rows)),

@@ -47,3 +47,22 @@ Related: [[bl36-partial]], [[bl18b-interim-rules]], [[df13-pairing-window]].
 - Traps: spawned workers cannot unpickle functions of a path-loaded module (`bl36.*`) -> wrap in
   the script's own module-level functions (first launch crashed, disclosed as deviation).
   Readout JSON printed after warnings: read the written file, not stdout.
+
+## Audit (2026-10-11): Confirmed with caveats; flags off, Henry chooses k=0 vs k=1, BL-39 next
+- My miss: the detection rows injected WRONG PITCHES, which a missed-note policy cannot hide by
+  construction. Omissions (the thing k=1 hides) were not injected: 3 omitted notes in an edge
+  bar ranked 60.2% (k=0) vs 17.3% (k=1), 0% on N's own edge. Lesson: a harm row must inject the
+  error type the candidate acts on (here missed notes), else it is zero by construction.
+- B was registered on N without the policy; with k=1 applied H1 Aria strong -0.1548 (fails).
+  Register no-regression rows under the candidate itself.
+- Wrong-piece probe: same-key pairs are not the hard case; all-pairs gave 2/1,376 >= 0.5
+  (4-7-bar excerpts). Probe all pairs.
+- Fallback "identical" was by construction for non-crashing calls; say what the check measures.
+
+## BL-38 parts 1-2 (2026-10-11)
+- `report/io.pianocore_expert_midis`: `raw_guard` BEFORE the seeded choice (app, not an
+  experiment), `SCORE_VERSION_MISMATCH` -> []. Op. 22 keeps 15 of 123 accepted files.
+- Henry check recipe: his A-01 reports use cached floor tables, so `pianocore_expert_midis` is
+  not on that path; verify the function directly (expert draws for his 5 pieces x 3
+  transcriber settings) plus a before/after report diff.
+- `eval_partial_bl36.py` held-out now calls `guard_jobs` after the draw (1 suspect expert).

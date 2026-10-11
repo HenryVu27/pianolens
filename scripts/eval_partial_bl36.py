@@ -198,7 +198,9 @@ def heldout_jobs(workers: int) -> tuple[list[dict], dict]:
     info = {"n_eligible": len(elig), "n_literal_repeats_eligible": len(rep),
             "flags": {p: flags[p] for p, _ in chosen},
             "all_flags": flags}
-    return jobs, info
+    from pianolens.data.pianocore import guard_jobs  # BL-35 / BL-38: after the draw, not before
+
+    return guard_jobs(jobs, idx, label="BL-36 held-out"), info
 
 
 def dev_jobs() -> list[dict]:
