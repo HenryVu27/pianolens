@@ -426,3 +426,177 @@ once the eval-auditor signs off and the lead and Henry decide. `PARTIAL_DEFAULT`
    adopted (not edited: both flags are off).
 4. **The fallback** (`align_note_arrays`) touches every alignment path but changed nothing on
    1,623 full-score alignments. It only rescues calls that crash today.
+
+## Audit (eval-auditor, 2026-10-11)
+
+**Verdict: Confirmed with caveats.** PASS by the pre-registered rule is the correct reading, and
+every registered number reproduces exactly from the cache. There is no pre-registration drift, no
+leakage and no selection on held-out data. The adoption recommendation (`partial=True` with
+`edge_low_confidence_bars = 1`) does not follow from the table as written, for two reasons:
+- D1 / D2 inject wrong pitches only, which the policy cannot hide by construction. Injected
+  omissions show the harm the policy does create: 3 omitted notes in a first / last recorded bar
+  are flagged notable or strong 60.2% of the time without the policy and 17.3% with it.
+- With the adopted policy switched on, H1 Aria-AMT strong is -0.155 pt against its ±0.15 bar. B
+  was registered and run on N without a policy, so the registered PASS stands.
+
+**1. Pre-registration, timeline, drift.**
+- The anchor recomputes to `4b1e7374...a86c`, as in `artifacts/prereg_sha256.txt`.
+- Transcript `subagents/agent-a9af24a6302e4c775.jsonl`:
+  - hash 13:20:36Z, first launch in the same call;
+  - the first launch crashed at 13:20:58Z in the literal-repeat flags (`ModuleNotFoundError:
+    bl36` in spawned workers), with no file written;
+  - wrapper edit and relaunch 13:21:14Z, then `heldout_draw.json` written 13:21:59Z.
+  - No earlier tool call reads a held-out file, the draw or seed 3737; the only matches are
+    edits that write `heldout_jobs`.
+- **Script deviation.** The audit reversed the 13:21:14Z edit on the committed script. The
+  result hashes to `2feeff274280beba`, the hashed value. The diff is the two module-level
+  wrappers plus the two call sites that use them, so it is plumbing only.
+- **src.** `git diff 805f681 d71a3f4 -- src/pianolens/align src/pianolens/report` hashes to
+  `93009ee8680b080e`, the hashed diff. No src file changed between the hash and the commit.
+- **Disjointness.**
+  - 0 of the 16 held-out pieces are in the 72 excluded pieces (71 plus the 1
+    `SCORE_VERSION_MISMATCH` piece) or in the 28 dev pieces.
+  - 0 of the 800 transcription ids are among the 4,320 earlier ids.
+- **Dev changes made before the hash** (disclosed) did not decide the held-out result:
+  - k = 1 also passes the original two-sided E2 bar [-2.0, +1.5] (-0.63).
+  - Under the original order (k = 2, k = 1, none; transcript 10:40Z) k = 2 passes all four
+    rows and would have been adopted. The reorder chose the smaller intervention.
+  - Smoke run 2 failed every policy on the old E2 lower bound (-2.04). That was the reason to
+    make E2 one-sided, and it was on dev.
+
+**2. Reproduction.**
+- `evaluate()` on `data/interim/bl37/heldout_rows.pkl` (read-only import, 311 s) reproduces
+  every value exactly:
+  - E1 / E2 / D1 / D2 for all three policies;
+  - W1 304 of 304;
+  - all 21 BL-36 values;
+  - the bar counts 1,862 / 1,091 / 1,508.
+- Piece bootstrap with another seed: E1 [-0.32, 0.22], E2 [-1.25, -0.17], D1 [-0.95, -0.14],
+  D2 [-5.58, -2.17]. The t-intervals match the README.
+- **Re-run alignments.**
+  - 128 targets (4 per piece and family): C tables 128 of 128 equal the cache, cut windows 285
+    of 285, N on the start copies 61 of 61.
+  - 70 more cut copies: N 70 of 70.
+  - W1 run independently on one whole, unrefined target per piece and family, with C and N
+    aligned separately: 32 of 32 identical.
+
+**3. Harm criteria: omissions (the main caveat).** The audit ran its own probe (scratch, not
+kept) on the same 128 targets and their 285 registered-kind copies.
+- **Method.**
+  - Bars: each first / last recorded bar (d = 0, no note lost to the cut) where the clean copy
+    has at least 4 correct notes and no wrong pitch, and where every expert has at most 1
+    missed note.
+  - Deletion: correct performed notes are deleted, then the copy is realigned with N.
+  - Compared: N with no policy, N with k = 1, and the same deletion in the uncut recording (C).
+  - Rate is notable or strong; 342 bars per level, all 16 pieces. Without any deletion the same
+    bars are notable or strong 1.5% of the time.
+
+| Deleted | Uncut recording | N, none | N, k = 1 | k = 1 minus none, mean over pieces |
+|---|---|---|---|---|
+| 3 notes (median of 16 correct) | 69.0% (strong 17.5%) | 60.2% (strong 12.3%) | **17.3%** (strong 5.8%) | -41.6 pt [-50.5, -32.5]; strong -9.6 [-15.2, -4.8] |
+| half the correct notes (median 8 of 16) | 99.4% (strong 98.5%) | 36.0% (strong 34.8%) | 26.3% (strong 25.7%) | -10.9 pt [-17.1, -6.0] |
+
+- **Measured as D1 / D2 are**, both rows would fail D1 (-5.0) and D2 (-8.0).
+- **When the bar is N's own edge, the policy hides 3 omitted notes completely.**
+  - That is 233 of 342 bars: 0.0% under k = 1, 63.1% under none.
+  - Bar-aligned excerpts (a learner who starts at a bar line) are always N's edge: 0.0% vs
+    65.1%.
+  - The notes are still listed, "shown but not ranked".
+- **Half-bar omissions are already lost without any policy.** N's shrink rule
+  (`SHRINK_SHARE` 0.5) marks 63.7% of those bars "not recorded". This comes from BL-36's design,
+  not from BL-37.
+- **The bite checks** (capping, untiering) show that D1 / D2 can fail other policies. They
+  cannot show harm for a policy that acts on missed notes only. The author's Threats section
+  names the hole; the numbers above size it.
+
+**4. Production code and the eval tier function.** The audit reconstructed 70 held-out cut copies:
+40 with a tier changed by the policy and 30 random copies with an N edge. Each was realigned
+with N and tiered by `report.build._correctness_section`, with the same inputs `build_report`
+gets and `edge_low_confidence_bars` 0 and 1, fast repeats off as in rule P.
+- 0 of 3,611 graded bars differ from the eval tier function at k = 0 and at k = 1.
+- The edge bars are identical in 70 of 70 copies, and the policy changes the same 51 tiers.
+- With the production default for transcribed input (fast-repeat low confidence on), 48 bars
+  differ from rule P. That gap predates BL-37 (BL-25).
+
+**5. H1.**
+- The author's fragility figures reproduce: pass share 0.55, 10 of 16 leave-one-out drops flip
+  it.
+- With k = 1 applied to the natural targets: Aria-AMT strong **-0.1548** (fails ±0.15).
+  - Pass share 0.48; 3 of 16 drops flip it back.
+  - Notable or strong -0.207 (passes ±0.30). Transkun V2 is unchanged (-0.081).
+  - The policy removes 2 strong flags in the last graded bar of two evidently-full Op. 29
+    Aria-AMT targets (PianoCoRe_097361 3 to 2, _097409 5 to 4).
+- **"Correction" on the units.** Most bars N marks not recorded were at least half missed under
+  C too: the openings of BWV 846, Op. 10 No. 8, Op. 31 No. 2/2, Op. 37a No. 10 and Iberia No. 3
+  bars 0-42. This supports a correction there.
+- Three bars were mostly found under C, so a correction cannot be shown for them:
+  - Op. 28 No. 2 Transkun V2 bar 2: 5 of 16 missed, strong;
+  - Op. 29 _097532 bar 126: 3 of 10 missed, strong;
+  - Op. 29 _097409 bar 125: 0 of 5 missed.
+
+**6. Ornament fallback.**
+- For calls that do not crash, the new code makes the same matcher call as the old code (the
+  copies are only kept for the retry), so identity holds by construction. The 1,623-item check
+  therefore measures "0 crashes on full scores".
+- A 102-item sample (every 16th item) gives 0 crashes and 102 identical.
+- **Crash path.** In both dev targets, only the 4-7-bar "short" copy crashes the old code. There
+  the new result equals the alignment with `process_ornaments=False`, with 0 unmatched performed
+  notes, which is what the comment says.
+- parangonar's `na_within` returns a plain list for an empty input, and that list cannot join a
+  structured array. The fallback is sensible.
+
+**7. Wrong-piece probe.** Same-key pairs are not the hard case. The audit aligned the probe's own
+16 excerpts with `partial` on to every other held-out score (15) and every dev score (28): 1,376
+wrong-score alignments.
+- Highest ratios: 0.524 (Chopin Op. 25 No. 2, 4-7 bars, on Beethoven Op. 2 No. 1/1) and 0.504
+  (Op. 29, 4-7 bars, on Op. 54).
+- 2 are at or above the app's stop of 0.5, 8 at or above 0.45, and 28 at or above 0.40.
+- Right-score excerpts score 0.81-1.0 (the author's 32).
+- So "lets no probed wrong piece through, margin 0.11" holds only for the 10 same-key pairs. A
+  stop between 0.53 and 0.81 would separate the sets observed here, but that needs its own
+  ticket.
+
+**8. Claim against evidence.**
+- Supported:
+  - the alignment-level fix of the BL-36 edge gap: edge bars 0.82% vs 0.54% uncut, with no
+    policy;
+  - whole recordings unchanged;
+  - the cut-bar fix;
+  - "injected wrong pitches are still caught".
+- Not supported as worded:
+  - The Question's "without hiding real mistakes in edge bars". Omissions in N's edge bar are
+    hidden from the tiers by design.
+  - "Its sign is a correction". That holds for most of the units, not all.
+  - The probe margin.
+
+**Required fixes (author).**
+1. Add the omission result (section 3) to Results, Verdict and Threats. Reword the Question /
+   Verdict to say wrong pitches are kept and omissions in N's edge bar are not ranked, with
+   the numbers.
+2. Report B under the adopted policy (section 5: H1 Aria-AMT strong -0.155, pass share 0.48),
+   labelled as information. The registered B (no policy) passes.
+3. Change "Its sign is a correction" to "mostly a correction" and list the three
+   mostly-found bars.
+4. Replace the probe's margin sentence with the all-pairs result (2 of 1,376 at or above 0.5,
+   both 4-7-bar excerpts), or report both.
+5. Fallback: say that identity on non-crashing calls holds by construction, that the check
+   measures 0 crashes, and that the crash path was verified on the two dev short excerpts.
+6. In the Run record, note that the dev changes did not decide held-out: the original E2 bar
+   also passes, and the original order would have adopted k = 2.
+7. Add the production-vs-eval agreement (section 4) to the Threats item that says the
+   production policy is tested on synthetic scores only, and note the fast-repeat difference.
+
+**For the lead (adoption).**
+- `partial=True` (BL-36 plus the BL-37 fixes) is supported on its own: k = 0 passes E1 (+0.27
+  pt), whole recordings are identical, and the BL-36 rows hold.
+- k = 1 is a trade, not a pure gain. A partly played first bar is falsely strong 20.4% of the
+  time under k = 0 and 0.27% under k = 1. But 3 notes a learner omits in the first / last
+  recorded bar are ranked 60% of the time under k = 0 and 17% under k = 1 (never when the bar
+  is N's edge), and H1 under k = 1 misses its bar by 0.005 pt.
+- Missed notes stay listed as low confidence, which limits the harm.
+- **Suggested next step** (new ticket, pre-registered): a narrower policy that makes low
+  confidence only the missed notes expected before the first performed note of the edge bar
+  (after the last, at the end), with a registered omission-injection row next to D1 / D2.
+- Until then the choice between k = 0 and k = 1 is Henry's.
+- The app's wrong-piece stop at 0.5 should be revisited before `partial` goes on in the app
+  (section 7).

@@ -391,3 +391,17 @@ paths:
 - **An evaluation that reuses the baseline output where it is "identical by construction" makes
   that harm row zero by construction.** Recompute the baseline on a sample and report the
   identity as a measurement (BL-36: 93 of 93 identical, including a variant-relabel branch).
+
+## Lessons from the BL-37 audit (2026-10-11)
+
+- **A harm row must inject the error type the candidate suppresses.** A policy that makes missed
+  notes low confidence cannot hide wrong pitches by construction, so a wrong-pitch injection
+  cannot see its harm. Bite checks with other policies (capping, untiering) do not show this.
+  BL-37: D1 / D2 passed (-0.5 / -3.8 pt). With 3 omitted notes in the edge bar, the policy cut
+  "ranked" from 60.2% to 17.3% (-41.6 pt).
+- **Report no-regression rows under the configuration you recommend adopting,** not only under
+  the configuration that was registered. BL-37's B rows were run without the edge policy; with
+  it, H1 Aria-AMT moved from -0.145 to -0.155 against a ±0.15 bar.
+- **A false-match probe needs all pairs, not pairs matched on an easy attribute.** BL-37's
+  same-key pairs (10) gave a maximum of 0.39 against a stop of 0.5. All 1,376 pairs gave 2
+  at or above 0.5, both short excerpts.
