@@ -38,3 +38,15 @@
   insertion list. So tagging notes as ornaments changes their matches; do not tag written notes.
 - `pt.score.iter_parts(score)` fails on a `Score` (no `.children`); pass `score.parts`.
 - `pt.load_musicxml(io.BytesIO(...), force_note_ids="keep")` loads edited XML without a temp file.
+
+# Found in BL-36 (2026-10-11)
+- parangonar `OnsetMatcherDTW` (first step of DualDTW) is `DTWSL`: a pure-Python double loop of
+  each performed pitch vs the pitch SET of each score onset (`element_of_set_metric`, 0/1),
+  anchored at BOTH ends. That anchoring is why a partial recording is stretched over the whole
+  score. `parangonar.mismatch.SubPartMatcher` is NOT a time-excerpt matcher (it aligns a score
+  voice/part inside a full performance). Our subsequence version: `align/partial.py`.
+- partitura note arrays: `is_grace` is an INTEGER field. `~na["is_grace"]` is a bitwise not
+  (-1/-2) and indexing with it silently returns garbage rows. Use `.astype(bool)`.
+- `copy.deepcopy(part)` hits RecursionError on long parts even at limit 100k (the timeline is a
+  linked list of TimePoints). Re-unfold a fresh part with `new_part_from_path` instead and
+  mutate that (`part.remove(obj)` works for notes and measures).

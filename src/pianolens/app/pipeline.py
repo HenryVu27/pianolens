@@ -250,8 +250,14 @@ def run(job_dir: Path) -> None:
     sc_path = score or find_score(spec["piece_id"])
     if sc_path is None:
         raise FileNotFoundError("no score file for this piece")
+    from pianolens.align.partial import PARTIAL_DEFAULT
+
+    # BL-36: the recording may cover only part of the piece (off unless the job asks for it)
+    partial = bool(spec.get("partial", PARTIAL_DEFAULT))
+    summary["partial"] = partial
     ap = align_performance(load_score(sc_path, spec.get("piece_id")),
-                           load_performance(mids[0], provenance, spec.get("piece_id")))
+                           load_performance(mids[0], provenance, spec.get("piece_id")),
+                           partial=partial)
     cs = correctness(ap).summary
     summary["align"] = {"match_ratio": float(cs.get("match_ratio", float("nan"))),
                         "error_rate": float(cs.get("error_rate", float("nan"))),
@@ -299,7 +305,8 @@ def run(job_dir: Path) -> None:
         exclude_references=spec.get("exclude_references") or [], notes=notes,
         reference_midis=same_refs, reference_provenance="disklavier",
         expert_capture_model=(spec.get("capture_model") or TRANSKUN_CAPTURE_MODEL) if audio
-        else spec.get("capture_model") if transcribed else None)  # fmt: skip
+        else spec.get("capture_model") if transcribed else None,
+        partial=partial)  # fmt: skip
     write_report(rep, job_dir / "report.html")
     summary["report"] = {
         "n_practise": len(rep.get("practise", [])),

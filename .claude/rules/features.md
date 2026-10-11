@@ -42,6 +42,15 @@ paths:
   from `measures` and `onset_beat` instead, or check whether a newer partitura fixes it.
 - **Scores must be parts-merged and unfolded** before alignment ids such as `n22-1` resolve. Use
   `score_from_partitura` on a merged, unfolded part.
+- **`is_grace` in partitura note arrays is an integer field** (BL-36). `~na["is_grace"]` is a
+  bitwise not (-1 / -2) and indexing with it silently returns the wrong rows. Use
+  `~na["is_grace"].astype(bool)`.
+- **`copy.deepcopy` of a long `Part` overflows the recursion limit** even at 100k (the timeline is
+  a linked list). To change a part, unfold a fresh one (`new_part_from_path`) and mutate it
+  (`part.remove(obj)`), as `align/partial.trim_part` does.
+- **parangonar's first step (`OnsetMatcherDTW`) is anchored at both ends**, so a recording of
+  part of a piece is stretched over the whole score. Use `align(..., partial=True)` (BL-36) when
+  a recording may be partial.
 
 ## Repeats and the performed score (from F-01, 2026-09-27)
 

@@ -18,6 +18,7 @@ pass over note ``n12``, ``"n12-2"`` the second. This is the id scheme (n)ASAP us
 
 from __future__ import annotations
 
+import copy
 import re
 import sys
 from dataclasses import dataclass, field
@@ -54,6 +55,12 @@ class AlignResult:
             measures, time signatures or directions).
         load_notes: what building the score changed or found fragile (tremolos expanded, chord
             notes moved to the lower staff, a close staff choice; ``_adapters.load_notes``).
+        recorded_span: with ``align(..., partial=True)`` the recorded span
+            (:class:`pianolens.align.partial.RecordedSpan`); None otherwise. When it is not
+            whole, ``unfolded_part`` and ``score_note_array`` hold only the recorded rows.
+        variant_labels: with ``partial=True``, the printed bar label of every measure row of the
+            unfolded variant (``partial.measure_labels``), so labels of the recorded rows and
+            the rows left out keep their repeat pass (``"12 (2)"``).
     """
 
     alignment: AlignmentList
@@ -64,6 +71,8 @@ class AlignResult:
     candidates: dict[str, float] = field(default_factory=dict)
     unfolded_part: Any = None
     load_notes: list[str] = field(default_factory=list)
+    recorded_span: Any = None
+    variant_labels: list[str] | None = None
 
     @property
     def n_match(self) -> int:
@@ -100,6 +109,11 @@ class AlignResult:
         meta = {**like.meta, "unfolded": self.variant}
         if self.load_notes:
             meta["load_notes"] = list(self.load_notes)
+        if self.recorded_span is not None:
+            meta["recorded_span"] = self.recorded_span_record()
+            if not self.recorded_span.whole and self.variant_labels is not None:
+                sp = self.recorded_span
+                meta["bar_labels"] = list(self.variant_labels[sp.first_row:sp.last_row + 1])
         return score_from_partitura(
             self.unfolded_part,
             score_id=like.score_id,
@@ -108,6 +122,28 @@ class AlignResult:
             meta=meta,
             keep_part=True,
         )
+
+    def recorded_span_record(self) -> dict[str, Any]:
+        """JSON-ready record of :attr:`recorded_span` (``Score.meta["recorded_span"]``): the
+        span, and ``not_recorded``, one entry per side left out, with its bar labels, row range,
+        number of bars and score notes."""
+        sp = self.recorded_span
+        rec: dict[str, Any] = {**sp.as_dict(), "method": "subsequence onset DTW (BL-36)",
+                               "not_recorded": []}
+        labels = self.variant_labels or []
+        if sp.whole or not labels:
+            return rec
+        counts = (sp.candidates.get(sp.variant) or {}).get("row_notes")
+        for side, rows in (("start", range(0, sp.first_row)),
+                           ("end", range(sp.last_row + 1, sp.n_rows))):
+            if len(rows) == 0:
+                continue
+            a, b = labels[rows[0]], labels[rows[-1]]
+            rec["not_recorded"].append({
+                "position": side, "first_row": rows[0], "last_row": rows[-1],
+                "n_bars": len(rows), "bars_label": f"bar {a}" if a == b else f"bars {a}-{b}",
+                "n_score_notes": int(sum(counts[r] for r in rows)) if counts else None})
+        return rec
 
     def match_pairs(self) -> list[tuple[str, str]]:
         """(score_id, performance_id) for every matched note."""
@@ -218,6 +254,7 @@ def align(
     repeats: str = "auto",
     max_candidates: int = 6,
     process_ornaments: bool = True,
+    partial: bool = False,
 ) -> AlignResult:
     """Align a score to a performance at the note level.
 
@@ -234,6 +271,11 @@ def align(
             Any other string is taken as an explicit path, e.g. ``"AABBC"``.
         max_candidates: how many variants ``"auto"`` aligns (each costs one DTW run).
         process_ornaments: let ornamented score notes absorb extra performed notes.
+        partial: BL-36, the performance may cover only part of the score
+            (:mod:`pianolens.align.partial`). The recorded span and repeat path are found by
+            subsequence onset DTW over the repeat paths (all of them for ``"auto"``); a whole
+            recording gives exactly the result of ``partial=False`` (plus ``recorded_span``),
+            a partial one an alignment to the score trimmed to the recorded rows.
 
     Returns:
         :class:`AlignResult`.
@@ -259,6 +301,37 @@ def align(
     else:
         raise ValueError(f"variant {repeats!r} is not a valid repeat path of this score")
 
+    span = labels = None
+    if partial:
+        from pianolens.align import partial as pa
+
+        # every repeat path for "auto" (a partial recording's note count says nothing about
+        # the path), in the order "auto" would try them so ties keep its preference
+        order = (sorted(variants, key=lambda v: (abs(v[1] - len(perf_na)), -v[1]))
+                 if repeats == "auto" and n_variants > 1 else
+                 [v for v in variants if v[0] in chosen])
+        built = {v: _build(part, p, n_variants) for v, _, p in order}
+        span = pa.detect_span([(v, built[v]) for v, _, _ in order], perf_na)
+        upart = built[span.variant]
+        labels = _variant_labels(upart)
+        for v, d in span.candidates.items():
+            if v == span.variant:
+                d["row_notes"] = _row_note_counts(upart)
+        if not span.whole:
+            path = by_name[span.variant]
+
+            def fresh(first: bool = False) -> Any:
+                # a new unfolding to trim in place (deep copies of long parts overflow the
+                # recursion limit); the detection's own part is used once when it is not the
+                # caller's part object
+                p = upart if first else _build(part, path, n_variants)
+                return copy.deepcopy(p) if p is part else p
+
+            res = _align_partial(fresh, span, perf_na, n_variants, process_ornaments)
+            res.variant_labels = labels
+            res.load_notes = load_notes(part)
+            return res
+
     matcher = DualDTWNoteMatcher()
     best: AlignResult | None = None
     candidates: dict[str, float] = {}
@@ -276,7 +349,83 @@ def align(
         raise ValueError("score has no notes to align")
     best.candidates = candidates
     best.load_notes = load_notes(part)
+    if span is not None:
+        if best.variant != span.variant:  # "auto" picked another path for a whole recording
+            labels = _variant_labels(best.unfolded_part)
+            span.candidates.setdefault(best.variant, {})["row_notes"] = \
+                _row_note_counts(best.unfolded_part)
+            n = len(labels)
+            span.variant, span.first_row, span.last_row, span.n_rows = best.variant, 0, n - 1, n
+        best.recorded_span = span
+        best.variant_labels = labels
     return best
+
+
+def _variant_labels(upart: Any) -> list[str]:
+    from pianolens.align.partial import measure_labels
+    from pianolens.data.types import measures_from_partitura
+
+    ms = measures_from_partitura(upart)
+    return measure_labels(ms["number"], ms["name"])
+
+
+def _row_note_counts(upart: Any) -> list[int]:
+    """Score notes (grace notes excluded) starting in each measure row of an unfolded part."""
+    from pianolens.align.partial import _measure_starts, _rows_of_divs
+
+    sna = score_note_array(upart)
+    ng = sna[~sna["is_grace"].astype(bool)]
+    starts = _measure_starts(upart)
+    return np.bincount(_rows_of_divs(starts, ng["onset_div"]), minlength=len(starts)).tolist()
+
+
+def _align_partial(fresh: Any, span: Any, perf_na: np.ndarray, n_variants: int,
+                   process_ornaments: bool) -> AlignResult:
+    """BL-36 step 2 (:mod:`pianolens.align.partial`): align to the span widened by the margin,
+    shrink the trimmed sides, drop the alignment entries of the rows removed by the shrink.
+    ``fresh(first)`` returns an unfolded part of the chosen path that may be trimmed in place."""
+    from pianolens.align import partial as pa
+
+    n_rows = span.n_rows
+    lo_trim, hi_trim = span.first_row > 0, span.last_row < n_rows - 1
+    upart = fresh(True)
+    starts = pa._measure_starts(upart)
+    row_notes = _row_note_counts(upart)
+    e0, e1 = pa.widen_rows(row_notes, span.first_row, span.last_row, lo_trim, hi_trim)
+    tpart = pa.trim_part(upart, e0, e1, inplace=True)
+    sna = score_note_array(tpart)
+    al = align_note_arrays(sna, perf_na, score_part=tpart, process_ornaments=process_ornaments)
+    row_of = dict(zip(sna["id"].astype(str), pa._rows_of_divs(starts, sna["onset_div"]),
+                      strict=True))
+    grace = dict(zip(sna["id"].astype(str), sna["is_grace"].astype(bool), strict=True))
+    n_notes = np.zeros(n_rows, int)
+    n_missed = np.zeros(n_rows, int)
+    for a in al:
+        sid = a.get("score_id")
+        if sid is None or grace.get(sid, False):
+            continue
+        r = row_of[sid]
+        n_notes[r] += 1
+        n_missed[r] += a["label"] == "deletion"
+    f, last = pa.shrink_rows(n_notes, n_missed, e0, e1, lo_trim, hi_trim)
+    if (f, last) != (e0, e1):
+        keep_rows = range(f, last + 1)
+        out: AlignmentList = []
+        for a in al:
+            sid = a.get("score_id")
+            if sid is None or row_of[sid] in keep_rows:
+                out.append(a)
+            elif a["label"] == "match":
+                out.append({"label": "insertion", "performance_id": a["performance_id"]})
+        al = out
+        tpart = pa.trim_part(fresh(), f, last, inplace=True)
+        sna = score_note_array(tpart)
+    span.first_row, span.last_row = int(f), int(last)
+    span.whole = f == 0 and last == n_rows - 1  # the margin reached both edges, nothing shrunk
+    span.refined = True
+    ratio = match_ratio(al, len(sna), len(perf_na))
+    return AlignResult(al, sna, perf_na, span.variant, n_variants, {span.variant: ratio},
+                       unfolded_part=tpart, recorded_span=span)
 
 
 def _clean(entry: dict[str, Any]) -> dict[str, str]:
@@ -306,7 +455,9 @@ def align_performance(score: Any, performance: Any, **kwargs: Any) -> Any:
     (folded) score is re-read so the repeat variant is chosen from this performance, not taken
     from however the loader unfolded it (the ASAP loader unfolds maximally). The returned
     ``AlignedPerformance.score`` is the unfolded variant that the alignment ids refer to.
-    ``kwargs`` go to :func:`align`.
+    ``kwargs`` go to :func:`align` (``partial=True``: BL-36, the score is trimmed to the
+    recorded span; ``score.meta["recorded_span"]`` lists the bars left out and
+    ``score.meta["bar_labels"]`` keeps their printed labels with repeat passes).
     """
     from pianolens.data.types import AlignedPerformance
 

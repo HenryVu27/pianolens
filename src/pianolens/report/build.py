@@ -67,7 +67,8 @@ from pianolens.report import calibration as cal
 
 __all__ = ["SCHEMA", "ReportConfig", "ReportInputs", "bar_error_table", "build_report",
            "error_signatures", "expert_bar_limits", "expert_error_keys", "fast_repeat_notes",
-           "fast_run_notes", "local_ioi", "not_heard_runs", "recurring_errors", "to_jsonable"]
+           "fast_run_notes", "local_ioi", "not_heard_runs", "recorded_span_report",
+           "recurring_errors", "to_jsonable"]
 
 SCHEMA = "pianolens.report/1"
 TIERS = ("none", "notable", "strong")
@@ -243,8 +244,15 @@ def _quantiles(ref_values: np.ndarray, min_n: int) -> tuple[float, float, int]:
 
 
 def bar_labels(score: Any) -> list[str]:
-    """Printed bar label per measure row; a repeated bar gets a pass suffix (``"12 (2)"``)."""
+    """Printed bar label per measure row; a repeated bar gets a pass suffix (``"12 (2)"``).
+
+    A score trimmed to a recorded span (BL-36, ``align(..., partial=True)``) carries the labels
+    of its rows in ``meta["bar_labels"]``, counted over the whole repeat path, so a second pass
+    keeps its suffix when the first pass was not recorded."""
     ms = score.measures
+    carried = (getattr(score, "meta", None) or {}).get("bar_labels")
+    if carried is not None and len(carried) == len(ms):
+        return [str(x) for x in carried]
     seen: dict[str, int] = {}
     out = []
     for m in ms:
@@ -1531,12 +1539,27 @@ def build_report(inp: ReportInputs, config: ReportConfig | None = None) -> dict[
     }
     if four_hands:
         rep["piece"]["four_hands"] = four_hands
+    rs = (getattr(score, "meta", None) or {}).get("recorded_span")
+    if rs is not None:  # BL-36 (align(..., partial=True)): bars outside it are not graded
+        rep["recorded_span"] = recorded_span_report(rs, labels)
     rep["confidence"]["notes"] = text.confidence_notes(rep)
     issues = collect_issues(rep)
     rep["issues"] = issues
     rep["practise"] = [d for d in issues if d["practise_eligible"]][: cfg.n_practise]
     rep["summary"] = text.summary_findings(rep)
     return rep
+
+
+def recorded_span_report(rs: dict[str, Any], labels: Sequence[str]) -> dict[str, Any]:
+    """The report's record of the recorded span (BL-36): whether the recording covers the
+    whole piece, the graded bars (``bars_label``) and, per side left out, the bars that were not
+    recorded (``not_recorded``; listed once, never graded or counted as mistakes)."""
+    out = {"whole": bool(rs.get("whole", True)), "variant": rs.get("variant", ""),
+           "method": rs.get("method", ""), "n_bars_recorded": len(labels),
+           "bars_label": span_label(labels, list(range(len(labels)))),
+           "not_recorded": [dict(d) for d in rs.get("not_recorded") or []]}
+    out["n_bars_not_recorded"] = int(sum(d.get("n_bars", 0) for d in out["not_recorded"]))
+    return out
 
 
 def _four_hands(inp: ReportInputs) -> dict[str, Any] | None:

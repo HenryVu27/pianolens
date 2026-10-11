@@ -52,7 +52,7 @@ def floor_note(summ: dict, k: str, t: str) -> str:
             f"Transcribed from a phone recording by {TR_NAME[t]}.")  # fmt: skip
 
 
-def high_extras(k: str, t: str, meta: dict) -> dict:
+def high_extras(k: str, t: str, meta: dict, partial: bool = False) -> dict:
     """Extra notes at G6 (MIDI 91) or above, and above the score's highest note.
 
     On Henry's takes 03-05 many extras sit on a few fixed high pitches that do not follow the
@@ -68,7 +68,7 @@ def high_extras(k: str, t: str, meta: dict) -> dict:
     sc = load_score(BASE / "scores" / f"{k}_score.mxl", meta[k]["piece_id"])
     perf = load_performance(BASE / "transcribed" / t / f"{k}.mid", "transcribed",
                             meta[k]["piece_id"], performance_id=k)  # fmt: skip
-    cr = correctness(align_performance(sc, perf))
+    cr = correctness(align_performance(sc, perf, partial=partial))
     nd = cr.notes
     ex = nd["label"].astype(str).to_numpy() == "extra"
     p = nd["pitch"].to_numpy(int)
@@ -119,6 +119,8 @@ def main() -> None:
     p.add_argument("--floor-tables", type=Path, default=FLOOR_TABLES,
                    help="cached A-01 floor expert tables (DF-13: rebuilt with the transcribed "
                         "window rule by scripts/rebuild_floor_tables_df13.py)")
+    p.add_argument("--partial", action="store_true",
+                   help="BL-36: detect the recorded span and grade only the recorded bars")
     args = p.parse_args()
     out = args.out
     warnings.filterwarnings("ignore")
@@ -140,8 +142,9 @@ def main() -> None:
                 piece_id=meta[k]["piece_id"], provenance="transcribed", title=title,
                 notes=[floor_note(summ, k, t)], expert_capture_model=TR_FAMILY[t],
                 expert_tables=[r["table"] for r in floor if r["take"] == k
-                               and r["transcriber"] == t and not r["suspect"]])  # fmt: skip
-            extra_note = high_note(high_extras(k, t, meta), rep)
+                               and r["transcriber"] == t and not r["suspect"]],
+                partial=args.partial)  # fmt: skip
+            extra_note = high_note(high_extras(k, t, meta, args.partial), rep)
             if extra_note:  # the header renders confidence notes; input notes keep provenance
                 rep["confidence"]["notes"].append(extra_note)
                 rep["input"]["notes"].append(extra_note)

@@ -50,6 +50,9 @@ def main() -> None:
     ap.add_argument("--note", action="append", default=[], help="extra provenance note")
     ap.add_argument("--filter-extras", choices=["off", "rule"], default="off",
                     help="remove likely transcription extras first (transcribed input only)")
+    ap.add_argument("--partial", action=argparse.BooleanOptionalAction, default=None,
+                    help="BL-36: the recording may cover only part of the piece; grade only the "
+                         "recorded bars (default: pianolens.align.partial.PARTIAL_DEFAULT, off)")
     ap.add_argument("--out", required=True, help="output .html (the .json goes beside it)")
     args = ap.parse_args()
     warnings.filterwarnings("ignore")
@@ -63,7 +66,8 @@ def main() -> None:
         args.performance, score=args.score, piece_id=args.piece_id, provenance=args.provenance,
         title=args.title, takes=args.take, reference_midis=args.reference_midi,
         reference_provenance=args.reference_provenance, use_pianocore=not args.no_pianocore,
-        exclude_references=args.exclude_reference, notes=args.note)  # fmt: skip
+        exclude_references=args.exclude_reference, notes=args.note,
+        partial=args.partial)  # fmt: skip
     td.cleanup()
     h, j = write_report(rep, Path(args.out))
     print(f"wrote {h}\nwrote {j}")

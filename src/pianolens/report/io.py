@@ -90,6 +90,7 @@ def report_from_files(
     expert_check_provenance: str | None = None,
     expert_capture_model: str | None = None,
     max_expert_checks: int = cal.EXPERT_CHECK_MAX_REFS,
+    partial: bool | None = None,
 ) -> dict[str, Any]:
     """Load, align and analyse. ``score`` or ``piece_id`` (ASAP lookup) must be given.
 
@@ -111,8 +112,16 @@ def report_from_files(
     ``max_expert_checks`` ASAP (Disklavier) performances of ``piece_id``. ``reference_midis`` of
     the same capture class (transcribed or key-sensor) are used instead when there are at least
     ``calibration.EXPERT_CHECK_MIN_REFS`` of them on the target's repeat path.
+
+    ``partial`` (BL-36; None = ``pianolens.align.partial.PARTIAL_DEFAULT``): the recording may
+    cover only part of the piece. The target and the takes are aligned with
+    ``align_performance(..., partial=True)``; bars outside the recorded span are not graded and
+    are listed once (``rep["recorded_span"]``). Same-score and correctness references on the
+    target's repeat path are cut to the target's bars (:func:`restrict_to_score`).
     """
     cfg = config or ReportConfig()
+    if partial is None:
+        from pianolens.align.partial import PARTIAL_DEFAULT as partial
     performance = Path(performance)
     if score is None:
         if piece_id is None:
@@ -122,7 +131,8 @@ def report_from_files(
             raise FileNotFoundError(f"no score for piece {piece_id!r} in ASAP; pass --score")
     sc = load_score(score, piece_id)
     perf = load_performance(performance, provenance, piece_id)
-    ap = align_performance(sc, perf)
+    ap = align_performance(sc, perf, partial=partial)
+    span_cut = not (ap.score.meta.get("recorded_span") or {}).get("whole", True)
     src = ""
     parts = performance.resolve().parts
     if "asap" in parts:
@@ -150,7 +160,9 @@ def report_from_files(
             continue
         rp = load_performance(m, reference_provenance, piece_id)
         rap = align_performance(sc, rp)
-        if _same_variant(rap, ap):
+        if span_cut and _same_path(rap, ap):
+            same.append(restrict_to_score(rap, ap.score))
+        elif _same_variant(rap, ap):
             rap.score = ap.score  # identical notes; share the target's score object
             same.append(rap)
         else:
@@ -172,7 +184,9 @@ def report_from_files(
         except Exception as e:  # noqa: BLE001 - an expert that fails to align is skipped
             ref_note.append(f"Correctness reference {m.name} could not be aligned ({e!r}).")
             continue
-        if _same_variant(rap, ap):
+        if span_cut and _same_path(rap, ap):
+            cref.append(restrict_to_score(rap, ap.score))
+        elif _same_variant(rap, ap):
             cref.append(rap)
     xtabs: list[Any] = []
     xprov = expert_check_provenance or ("transcribed" if provenance == "transcribed"
@@ -212,7 +226,8 @@ def report_from_files(
             if tmp is not None:
                 tmp.cleanup()
     tk = [align_performance(sc, load_performance(t, provenance, piece_id,
-                                                 performance_id=f"take{k + 2}:{Path(t).stem}"))
+                                                 performance_id=f"take{k + 2}:{Path(t).stem}"),
+                            partial=partial)
           for k, t in enumerate(takes)]
     inp = ReportInputs(
         ap=ap, piece_id=piece_id, title=title or (piece_id or Path(score).stem),
@@ -225,6 +240,31 @@ def report_from_files(
                "correctness_references": [str(p) for p in cref_paths]},
         notes=[*notes, *ref_note])  # fmt: skip
     return build_report(inp, cfg)
+
+
+def _same_path(a: Any, b: Any) -> bool:
+    """Same repeat path (BL-36: a target trimmed to its recorded span has fewer notes)."""
+    return str(a.score.meta.get("unfolded") or "") == str(b.score.meta.get("unfolded") or "")
+
+
+def restrict_to_score(ap: Any, score: Score) -> Any:
+    """``ap`` (aligned to the whole score, same repeat path) cut to the notes of ``score`` (a
+    target's score trimmed to its recorded span, BL-36): pairs of score notes outside it are
+    dropped, and performed notes matched there become insertions. Returns a new
+    ``AlignedPerformance`` that shares ``score``."""
+    from pianolens.data.types import AlignedPerformance, Alignment
+
+    keep = set(score.notes["id"].astype(str).tolist())
+    pairs = []
+    for lab, sid, pid in ap.alignment.pairs.tolist():
+        if not sid or sid in keep:
+            pairs.append((lab, sid, pid))
+        elif lab == "match":
+            pairs.append(("insertion", "", pid))
+    al = ap.alignment
+    new = Alignment(np.array(pairs, dtype=al.pairs.dtype), al.score_id, al.performance_id,
+                    al.ground_truth, f"{al.source}+recorded_span")
+    return AlignedPerformance(performance=ap.performance, score=score, alignment=new)
 
 
 def _capture_class(provenance: str) -> str:

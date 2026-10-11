@@ -62,3 +62,5 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   ASAP score MIDI as check, D899/1 bars 82-84), LH-in-upper-staff split (voice rule, MuseScore voice 5+), Op. 29.
 - [df15-bl27.md](df15-bl27.md) - DF-15 (both parangonar steps, re-match off, nASAP 557/61), BL-26 mark copy off, BL-28
   constants (D899/1 q99 artefact), BL-27 FAIL on P1 (Op. 20 aligner damage after start cuts), `_load` temp-dir trap.
+- [bl36-partial.md](bl36-partial.md) - BL-36 partial recordings: subsequence onset DTW span + trimmed alignment, dev numbers, snap/margin
+  tuning, harm bite check (tightened H1/H2), report wiring behind `PARTIAL_DEFAULT`.

@@ -97,6 +97,9 @@ def confidence_notes(rep: dict) -> list[str]:
                    "is analysed as one performance of everything written, and hand synchrony "
                    "is left out, because PianoLens tells the hands apart by the staff a note is "
                    "written on, and with four hands that split is arbitrary (DF-11).")
+    nr = not_recorded_text(rep.get("recorded_span"))
+    if nr:
+        out.append(nr)
     if conf.get("alignment_suspect"):
         mr = rep["correctness"].get("match_ratio")
         out.append(f"Only {_pct(mr)} of the notes could be matched to the score: the score may "
@@ -144,6 +147,21 @@ def confidence_notes(rep: dict) -> list[str]:
 
 
 # =========================================================================== issues
+
+
+def not_recorded_text(rs: dict | None) -> str | None:
+    """The one line on bars outside the recorded span (BL-36), or None for a whole recording
+    (or when span detection was off)."""
+    if not rs or rs.get("whole", True) or not rs.get("not_recorded"):
+        return None
+    parts = []
+    for d in rs["not_recorded"]:
+        where = "before the recording starts" if d.get("position") == "start" else \
+            "after it ends"
+        parts.append(f"{d['bars_label']} ({where})")
+    return (f"Not recorded: {' and '.join(parts)}. The recording covers "
+            f"{rs.get('bars_label', 'part of the piece')}, and only those bars are graded. The "
+            "bars not recorded are not counted as mistakes and are not in the practise list.")
 
 
 def not_heard_text(nh: dict) -> str:
