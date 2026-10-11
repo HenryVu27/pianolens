@@ -1150,8 +1150,8 @@ In the code: `alignment_suspect` in `src/pianolens/features/correctness.py` and 
 - The repeat choice aligns only the 6 paths closest in note count. The number 6 was never varied, and the choice was wrong in 13 of 99 multi-path performances. The synthetic mistake set contains no multi-path scores, so repeat errors combined with mistakes are untested.
 - The match-ratio warning threshold of 0.8 is a judgement, not a calibrated value. Its ability to separate "wrong score or structure" from "many mistakes" is untested.
 - The wrong-pitch window (100 ms) and pitch limits (±2 semitones, octave) were chosen once, from two candidate windows fixed in advance. No other values were tried, and the decision itself says to revisit on real mistakes.
-- The ornament allowance (±2 semitones, 0.25 s before, 0.1 s after a grace note) is untested on real mistakes. It hides some wrong neighbouring keys in dense passages (BL-20), and the tighter alternative flags genuine ornament playing (BL-23). A key-aware rule, and expanding tremolo shorthand in scores (BL-26), are untried. An unplayed ornamented main note is still counted as missed.
-- parangonar's ornament step, read for this chapter, appears to compare candidates against a stale pitch variable and to skip unmatched ornamented notes. The effect on alignments is unmeasured (DF-07).
+- The ornament allowance (±2 semitones, 0.25 s before, 0.1 s after a grace note) is untested on real mistakes. It hides some wrong neighbouring keys in dense passages (BL-20), and the tighter alternative flags genuine ornament playing (BL-23). A key-aware rule is untried. Tremolo shorthand is now written out before aligning (BL-26, 2026-10-10): eighth and sixteenth strokes are expanded into the notes they stand for, faster or unmeasured tremolos stay as written. In Schubert's Impromptu D899/1 the notes the tighter rule had re-flagged fell from 124 to 1 (measured before a related mark-copying setting was switched off); the tighter and key-aware rules have not been retested. An unplayed ornamented main note is still counted as missed.
+- parangonar's ornament step, read for this chapter, appears to compare candidates against a stale pitch variable and to skip unmatched ornamented notes (DF-07). It also never removes a performed note once used, and its per-pitch matching step can do the same, so one played note could be given to two written notes and both counted correct, hiding a missed note. Since DF-15 (2026-10-10) every match is made one-to-one after alignment; against reference alignments of 1,061 ASAP performances this repaired 557 matches and broke 61. It catches slightly more wrong notes on transcriptions (bars with 3 injected wrong notes marked strong: 70.8% to 72.2%) without changing how often clean playing is flagged (at most 0.05 points).
 - Hands are assigned by staff. Score proxies flag about 5% of notes as possibly played by the other hand (BL-19), but they miss most bars where the engraver marked a hand swap, so the true rate is unknown until PianoVAM's video hand labels are checked (BL-24). No correctness output is per hand. Piano duets get an arbitrary staff split (DF-11).
 - In fast runs, wrong notes that equal a nearby written pitch are still named less reliably than in slow passages (a gap of 0.135 in strict recall after the reassignment pass, against a target of 0.10), and about 1 clean dense bar in 14 with such a wrong key stays unflagged (BL-23). The report words these at bar level.
 - The reassignment pass moves a correct match in about 1 swap in 8 on real alignments. Its two time constants (30 ms and 100 ms) were fixed, not tuned.
@@ -2034,7 +2034,7 @@ What "the matching expert values" means differs by channel. The table lists, for
 | Too flat (tempo, loudness) | Tier D references | The amount of shaping in each 16-bar window across references. "Too flat" means in the low tail. |
 | Timing steadiness | Tier D references, with same-score references merged in | Each reference's own leave-one-out timing noise at that bar |
 | Pedal blur, evenness | Same-score references only | Their value per bar (pedal) or per run of fast notes (evenness) |
-| Whole-performance error rate | Clean expert performances | Error rate per performance (95th percentile 0.164, 99th percentile 0.207) |
+| Whole-performance error rate | Clean expert performances | Error rate per performance (95th percentile 0.162, 99th percentile 0.171 since BL-28; was 0.164 / 0.207) |
 
 The tempo, loudness and too-flat flags are computed by the expert-comparison module (F-06), which the report simply runs twice, once at each percentile. Timing steadiness, by contrast, is computed inside the report itself, and the reason is consistency.
 
@@ -2443,7 +2443,7 @@ So R1(0) plus "passage not heard" stays the interim default, **Provisional**: it
 
 The number a learner should know follows from this: **on transcribed input, about 7 in 10 bars with 3 wrong notes become strong**, because of the note checker (DF-12), not the tier rule. The checker did not count 16% (Transkun V2) and 19% (Aria-AMT) of the injected wrong notes as wrong, against 2.5% to 8.3% on Disklavier playing in BL-20. The auditor followed all 6,765 injected notes. About 80% to 84% were counted. Most of the rest were left unpaired and shown as an extra note plus a missed one, and 75% to 84% of those sat more than 100 ms from the time the checker expected the written note (median 141 and 180 ms, against 12 to 13 ms for counted notes). So the main cause is the 100 ms wrong-pitch window meeting worse onset estimates on transcriptions (DF-13), not aligner absorption. A smaller group, 4% to 5%, was matched as correct to another written note of the new pitch in the same bar, a collision the injection did not avoid. The loss is broad: 21% to 24% in fast runs and 16% to 19% elsewhere.
 
-The auditor also merged the "not heard" fragments: in 8 of the 10 transcriptions with runs, the missing passage is the ending, which supports truncated source videos. Unmerged, a cut ending shows as two or three separate items (BL-27). A future confirmation will come after a DF-12 fix, on new pieces, with a rule-relative criterion (the strong share on targeted bars at least 0.95 of R0's) and the end-to-end share tracked as a measurement of the checker.
+The auditor also merged the "not heard" fragments: in 8 of the 10 transcriptions with runs, the missing passage is the ending, which supports truncated source videos. Unmerged, a cut ending shows as two or three separate items. Merging them was tested on 16 new pieces (BL-27, 2026-10-11) and failed its pre-registered rule: it reports a cut-off passage as one item 17 points more often, but it also swallowed bars that had been played, just above the limit, mostly in one piece where the aligner had shifted the played part onto an earlier repeat. The merge stays off. The same test exposed a larger problem: when a recording covers only part of a piece, the current rule marks 12.9% of the never-played bars strong, and in 244 of 572 cut copies the unplayed strong bars outnumber the played ones. Aligning partial recordings properly (BL-36) is now the priority. A future confirmation will come after a DF-12 fix, on new pieces, with a rule-relative criterion (the strong share on targeted bars at least 0.95 of R0's) and the end-to-end share tracked as a measurement of the checker.
 
 **Other places the sources show rates above nominal:**
 
@@ -3932,6 +3932,7 @@ it each time.
 | BL-23 | The tight ornament rule fails mostly because ornaments are played on an unexpected side; the pitch check found nothing on real data | Most of the failure is one score's unexpanded tremolo shorthand. The pitch check is zero by construction under the default. The reassignment pass also moves a correct match about 1 time in 8. |
 | BL-19b | Mismatches between staff and hand are single notes passed to the other hand, not whole passages | They are systematic: a mismatched note is mismatched again 90% of the time, and one score puts a whole left-hand passage on the upper staff. Hand synchrony's pass holds only at the boundary and fails if any one passing piece is dropped |
 | DF-13 | The wider window's false-pairing excess comes from one piece, and the rest of the lost wrong notes are aligner re-matches | One piece is the only drop that flips the result, but the failure is not one piece's doing. Part of the "re-match" half is the aligner matching one played note to two written notes, a separate defect (DF-15) that also occurs on clean playing |
+| BL-27 | Merging the fragments swallows played bars mainly at the cut, and the failure is one piece's noise | The swallowed bars sat 40 to 176 bars after the cut, inside a stretch the aligner had moved 116 bars onto an earlier repeat. The current rule already mislabels much of that stretch, and the bigger problem is reports on partial recordings, not the merge |
 
 
 ## Part 5. Where things stand
@@ -4002,7 +4003,12 @@ Each chapter in Part 2 ends with its own list. The ones that matter most for a l
   input 16 to 19 percent of injected wrong notes are not counted as wrong, mostly because they sit
   more than 100 ms from the expected onset and are left as a missed note plus an extra. A wider
   pairing window was tested and failed (DF-13): it recovers only part of the loss and adds
-  wrong-note labels on clean playing. The other half is the aligner (DF-15), not yet fixed.
+  wrong-note labels on clean playing. Part of the other half was the aligner giving one played
+  note to two written notes, fixed in DF-15; re-pairing wrong pitches the aligner moved is untried.
+- **Recording only part of a piece.** The aligner assumes the whole piece was played. On cut
+  copies, 12.9% of never-played bars are marked strong, and a start cut can shift the played part
+  onto an earlier repeat (BL-27 audit). Until partial recordings are handled (BL-36), a report on
+  an excerpt should be read with care.
 - **Which hand played a note.** The staff is wrong for 6.66% of notes against real video hand
   labels (BL-19b). Per-hand feedback stays off until hands are assigned by a tested model (BL-34).
 
@@ -4017,10 +4023,11 @@ Each chapter in Part 2 ends with its own list. The ones that matter most for a l
 | Run the listening study, starting with a pilot | Which flaws listeners actually mind (H6), and the ground truth any grade needs |
 | A pairwise preference study among good performances | What separates good from great (H7) |
 | Real-audio recording-context test | How large the audio shortcut is outside simulation (H8) |
-| Stop the aligner giving one played note two written notes, then a pre-registered re-pairing step for wrong pitches; rebuild the expert floor tables and recheck the strong rule on transcribed input | Counting more of a phone learner's wrong notes, and a settled strong rule for phone recordings (DF-12, DF-15, BL-28, BL-18b) |
+| Align partial recordings: find the recorded span, or ask the learner for the bar range | Reports on excerpts that do not blame unplayed bars (BL-36) |
+| A pre-registered re-pairing step for wrong pitches the aligner moved, then recheck the strong rule on transcribed input on new pieces | Counting more of a phone learner's wrong notes, and a settled strong rule for phone recordings (DF-12, BL-18b) |
 | Improve Claude's Romantic phrase reading: phrase labels made after the model's cutoff, a rule for where a cadence arrives, a period cue | Phrase feedback on the repertoire most learners play (BL-17) |
 | A hand-assignment model trained on PianoVAM's hand labels, tested on unseen pieces | Per-hand feedback and a sturdier hand-synchrony measure (BL-34) |
-| Expand tremolo shorthand in scores, then retest a tighter ornament rule | Better wrong-note naming around ornaments (BL-26) |
+| Retest the tighter and key-aware ornament rules now that tremolos are expanded | Better wrong-note naming around ornaments (BL-26) |
 
 
 ## Appendix
@@ -4060,6 +4067,7 @@ for audio, P for the product, D for a data check, BL for a backlog item that bec
 | BL-23 | Can a tighter ornament rule and a same-pitch repair close the fast-passage gap? | Confirmed with caveats; candidate failed, repair step adopted, gap still open | Part 2, alignment chapter |
 | BL-19b | How often is staff not hand, against real hand labels? | Confirmed with caveats; 6.66% of notes, hand synchrony passes at the boundary | Part 2, alignment chapter |
 | DF-13 | Does a wider wrong-note pairing window help on transcriptions? | FAIL by the pre-registered rule; Confirmed with caveats; 100 ms stays | Part 2, alignment chapter |
+| BL-27 | Should "passage not heard" fragments be merged? | FAIL by the pre-registered rule; Confirmed with caveats; merge stays off | Part 2, report chapter |
 
 ### Reproducing anything
 

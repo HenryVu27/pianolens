@@ -706,3 +706,10 @@ Append only. Each entry records the date, the decision, the reason, and who deci
     0.71% to 0.88% (under the nominal 1%), notable+ +0.26 pt; transcribed limits and rule P rates
     essentially unchanged (largest move -0.12 pt). BL-27 is registered and scored against these
     constants.
+- **2026-10-11, lead: BL-27 and partial recordings.** BL-27 is FAIL by the pre-registered rule
+  (P1), Confirmed with caveats (eval-auditor 2026-10-11): `NOT_HEARD_MERGE_GAP` stays 0 and the
+  recurring-error guard stays. No new merge test for now. **BL-36 (aligning partial recordings)
+  takes priority:** on BL-27's cut copies the current rule tiers 12.9% of never-played bars
+  strong, unplayed strong bars outnumber played ones in 244 of 572 copies, and a start cut can
+  shift the played part onto an earlier repeat. A learner recording part of a piece would get a
+  practice list dominated by bars they did not play. Measured on synthetic 5-25% cuts only.

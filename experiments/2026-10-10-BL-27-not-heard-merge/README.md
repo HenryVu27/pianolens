@@ -206,3 +206,188 @@ flips it; about half of the bootstrap resamples pass).
    50-78% missed (Op. 20). Cut recordings therefore produce false strong flags outside any run
    under either rule (not-heard bars tiered strong: 12.9% under C); worth a ticket on aligning
    partial recordings (subsequence alignment or trimming the score to the recorded span).
+
+## Audit (eval-auditor, 2026-10-11)
+
+**Verdict: Confirmed with caveats.** FAIL by the pre-registered rule is the correct reading, and
+`NOT_HEARD_MERGE_GAP` stays 0. Every reported number reproduces. The post hoc "aligner damage"
+reading is supported and labelled post hoc, but it understates the problem: both rules misreport
+the affected passage. P1 sits on a knife edge. The author fixes below are wording plus one
+missing test; none of them changes the verdict.
+
+**1. Pre-registration and timeline.**
+- The anchor recomputes to `78a9a04c...c594`, the same value as in `artifacts/prereg_sha256.txt`.
+- Author transcript: session 73c389dd, `subagents/agent-a90d10a79fa6d5e53.jsonl`.
+  - BL-28 constants committed (2cd851a): 04:04:54Z.
+  - Dev re-score: 04:04:55Z.
+  - README written: 04:05:59Z.
+  - Hash: 04:06:03Z.
+  - "Falsified if" line edited (outside the anchor) and held-out run launched in the same call:
+    04:06:12Z.
+  - `heldout_rows.pkl` written at 04:53:11Z.
+- Before the hash, the script ran only on dev pieces: a one-target smoke test at 23:51Z, then the
+  dev run and the dev re-score. No held-out draw happened before the hash.
+- The script's sha256 (5bcd5aa2...) is unchanged from the hash time to the commit. No criterion
+  changed after launch.
+
+**2. Disjointness.**
+- The 16 held-out piece ids are disjoint from Henry's 5 pieces, the BL-18 pieces (T1 and T2),
+  BL-18b (= BL-27 dev = DF-13 dev), the DF-13 held-out pieces and the A-01 floor pieces (taken
+  from the floor ref ids). The script's dev set is exactly the BL-18b pieces.
+- 0 of the 800 transcription ids appear in any earlier set.
+- Sibling movements (not the same content) sit in excluded sets: K. 331/2, D. 780/2 and Op. 16/2.
+- Three held-out pieces (Op. 20, D. 780/1, Op. 16/6) appear among the DF-15 ASAP / key-sensor
+  performances, which fed the BL-28 constants. Those are different recordings, and rule P here
+  uses same-family experts with no family limits, so this is not a leak into M vs C.
+
+**3. Criteria computed as registered.** `evaluate()` on the cached `heldout_rows.pkl` reproduces
+`heldout_summary.json` in every field (0 differences).
+- Denominators:
+  - S1 runs per family over bars outside each rule's own runs.
+  - E1 is the mean over scored copies, pooled over families and sides.
+  - P1 is a ratio of sums: 62 / 589 = 62 heard + 5 cut + 522 not heard, with no unknown truth.
+- Tolerances: S1 is two-sided; E1, E2 and P1 are one-sided, as registered.
+- Scored copies: 632 copies minus 45 suspect minus 15 with fewer than 3 not-heard bars gives 572.
+- Reproduced in a fresh run: the P1 bootstrap ([1.8, 30.0]% Aria-AMT, [2.2, 20.8]% pooled), the
+  share of resamples that pass (51%, 47%), the leave-one-out ranges and "1 of 16 drops flips".
+- Re-aligning 2 Op. 20 targets reproduced the cached clean and cut tables exactly, including the
+  cut times (6 alignments).
+- `not_heard_runs(merge_gap=0)` equals the pre-BL-27 function on 200,000 random inputs.
+- Reports built with the old and the new function at gap 0 are identical (JSON and HTML),
+  apart from the two keys added to `summary.not_heard_rule`.
+
+**4. Truncation-control truth.**
+- Truth comes from the uncut alignment, so it holds wherever that alignment is right. For the Op. 20
+  bars it is right: median 0% missed in the clean copies.
+- The registered "heard" truth does not require the clean copy to have found the bar. 5 of the 62
+  heard additions were at least 50% missed in the clean copy (1 Aria-AMT, 4 Transkun V2).
+  Counting them as not heard (post hoc) gives P1 = 43 / 288 = 14.9% Aria-AMT and 57 / 584 = 9.8%
+  pooled, which would pass. So P1 fails by 1 bar (Aria-AMT; the bar is 43.35 of 289) and by
+  4 bars (pooled; the bar is 58.9 of 589). This does not change the registered verdict.
+- "Every copy kept the clean repeat variant" is true by construction: the copy is aligned with
+  `repeats=variant`. It is not a finding.
+- The 45 suspect copies (7%; 18 of them Transkun V2 end cuts) are excluded, so harm on
+  cut recordings whose alignment falls below 0.8 is not measured.
+
+**5. The post hoc Op. 20 reading: supported, but incomplete.** Facts that check out:
+- 42 heard additions: 34 Aria-AMT and 8 Transkun V2; 38 after start cuts.
+- 0% median missed in the clean copy; 50-78% missed in the cut copy.
+- 39 strong and 3 notable under C.
+
+The README omits three things:
+- **Mechanism (two copies probed, PianoCoRe_121007 and _121487, start cuts).** The realignment
+  matched the kept passage, clean bars about 126-285, onto pitch-identical material 116 bars
+  earlier in the unfolded score: 99-100% of those notes are still "correct", but in the wrong
+  bars. Alignment resumes at about bar 300. The unplayed opening is reported as played, and the
+  played stretch as missed.
+- **C already swallows most of it.** C puts 96 to 109 heard bars per copy into "not heard" runs in
+  four Op. 20 start copies, and 522 heard bars of Op. 20 in total. Across all 572 copies it puts
+  1,393 heard bars into runs. The 42 bars M adds are gap bars inside this misaligned stretch,
+  40-176 bars after the cut. They are not at the cut boundary.
+- **The warning was in the dev data.** On dev, Chopin Op. 54 held 16 of the 24 heard additions
+  (13 of 20 Aria-AMT) and 230 heard bars in C runs. The pre-registration reported reachability
+  percentiles but not this concentration.
+
+So "M replaces false strong flags with a 'not heard' item" is true for these bars. But under
+either rule the report misplaces the whole passage. P1 measured M's small increment on top of an
+alignment failure that C already has.
+
+**6. Ratio of sums and the DF-13 lesson.**
+- P1 is a ratio of sums over bars. The DF-13 rule lesson ("report how concentrated it is on its
+  heaviest pieces, and register a robust per-piece statistic") was committed (f330e13, 22:56Z)
+  about five hours before this pre-registration, and the author had read DF-13.
+- Not following it is a process lapse, disclosed in Threats. It does not change a registered
+  verdict.
+- Post hoc, the unweighted mean of per-piece heard shares (pieces with at least one addition)
+  is 5.5% Aria-AMT, 3.8% Transkun V2 and 5.0% pooled; the median piece is 0%.
+- Of the pieces with additions, 1 of 15 is above the bar for Aria-AMT and 3 of 15 for pooled.
+
+**7. E1 and S1.**
+- E1 is robust: leave-one-piece-out +16.5 to +18.2 pt, and 15 of 16 pieces gain (one gains 0).
+- S1 for Aria-AMT is 0 because M added no natural Aria-AMT bar on these pieces. That is not
+  informative about safety. Natural runs are few (22), as the README says.
+
+**8. Guard.**
+- Removing `and heard[i]` in `build_report` makes `test_recurring_error_never_overrides_not_heard`
+  fail.
+- The matching change in `render.py` (the takes timeline row) is not covered: mutating it leaves
+  all 67 report tests passing. BACKLOG's "checked to fail without the guard" is true only for the
+  build side.
+
+**9. The 12.9% side finding (not-heard bars tiered strong under C).**
+- The figure reproduces: 1,966 of 15,275 not-heard bars.
+- It is general, not one piece: per piece 3.6-19.3%, unweighted mean 13.4%.
+- 346 of the 572 copies have at least one such bar (median 4 among them, at most 40). Only 11%
+  of them lie within 3 bars of the cut; the median distance is 17 bars.
+- These bars are mostly 67-80% missed (quartiles), so they fall just under the 80% run threshold
+  because the aligner pulled in a few notes from elsewhere.
+- In the same copies, C tiers 1,268 heard bars strong, against 577 in the uncut copies of the
+  same bars.
+- In 244 of 572 copies the strong flags on unplayed bars outnumber those on played bars. M only
+  lowers 1,966 to 1,515.
+
+For a learner who records part of a piece, the current report's strong list would often be
+dominated by bars they never played. When the piece repeats material, the passage they did play
+can also be shifted onto the wrong occurrence. This was measured on synthetic cuts removing 5-25%
+of the graded bars. Short excerpts (most of the piece missing) and real cut recordings are
+untested. This supports BL-36 (subsequence alignment, or a learner-given bar range) as the
+higher-priority fix.
+
+**Required author fixes (wording and one test; the verdict is unchanged).**
+1. README "What the swallowed heard bars are": add the 116-bar shift mechanism, the count of heard
+   bars C already puts in runs (522 for Op. 20; 1,393 overall), and that the 42 bars lie 40-176
+   bars after the cut, not at it.
+2. README "For the lead" item 2: a P1 limited to bars untiered under C is nearly pass by
+   construction. 581 of 589 added bars, and 61 of 62 heard additions, were already tiered under C,
+   because M only adds bars at least 50% missed. Replace it with a per-piece-robust heard share,
+   scored against a truth that requires the bar to be found in the clean copy.
+3. README Data: "every copy kept the clean repeat variant" should say "by construction".
+4. BACKLOG BL-27 cell: delete the stale "Prepared, not run ... No pre-registration written and no
+   held-out data drawn." Scope "checked to fail without the guard" to `build_report`, or add a
+   test on the rendered takes row.
+5. EXPERIMENTS row: "already strong under the current rule" should read "already tiered (39
+   strong, 3 notable)".
+6. Add a `render.py` guard test: the takes timeline row must not paint a not-heard recurring bar
+   strong.
+
+**Gates.** `uv run pytest -q`: 623 passed, 8 skipped. `uv run ruff check src tests`: all
+checks passed.
+
+### Corrections after the audit (2026-10-11)
+
+By `feature-engineer`, applying the audit's required fixes (wording and one test). The audit
+section, the run record and the pre-registration are not edited; the anchor hash was re-checked
+after these corrections and is still `78a9a04c...c594`. The verdict is unchanged: FAIL by the
+pre-registered rule (P1), Confirmed with caveats; the merge stays off, the guard stays.
+
+1. **What the swallowed "heard" bars are (replaces the post hoc paragraph's scope).** In the
+   Op. 20 start-cut copies the auditor probed (PianoCoRe_121007, _121487), the realignment
+   matched the kept passage (clean bars about 126-285) onto pitch-identical material 116 bars
+   earlier in the unfolded score: 99-100% of those notes stay "correct", but in the wrong bars,
+   until alignment resumes near bar 300. So the unplayed opening is reported as played and the
+   played stretch as missed, under either rule. C already puts heard bars into "not heard" runs
+   on a large scale: 522 heard Op. 20 bars, and 1,393 heard bars over all 572 scored copies (both
+   recomputed from `heldout_truncation.csv`). The 42 bars M adds in Op. 20 are gap bars inside this
+   misaligned stretch, 40-176 bars after the cut, not at the cut. P1 therefore measured M's small
+   increment on top of an alignment failure C already has. The warning was in the dev data:
+   Chopin Op. 54 held 16 of the 24 heard additions (13 of 20 Aria-AMT) and 230 heard bars in C
+   runs (recomputed); the pre-registration reported reachability percentiles, not this
+   concentration.
+2. **"For the lead" item 2 (replaced).** A P1 limited to bars untiered under C would pass nearly
+   by construction: 581 of 589 added bars, and 61 of 62 heard additions, were already tiered (audit counts)
+   under C, because M only adds bars at least 50% missed. If the merge is retested, register a
+   per-piece-robust heard share (for example the mean or median over pieces of each piece's
+   heard share), scored against a truth that requires the bar to be found in the clean copy (not
+   only due on the kept side of the cut), on new pieces. For scale, all post hoc: P1 fails by 1
+   bar for Aria-AMT (bar 43.35 of 289, observed 44) and by 4 bars pooled (58.9 of 589, observed
+   62); counting the 5 heard additions that the clean copy itself had at least 50% missed as not
+   heard gives 14.9% / 9.8%; the unweighted means of per-piece heard shares (pieces with at least
+   one addition) are 5.5% (Aria-AMT), 3.8% (Transkun V2) and 5.0% (pooled), median piece 0%.
+   None of this changes the registered verdict. The higher-priority fix is aligning partial
+   recordings (BL-36), since both rules misplace the passage.
+3. **Data.** "Every copy kept the clean repeat variant" is true by construction (each copy is
+   realigned with `repeats=<clean variant>`); it is not a finding.
+4. **Guard test (audit item 8).** `tests/report/test_report.py::test_takes_timeline_does_not_paint_not_heard_bar_strong`
+   checks the `render.py` side: the "Errors in takes" row shows the not-heard recurring bar as
+   untiered, and the same bar heard is painted strong. It fails with the `render.py` guard removed
+   (checked) and passes with it.

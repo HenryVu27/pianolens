@@ -363,3 +363,18 @@ paths:
   means the share applies to out-of-bar slips only).
 - **"The leave-one-out range straddles the bar" is not a reading.** Count how many drops flip
   it; in DF-13 only 1 of 16 did.
+
+## Lessons from the BL-27 audit (2026-10-11)
+
+- **A known-answer truncation control must compare the cut copy's alignment with the clean copy,
+  bar by bar.** Partial recordings of pieces with literal repeats realign onto the earlier
+  occurrence (BL-27: Chopin Op. 20 start cuts shifted 116 bars). Report what the baseline rule
+  already gets wrong on the control, not only the candidate's increment.
+- **Check on dev whether a harm criterion can bite before registering it.** "Harm only on bars
+  untiered under the baseline" is near-vacuous when the candidate only adds bars above a
+  missed-share threshold (581 of 589 added bars were already tiered).
+- **The DF-13 ratio-of-sums lesson applies at dev.** If half or more of a dev numerator sits in
+  one piece, say so in the pre-registration and register a per-piece statistic. BL-27 registered
+  a ratio of sums five hours after that lesson; one piece then held 34 of 44 failing bars.
+- **Report how many numerator units flip a ratio verdict.** BL-27's P1 failed by 1 bar (Aria-AMT)
+  and 4 bars (pooled).

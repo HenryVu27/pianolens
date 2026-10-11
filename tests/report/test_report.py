@@ -740,10 +740,9 @@ def test_wrong_notes_in_fast_run_worded_per_bar():
     assert "instead of" in _describe_error(key, {"n32": 72})
 
 
-def test_recurring_error_never_overrides_not_heard(refs):
-    """BL-27 guard: the recurring wrong note of bar 4 sits in a "passage not heard" run (bars
-    1-4 otherwise unplayed in this take, transcribed input). It stays listed as recurring, but the
-    bar keeps no tier and no practise item."""
+def _not_heard_recurring_report(refs) -> dict:
+    """Bar 4's recurring wrong note sits in a "passage not heard" run (bars 1-4 otherwise unplayed
+    in this take, transcribed input)."""
     ap = _take(0)
     ap.performance.provenance = "transcribed"
     wrong = [i for i, (b, _, _, st, _) in enumerate(NOTES)
@@ -751,13 +750,36 @@ def test_recurring_error_never_overrides_not_heard(refs):
     ap = _drop_notes(ap, [i for i, (b, *_) in enumerate(NOTES) if b < 16 and i != wrong])
     inp = ReportInputs(ap=ap, provenance="transcribed", same_score_refs=refs,
                        same_score_provenance="disklavier", takes=[_take(1), _take(2)])
-    rep = to_jsonable(build_report(inp, CFG))
+    return to_jsonable(build_report(inp, CFG))
+
+
+def test_recurring_error_never_overrides_not_heard(refs):
+    """BL-27 guard (build): the recurring wrong note stays listed as recurring, but its "not
+    heard" bar keeps no tier and no practise item."""
+    rep = _not_heard_recurring_report(refs)
     rb = rep["bars"][REC_BAR]["correctness"]
     assert rep["takes"]["promoted"] and rep["takes"]["recurring_error_bars"] == [str(REC_BAR + 1)]
     assert rb["not_heard"] and rb["recurring"] and rb["tier"] == "none"
     assert rep["correctness"]["not_heard"][0]["bars"] == [0, 1, 2, 3]
     assert not any(d["category"] == "correctness" and REC_BAR in d["bars"]
                    for d in rep["issues"])
+
+
+def test_takes_timeline_does_not_paint_not_heard_bar_strong(refs):
+    """BL-27 guard (render): the "Errors in takes" timeline row shows the not-heard recurring bar
+    untiered, while a recurring bar outside a run is still painted strong."""
+    from pianolens.report.render import timeline_svg
+
+    rep = _not_heard_recurring_report(refs)
+    svg = timeline_svg(rep)
+    lab = str(REC_BAR + 1)
+    assert f"Bar {lab}: Errors in takes: in range / not tiered" in svg
+    assert f"Bar {lab}: Errors in takes: strong" not in svg
+    # control: the same recurring bar, heard, is painted strong in a report without the run
+    inp = ReportInputs(ap=_take(0), provenance="disklavier", same_score_refs=refs,
+                       same_score_provenance="disklavier", takes=[_take(1), _take(2)])
+    heard = timeline_svg(to_jsonable(build_report(inp, CFG)))
+    assert f"Bar {lab}: Errors in takes: strong" in heard
 
 
 def test_not_heard_runs_merge_and_edges():

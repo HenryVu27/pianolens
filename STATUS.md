@@ -1,6 +1,6 @@
 # PianoLens status
 
-Last updated 2026-10-10 by the lead (DF-13 and BL-19b audited; DF-11 fixed). Earlier refreshes 2026-10-06 (R-10) and 2026-09-29
+Last updated 2026-10-11 by the lead (BL-27 audited; DF-15, BL-26, BL-33, BL-28, DF-14 done). Before that 2026-10-10 (DF-13 and BL-19b audited; DF-11 fixed). Earlier refreshes 2026-10-06 (R-10) and 2026-09-29
 (feature-engineer, DEFECTS DF-08) from `EXPERIMENTS.md`,
 `DECISIONS.md`, the `WORKBOARD.md` log and `docs/RESEARCH_LOG.md` Part 5). Details live in those
 files. This page is the short version.
@@ -26,6 +26,7 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 | R-11 | Do expert performances and the report follow what teachers mark (3 tonebase annotated scores, pilot)? | Encoding is reliable (two blind encoders, category kappa 0.97, bar maps identical). Experts following the marks: inconclusive (0.634 [0.503, 0.750]; 0.598 with the waltz hand fix). The report does not notice a removed marked effect: its per-bar tempo/loudness channels cannot see single-note demands even at 4x (BL-32). About a third of annotations are MIDI-observable. |
 | BL-19b | How often is staff not hand, against PianoVAM's video hand labels? | Staff is wrong for 6.66% [3.51, 9.00] of notes (31 pieces; label noise 0.76%), systematically. Staff beats a middle-C split by 16.7 points. Hand synchrony passes only at the boundary (3 of 30 pieces, bar 10%). Per-hand feedback stays off; hand model is BL-34. |
 | DF-13 | Does a wider wrong-note pairing window help on transcriptions? | No: FAIL by the pre-registered rule. The best (tempo-scaled) window counts 3.6-4.7 points more injected wrong notes but adds 15.0-16.8% wrong-note labels on clean playing (bar 15%). The window reaches only half the loss; the rest is the aligner (DF-15). 100 ms stays. |
+| BL-27 | Should "passage not heard" fragments be merged? | No: FAIL by the pre-registered rule (it swallows slightly too many played bars, mostly one piece the aligner had shifted onto a repeat). Merge stays off. Side finding: on recordings of part of a piece, 12.9% of never-played bars are marked strong (BL-36). |
 | BL-16 | Can repeated takes estimate a learner's noise floor (Rach3 Hanon)? | Yes, within one sitting. Across days, takes carry structured drift, so timing noise uses same-sitting takes only (O-01 guidance: 2-3 takes in one sitting). A second beginner is still needed. |
 
 ## Engineering results accepted by the lead (tickets, not audited experiments)
@@ -42,6 +43,7 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
   score or edition artefacts; extras never count toward tiers on transcribed input.
 - **P-01 comparison engine:** A/B clips per flagged passage (your recording, you on the reference
   piano, a typical and a contrasting expert).
+- **2026-10-10/11 checker and calibration fixes:** one-to-one matches after alignment (DF-15: 557 repairs vs 61 breaks against reference alignments); tremolo shorthand written out and left-hand chord notes moved to the lower staff at score load (BL-26, BL-33); correctness limits recalibrated on the fixed checker (BL-28: 99th-percentile error rate 0.207 to 0.171, missed+extra per note 0.634 to 0.50); partial catalogue scores labelled (DF-14); duets skip hand synchrony (DF-11). 4 of Henry's 10 A-01 reports changed (`data/interim/reports/henry_bl28/`).
 - **P-02 local app:** pick a piece, upload audio or MIDI, get the report and the A/B player, all on
   this Mac (`docs/APP.md`).
 
@@ -82,17 +84,16 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 - **The report still uses the cadence detector for phrase boundaries,** not the LLM (DF-02).
 - **Pedal and evenness rarely tier:** they need at least 10 same-score references; the app supplies
   them only for key-captured MIDI of pieces without PianoCoRe references (DF-05, `docs/APP.md`).
+- **Partial recordings are not handled.** The aligner assumes the whole piece was played; on cut copies 12.9% of never-played bars are marked strong (BL-27 audit). BL-36 is the priority fix.
 - **Staff is not hand** for 6.66% of notes (BL-19b); hand synchrony is fragile, per-hand feedback is off.
 - **The strong flag on transcribed input stays interim:** on a second sample its clean rate is 1.49% / 1.86%, above the 1.25% band by point estimate (DF-13 side finding).
 - **Known untested gaps:** dense passages (BL-20), fast repeated notes in
   phone audio (BL-21), the source of Henry's high extras (BL-22).
 
-## In flight (2026-10-10)
+## In flight (2026-10-11)
 
-- **Wave 2a (running):** BL-26 tremolo expansion, BL-33 waltz left-hand chords, Op. 29 staff-margin warning (feature-engineer); DF-14 catalogue score defects (data-engineer: Italian Concerto is movement 2 only; Schumann Op. 17 i engraving).
-- **Next:** DF-15 (reject duplicate aligner matches) and BL-27 (merge "passage not heard" fragments), then BL-28 (rebuild expert floor tables) and a recheck of the interim strong rule.
-- **Done 2026-10-10:** DF-13 closed (100 ms stays), BL-19b Confirmed with caveats, DF-11 / DF-08 fixed (duets detected; footer), BL-24 data loaded, R-07 author fixes, BL-31 protocol v1.3.
-
+- **Next:** BL-36 (align partial recordings, pre-registered), then a re-pairing step for wrong pitches the aligner moved (DF-12) and a recheck of the interim strong rule on new pieces; retest the tight / key-aware ornament rules now that tremolos are expanded (BL-26); BL-35 raw-MIDI guard.
+- **Done 2026-10-10/11:** DF-13 closed (100 ms stays), BL-19b and BL-27 Confirmed with caveats, DF-11 / DF-08 / DF-14 / DF-15 fixed, BL-26 / BL-33 score loading, BL-28 recalibration, BL-24 data loaded, R-07 author fixes, BL-31 protocol v1.3.
 - **R-10, R-11, R-07:** audited and closed (R-10 secondary arms audited 2026-10-10; R-11 follow-ups
   BL-32 (OWNER input) and BL-33 (in wave 2a); R-07 author fixes closed 2026-10-10).
 
