@@ -748,3 +748,17 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   Leakage check: only R-07 held them, in train with Op. 13 ii, so no cross-split leak. Op. 70
   No. 2's degraded refined data sits in R-02 and R-07 training sets; not re-run (one piece of
   hundreds, no held-out role).
+- **2026-10-11, lead: BL-37 edge bars.** PASS by the pre-registered rule, Confirmed with caveats
+  (eval-auditor 2026-10-11). The fixes (realign after the shrink, optional tie tails,
+  `restrict_to_score` out-of-span removal, conditional margin) are kept: with no policy (k = 0)
+  the first or last recorded bar is within +0.27 pt of the same bar uncut, and whole recordings
+  are identical. **The k = 1 policy is not adopted as registered.** Its harm rows injected wrong
+  pitches, which a missed-note policy cannot hide; the audit injected omissions instead and
+  found 3 omitted notes in an edge bar ranked 60.2% (k = 0) vs 17.3% (k = 1), and never on the
+  aligner's own edge bar; H1 also misses its bar under k = 1 (-0.1548 vs 0.15). Both flags stay
+  off. Henry chooses between `partial` with k = 0 (partly played cut bars falsely strong about
+  20%) and k = 1 (omissions at the edge hidden), or waits for BL-39, a narrower policy that
+  ignores only missed notes expected before the first performed note of the edge bar (after the
+  last, at the end), pre-registered with an omission-injection row. Before `partial` goes on in
+  the app, the wrong-piece stop (0.5) needs revisiting: 2 of 1,376 short wrong-score excerpts
+  reach it (BL-40).
