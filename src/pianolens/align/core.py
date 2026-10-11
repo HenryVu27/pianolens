@@ -243,7 +243,17 @@ def align_note_arrays(
     """
     matcher = matcher or DualDTWNoteMatcher()
     use_orn = process_ornaments and score_part is not None
-    raw = matcher(score_na, perf_na, process_ornaments=use_orn, score_part=score_part)
+    if not use_orn:
+        raw = matcher(score_na, perf_na, process_ornaments=False, score_part=score_part)
+        return [_clean(a) for a in raw]
+    s_copy, p_copy = score_na.copy(), perf_na.copy()  # the ornament step edits arrays in place
+    try:
+        raw = matcher(score_na, perf_na, process_ornaments=True, score_part=score_part)
+    except np.exceptions.DTypePromotionError:
+        # parangonar 3.3.3: the ornament step crashes when no performed note is left unmatched
+        # (``na_within`` returns a plain empty list that ``np.concatenate`` cannot join to the
+        # structured arrays). There is nothing for it to re-match then, so align without it.
+        raw = matcher(s_copy, p_copy, process_ornaments=False, score_part=score_part)
     return [_clean(a) for a in raw]
 
 
@@ -381,9 +391,18 @@ def _row_note_counts(upart: Any) -> list[int]:
 
 def _align_partial(fresh: Any, span: Any, perf_na: np.ndarray, n_variants: int,
                    process_ornaments: bool) -> AlignResult:
-    """BL-36 step 2 (:mod:`pianolens.align.partial`): align to the span widened by the margin,
-    shrink the trimmed sides, drop the alignment entries of the rows removed by the shrink.
-    ``fresh(first)`` returns an unfolded part of the chosen path that may be trimmed in place."""
+    """BL-36 step 2, revised in BL-37 (:mod:`pianolens.align.partial`).
+
+    1. Align the DTW span itself (``D``) and the span widened by the margin (``W``); shrink the
+       trimmed sides of both.
+    2. On each trimmed side, the margin rows ``W`` keeps beyond the DTW span are used only when
+       they explain performed notes ``D`` leaves unmatched (``partial.margin_needed``). An
+       anchored note alignment otherwise pulls the first (last) performed notes into unplayed
+       margin bars, and the real edge bar is reported missed (BL-37 dev).
+    3. Align the final rows (or reuse ``D`` / ``W`` when they match); a note tied in from
+       before the span is optional.
+    ``fresh(first)`` returns an unfolded part of the chosen path that may be trimmed in place.
+    """
     from pianolens.align import partial as pa
 
     n_rows = span.n_rows
@@ -391,37 +410,56 @@ def _align_partial(fresh: Any, span: Any, perf_na: np.ndarray, n_variants: int,
     upart = fresh(True)
     starts = pa._measure_starts(upart)
     row_notes = _row_note_counts(upart)
-    e0, e1 = pa.widen_rows(row_notes, span.first_row, span.last_row, lo_trim, hi_trim)
-    tpart = pa.trim_part(upart, e0, e1, inplace=True)
-    sna = score_note_array(tpart)
-    al = align_note_arrays(sna, perf_na, score_part=tpart, process_ornaments=process_ornaments)
-    row_of = dict(zip(sna["id"].astype(str), pa._rows_of_divs(starts, sna["onset_div"]),
-                      strict=True))
-    grace = dict(zip(sna["id"].astype(str), sna["is_grace"].astype(bool), strict=True))
-    n_notes = np.zeros(n_rows, int)
-    n_missed = np.zeros(n_rows, int)
-    for a in al:
-        sid = a.get("score_id")
-        if sid is None or grace.get(sid, False):
-            continue
-        r = row_of[sid]
-        n_notes[r] += 1
-        n_missed[r] += a["label"] == "deletion"
-    f, last = pa.shrink_rows(n_notes, n_missed, e0, e1, lo_trim, hi_trim)
-    if (f, last) != (e0, e1):
-        keep_rows = range(f, last + 1)
-        out: AlignmentList = []
-        for a in al:
-            sid = a.get("score_id")
-            if sid is None or row_of[sid] in keep_rows:
-                out.append(a)
-            elif a["label"] == "match":
-                out.append({"label": "insertion", "performance_id": a["performance_id"]})
-        al = out
-        tpart = pa.trim_part(fresh(), f, last, inplace=True)
+
+    def run(r0: int, r1: int, part: Any = None) -> dict:
+        tp = pa.trim_part(part if part is not None else fresh(), r0, r1, inplace=True)
+        sna = score_note_array(tp)
+        al = align_note_arrays(sna, perf_na, score_part=tp, process_ornaments=process_ornaments)
+        row_of = dict(zip(sna["id"].astype(str), pa._rows_of_divs(starts, sna["onset_div"]),
+                          strict=True))
+        grace = dict(zip(sna["id"].astype(str), sna["is_grace"].astype(bool), strict=True))
+        n_notes = np.zeros(n_rows, int)
+        n_missed = np.zeros(n_rows, int)
+        for x in al:
+            sid = x.get("score_id")
+            if sid is None or grace.get(sid, False):
+                continue
+            n_notes[row_of[sid]] += 1
+            n_missed[row_of[sid]] += x["label"] == "deletion"
+        f, last = pa.shrink_rows(n_notes, n_missed, r0, r1, lo_trim, hi_trim)
+        return {"rows": (r0, r1), "part": tp, "sna": sna, "al": al, "row_of": row_of,
+                "shrunk": (f, last)}
+
+    d0, d1 = span.first_row, span.last_row
+    e0, e1 = pa.widen_rows(row_notes, d0, d1, lo_trim, hi_trim)
+    w = run(e0, e1, upart)
+    d = run(d0, d1) if (e0, e1) != (d0, d1) else w
+    unmatched_d = {x["performance_id"] for x in d["al"] if x["label"] == "insertion"}
+
+    def side(lo: bool) -> int:
+        wf = w["shrunk"][0] if lo else w["shrunk"][1]
+        df = d["shrunk"][0] if lo else d["shrunk"][1]
+        margin = range(wf, d0) if lo else range(d1 + 1, wf + 1)
+        if len(margin) == 0:  # W kept no margin row on this side
+            return df if (wf >= d0 if lo else wf <= d1) else wf
+        used = {x["performance_id"] for x in w["al"] if x["label"] == "match"
+                and w["row_of"].get(x["score_id"], -1) in margin}
+        return wf if pa.margin_needed(used, unmatched_d) else df
+
+    f = side(True) if lo_trim else 0
+    last = side(False) if hi_trim else n_rows - 1
+    best = next((x for x in (d, w) if x["rows"] == (f, last)), None)
+    if best is None:
+        best = run(f, last)
+    tpart, sna, al = best["part"], best["sna"], best["al"]
+    tails = set(pa.edge_tails(tpart)) if f > 0 else set()
+    unplayed = {x["score_id"] for x in al if x["label"] == "deletion" and x["score_id"] in tails}
+    if unplayed:  # BL-37: a note tied in from before the span is optional
+        al = [x for x in al if x.get("score_id") not in unplayed]
+        tpart = pa.drop_notes(tpart, unplayed)
         sna = score_note_array(tpart)
     span.first_row, span.last_row = int(f), int(last)
-    span.whole = f == 0 and last == n_rows - 1  # the margin reached both edges, nothing shrunk
+    span.whole = f == 0 and last == n_rows - 1  # nothing left out after all
     span.refined = True
     ratio = match_ratio(al, len(sna), len(perf_na))
     return AlignResult(al, sna, perf_na, span.variant, n_variants, {span.variant: ratio},

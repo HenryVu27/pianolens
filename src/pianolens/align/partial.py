@@ -26,8 +26,12 @@ Steps (``align(..., partial=True)``):
    notes (:func:`widen_rows`; a sparse opening the DTW left out is reached this way), the score
    is trimmed and aligned (parangonar), and each trimmed side is shrunk back while its edge row
    has no graded notes or at least ``SHRINK_SHARE`` of them missed (:func:`shrink_rows`). Notes
-   matched in rows removed by the shrink become insertions. If nothing is left out in the end,
-   the recording is whole after all.
+   If the shrink moved an edge, the score is trimmed to the final rows and aligned again (BL-37;
+   BL-36 filtered the widened alignment instead, which left a note tied across the new edge
+   unmatched and its performed note extra). A note tied in from before the first row is
+   optional (BL-37): kept when the performance matched it (a learner starting at that bar
+   strikes it again), dropped from the score when it is unmatched (the uncut score counts it in
+   the bar before). If nothing is left out in the end, the recording is whole after all.
 
 Units: DTW cost in mismatched cells (a performed pitch absent from the onset it is mapped to, or
 a score onset passed without a matching pitch); spans in measure rows of the unfolded score
@@ -46,7 +50,9 @@ import partitura as pt
 
 __all__ = ["MARGIN_BARS", "MARGIN_NOTES", "PARTIAL_DEFAULT", "RecordedSpan", "SHRINK_SHARE",
            "SNAP_NOTES", "WHOLE_TOL", "detect_span", "measure_labels", "onset_pitch_sets",
-           "shrink_rows", "subsequence_onset_dtw", "trim_part", "widen_rows"]
+           "shrink_rows", "subsequence_onset_dtw", "trim_part", "widen_rows", "edge_tails",
+           "drop_notes", "EDGE_TAILS_ATTR", "margin_needed", "MARGIN_EXPLAINS_NOTES",
+           "MARGIN_EXPLAINS_SHARE"]
 
 PARTIAL_DEFAULT = False
 """Whether the report (``report_from_files``, the CLI and the app) detects the recorded span by
@@ -67,6 +73,13 @@ MARGIN_BARS = 2
 MARGIN_NOTES = 16
 """Score notes (grace notes excluded) added on each trimmed side of the DTW span before the
 note alignment (at least; whole rows, up to the piece edge)."""
+
+MARGIN_EXPLAINS_NOTES = 3
+"""BL-37: margin rows kept beyond the DTW span are used only when the performed notes matched in
+them include at least this many that the alignment of the DTW span leaves unmatched ..."""
+
+MARGIN_EXPLAINS_SHARE = 0.5
+"""... and at least this share of them (:func:`margin_needed`)."""
 
 SHRINK_SHARE = 0.5
 """After the note alignment a trimmed side loses edge rows with at least this share of their
@@ -241,9 +254,12 @@ def trim_part(part: Any, first_row: int, last_row: int, *, inplace: bool = False
     ms = sorted(p.measures, key=lambda m: m.start.t)
     t0 = ms[first_row].start.t
     t1 = ms[last_row].end.t
+    tails = []
     for n in list(p.iter_all(pt.score.GenericNote, include_subclasses=True)):
         if not (t0 <= n.start.t < t1):
             if n.tie_next is not None:
+                if n.start.t < t0 and t0 <= n.tie_next.start.t < t1:
+                    tails.append(n.tie_next)
                 n.tie_next.tie_prev = None
             if n.tie_prev is not None:
                 n.tie_prev.tie_next = None
@@ -251,7 +267,30 @@ def trim_part(part: Any, first_row: int, last_row: int, *, inplace: bool = False
     for k, m in enumerate(ms):
         if k < first_row or k > last_row:
             p.remove(m)
+    setattr(p, EDGE_TAILS_ATTR, sorted({str(n.id) for n in tails}))
     return p
+
+
+EDGE_TAILS_ATTR = "pianolens_edge_tails"
+"""Attribute :func:`trim_part` sets on the trimmed part: ids of notes tied in from before the
+first row (their tie head was removed). BL-37: they are optional in ``align``'s partial path."""
+
+
+def edge_tails(part: Any) -> list[str]:
+    """Ids of the notes :func:`trim_part` found tied in from before the span (BL-37)."""
+    return list(getattr(part, EDGE_TAILS_ATTR, None) or [])
+
+
+def drop_notes(part: Any, ids: set[str]) -> Any:
+    """Remove the notes with these ids from ``part`` (in place) and return it."""
+    for n in list(part.iter_all(pt.score.GenericNote, include_subclasses=True)):
+        if str(n.id) in ids:
+            if n.tie_next is not None:
+                n.tie_next.tie_prev = None
+            if n.tie_prev is not None:
+                n.tie_prev.tie_next = None
+            part.remove(n)
+    return part
 
 
 def widen_rows(row_notes: Sequence[int], first: int, last: int, widen_first: bool,
@@ -276,6 +315,22 @@ def widen_rows(row_notes: Sequence[int], first: int, last: int, widen_first: boo
             k += 1
             added += row_notes[last]
     return first, last
+
+
+def margin_needed(used: set[str], unmatched_without: set[str], min_notes: int | None = None,
+                  share: float | None = None) -> bool:
+    """BL-37: whether margin rows are needed. ``used`` are the performed notes the widened
+    alignment matched in the margin rows; ``unmatched_without`` the performed notes the
+    alignment of the DTW span leaves unmatched. The margin is needed when it explains notes
+    nothing else explains: at least ``MARGIN_EXPLAINS_NOTES`` of ``used`` and at least
+    ``MARGIN_EXPLAINS_SHARE`` of them are in ``unmatched_without``. Otherwise the margin only
+    pulled notes away from the bars they belong to."""
+    min_notes = MARGIN_EXPLAINS_NOTES if min_notes is None else min_notes
+    share = MARGIN_EXPLAINS_SHARE if share is None else share
+    if not used:
+        return False
+    k = len(used & unmatched_without)
+    return k >= min_notes and k >= share * len(used)
 
 
 def shrink_rows(n_notes: Sequence[int], n_missed: Sequence[int], first: int, last: int,

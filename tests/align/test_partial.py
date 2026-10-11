@@ -8,7 +8,7 @@ import pytest
 from pianolens.align import align, align_performance
 from pianolens.align import partial as pa
 from pianolens.align.core import _variants_with_paths
-from tests.align.test_align import make_part, make_perf
+from tests.align.test_align import SCALE, make_part, make_perf, melody
 from tests.features.test_control import P_DTYPE
 
 N_BARS = 40
@@ -281,28 +281,52 @@ def test_restrict_to_score_keeps_only_the_target_bars_on_a_repeat_path():
     assert ap.score.meta["unfolded"] == "AA" and (rs["first_row"], rs["last_row"]) == (8, 31)
     labels = bar_labels(ap.score)
     assert labels[0] == "9" and labels[8] == "1 (2)" and labels[-1] == "16 (2)"
+    assert "n32-1" in set(ap.score.notes["id"].astype(str))  # the target struck the tied note
     assert _same_path(rap, ap)
     r = restrict_to_score(rap, ap.score)
-    assert r.score is ap.score and r.performance is rap.performance
+    assert r.score is ap.score
     keep = set(ap.score.notes["id"].astype(str))
     pairs = [tuple(x) for x in r.alignment.pairs.tolist()]
     assert all(sid in keep for _, sid, _ in pairs if sid)
-    # every match outside the span became an insertion; no performed note is lost
-    outside = [p for lab, s, p in rap.alignment.pairs.tolist() if lab == "match" and s not in keep]
-    assert len(outside) == 32  # bars 1-8 of the first pass (the tie head is in bar 8)
-    assert sorted(p for _, _, p in pairs if p) == sorted(
-        p for _, _, p in rap.alignment.pairs.tolist() if p)
-    # inside the span, away from its first bar, the restricted expert is exact
+    # BL-37: the performed notes matched outside the span leave the restricted performance
+    # (32 in bars 1-8 of the first pass), except the tie head, which now plays the tie tail
+    outside = {p for lab, s, p in rap.alignment.pairs.tolist() if lab == "match" and s not in keep}
+    assert len(outside) == 32
+    head_pid = dict((s, p) for lab, s, p in rap.alignment.pairs.tolist())["n31-1"]
+    assert ("match", "n32-1", head_pid) in pairs
+    kept_ids = set(r.performance.notes["id"].astype(str))
+    assert kept_ids == set(rap.performance.notes["id"].astype(str)) - (outside - {head_pid})
+    # the restricted perfect expert is exact in every span bar
     t = bar_error_table(correctness(r), labels)
-    inner = t[t["label"] != "9"]
-    assert inner["n_missed"].sum() == 0 and inner["n_extra"].sum() == 0
-    assert inner["n_wrong_pitch"].sum() == 0
+    assert t["n_missed"].sum() == 0 and t["n_extra"].sum() == 0
+    assert t["n_wrong_pitch"].sum() == 0
 
 
-@pytest.mark.xfail(strict=True, reason="known issue (BL-36 audit fix 4): in the first span bar "
-                   "a note tied in from before the span is counted missed, and the performed note "
-                   "matched to the tie head outside the span becomes an extra there")
+def test_restrict_to_score_drops_unmatched_notes_outside_the_span():
+    from pianolens.report.io import restrict_to_score
+
+    ap, rap = _tied_repeat_case()
+    # an extra note in the expert, early in the first pass (outside the span)
+    pairs = [tuple(x) for x in rap.alignment.pairs.tolist()]
+    import dataclasses
+
+    from pianolens.data import types
+
+    extra = np.zeros(1, dtype=rap.performance.notes.dtype)
+    extra["onset_sec"], extra["duration_sec"], extra["pitch"] = 1.25, 0.2, 100
+    extra["velocity"], extra["id"] = 64, "pX"
+    perf = dataclasses.replace(rap.performance,
+                               notes=np.concatenate([rap.performance.notes, extra]))
+    al = types.Alignment(np.array(pairs + [("insertion", "", "pX")], dtype=types.ALIGNMENT_DTYPE),
+                         "t", "p", False, "test")
+    r = restrict_to_score(types.AlignedPerformance(perf, rap.score, al), ap.score)
+    assert "pX" not in set(r.performance.notes["id"].astype(str))
+    assert all(p != "pX" for _, _, p in r.alignment.pairs.tolist())
+
+
 def test_restrict_to_score_first_span_bar_is_exact_for_a_perfect_expert():
+    """BL-37 (was a strict xfail after the BL-36 audit): the tie tail is matched to the expert's
+    tie head and the notes matched before the span no longer land as extras."""
     from pianolens.features.correctness import correctness
     from pianolens.report.build import bar_error_table, bar_labels
     from pianolens.report.io import restrict_to_score
@@ -313,13 +337,118 @@ def test_restrict_to_score_first_span_bar_is_exact_for_a_perfect_expert():
     assert first["n_missed"] == 0 and first["n_extra"] == 0
 
 
-@pytest.mark.xfail(strict=True, reason="known issue (found while testing BL-36 audit fix 4): "
-                   "_align_partial filters the widened alignment after the shrink instead of "
-                   "realigning, so a tie split at the new edge leaves the tail unmatched (missed) "
-                   "and its performed note an extra")
 def test_partial_alignment_first_bar_is_exact_when_a_tie_crosses_the_edge():
+    """BL-37 (was a strict xfail): after the shrink the final rows are realigned, so the target's
+    struck tie tail is matched instead of becoming an extra plus a missed note."""
     from pianolens.features.correctness import correctness
 
     ap, _ = _tied_repeat_case()
     s = correctness(ap).summary
     assert s["n_missed"] == 0 and s["n_extra"] == 0
+
+
+def test_unstruck_tie_tail_at_the_span_start_is_dropped():
+    """BL-37: a recording that starts after a tied note's head (the tail is not struck again)
+    does not get the tail as a missed note; the score drops it, as the uncut score counts it in
+    the bar before."""
+    from pianolens.features.correctness import correctness
+
+    bars = _bars(seed=11, n_bars=16)
+    bars[8][0] = bars[7][3]
+    part = _tied_repeat_part(bars)
+    played = []
+    for b in range(9, 32):  # from bar 9 of the first pass, tie tail not struck
+        played += [int(p) for i, p in enumerate(bars[b % 16]) if not (b % 16 == 8 and i == 0)]
+    sc, tgt = _project_types(part, make_perf(np.arange(len(played)) * 0.5 + 1.0, played))
+    ap = align_performance(sc, tgt, partial=True)
+    assert "n32-1" not in set(ap.score.notes["id"].astype(str))
+    s = correctness(ap).summary
+    assert s["n_missed"] == 0 and s["n_extra"] == 0
+
+
+def test_edge_low_confidence_policy_only_touches_edge_bars_of_a_trimmed_span():
+    """BL-37 policy (off by default): missed notes in the first / last k graded bars of a
+    trimmed side are low confidence; whole recordings and the default config are unchanged."""
+    from pianolens.report import ReportConfig, ReportInputs, build_report
+    from pianolens.report.build import edge_bars
+
+    bars = _bars()
+    part = make_part(_events(bars))
+    # recording of bars 21-30 that misses 3 of the 4 notes of bar 21 and of bar 25
+    rows = list(range(20, 30))
+    pitches = [int(p) for r in rows for i, p in enumerate(bars[r])
+               if not (r in (20, 24) and i > 0)]
+    sc, pf = _project_types(part, make_perf(np.arange(len(pitches)) * 0.5 + 1.0, pitches))
+    ap = align_performance(sc, pf, partial=True)
+    n = ap.score.measures
+    assert edge_bars(ap.score, [4] * len(n), 2) == [0, 1, len(n) - 2, len(n) - 1]
+    assert edge_bars(ap.score, [4] * len(n), 0) == []
+    base = ReportConfig(shaping=False)
+    off = build_report(ReportInputs(ap=ap, provenance="synthetic", four_hands=False), base)
+    on = build_report(ReportInputs(ap=ap, provenance="synthetic", four_hands=False),
+                      ReportConfig(shaping=False, edge_low_confidence_bars=2))
+    lab = {b["label"]: b for b in on["bars"]}
+    loff = {b["label"]: b for b in off["bars"]}
+    first = on["bars"][0]["label"]
+    if lab[first]["correctness"]["n_missed"]:
+        assert lab[first]["correctness"]["n_missed_low_confidence"] == \
+            lab[first]["correctness"]["n_missed"]
+    assert "edge_low_confidence" not in off["correctness"]
+    assert on["correctness"]["edge_low_confidence"]["n_bars"] == 2
+    # an interior bar with missed notes keeps its count and tier
+    assert lab["25"]["correctness"]["n_missed_low_confidence"] == 0
+    assert lab["25"]["correctness"]["tier"] == loff["25"]["correctness"]["tier"]
+    # a whole recording: no edge bars, report identical with the policy on
+    sc2, pf2 = _project_types(part, _deadpan(bars, range(N_BARS)))
+    ap2 = align_performance(sc2, pf2, partial=True)
+    assert edge_bars(ap2.score, [4] * N_BARS, 2) == []
+    a = build_report(ReportInputs(ap=ap2, provenance="synthetic", four_hands=False), base)
+    b = build_report(ReportInputs(ap=ap2, provenance="synthetic", four_hands=False),
+                     ReportConfig(shaping=False, edge_low_confidence_bars=2))
+    b["correctness"].pop("edge_low_confidence")
+    a.pop("generated"), b.pop("generated")
+    import json
+
+    assert json.dumps(a, sort_keys=True, default=str) == json.dumps(b, sort_keys=True, default=str)
+
+
+def test_ornament_step_crash_without_unmatched_notes_falls_back():
+    """parangonar 3.3.3's ornament step crashes (numpy DTypePromotionError) when every performed
+    note is matched and the score has a matched ornamented note (found in BL-37 on short
+    excerpts); ``align_note_arrays`` then aligns without the ornament step."""
+    part = make_part(melody(SCALE))
+    for n in part.notes_tied:
+        if n.id == "n3":
+            n.ornaments = {"trill": True}
+    perf = make_perf(np.arange(len(SCALE)) * 0.5, SCALE)
+    res = align(part, perf)
+    assert res.n_match == len(SCALE) and res.n_insertion == 0
+
+
+def test_margin_needed_only_when_it_explains_otherwise_unmatched_notes():
+    # the widened alignment matched p1..p4 in margin rows; the DTW-span alignment left p1..p3
+    # unmatched -> the margin explains 3 notes nothing else does
+    assert pa.margin_needed({"p1", "p2", "p3", "p4"}, {"p1", "p2", "p3", "x"}, 3, 0.5)
+    # the margin only took notes the DTW-span alignment matched elsewhere (a pulled edge)
+    assert not pa.margin_needed({"p1", "p2", "p3", "p4"}, {"x"}, 3, 0.5)
+    assert not pa.margin_needed({"p1", "p2"}, {"p1", "p2"}, 3, 0.5)  # too few
+    assert not pa.margin_needed(set(), {"p1"}, 3, 0.5)
+
+
+def test_played_opening_left_out_by_the_dtw_is_recovered_by_the_margin():
+    """Rows 0-3 hold one note each (a sparse opening), then dense bars. A recording of the whole
+    piece is whole; a recording from row 20 leaves the opening out."""
+    rng = np.random.default_rng(4)
+    bars = [[int(rng.integers(55, 80))] for _ in range(4)]
+    bars += [list(rng.integers(55, 80, 4)) for _ in range(36)]
+    events = []
+    for b, bar in enumerate(bars):
+        for i, p in enumerate(bar):
+            events.append((4 * b + i, [int(p)]))
+    part = make_part(events)
+    full = [int(p) for bar in bars for p in bar]
+    res = align(part, make_perf(np.arange(len(full)) * 0.5 + 1.0, full), partial=True)
+    assert res.recorded_span.whole
+    late = [int(p) for bar in bars[20:] for p in bar]
+    res2 = align(part, make_perf(np.arange(len(late)) * 0.5 + 1.0, late), partial=True)
+    assert res2.recorded_span.first_row == 20 and res2.n_match == len(late)

@@ -64,3 +64,4 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   constants (D899/1 q99 artefact), BL-27 FAIL on P1 (Op. 20 aligner damage after start cuts), `_load` temp-dir trap.
 - [bl36-partial.md](bl36-partial.md) - BL-36 partial recordings (Confirmed w/ caveats): span DTW design, numbers, edge-bar harm, tie-split defect (xfail), snap/margin
   tuning, harm bite check (tightened H1/H2), report wiring behind `PARTIAL_DEFAULT`.
+- [bl37-edge-bars.md](bl37-edge-bars.md) - BL-37 PASS (k=1 edge policy): margin cause, realign+tie fixes, fallback check, fragile H1, spawn trap.

@@ -67,7 +67,7 @@ from pianolens.report import calibration as cal
 
 __all__ = ["SCHEMA", "ReportConfig", "ReportInputs", "bar_error_table", "build_report",
            "error_signatures", "expert_bar_limits", "expert_error_keys", "fast_repeat_notes",
-           "fast_run_notes", "local_ioi", "not_heard_runs", "recorded_span_report",
+           "edge_bars", "fast_run_notes", "local_ioi", "not_heard_runs", "recorded_span_report",
            "recurring_errors", "to_jsonable"]
 
 SCHEMA = "pianolens.report/1"
@@ -116,6 +116,10 @@ class ReportConfig:
             tiers. None = automatic: True for transcribed input.
         fast_run_max_ioi_sec: BL-20: wrong notes in runs with a local inter-onset interval below
             this are worded at bar level (:func:`fast_run_notes`).
+        edge_low_confidence_bars: BL-37, for a score trimmed to a recorded span
+            (``align(..., partial=True)``): in the first (last) this many graded bars of a side
+            that was not recorded, missed notes are low confidence, shown but not counted
+            towards tiers (:func:`edge_bars`). 0 = off (the default until BL-37 is audited).
     """
 
     interpretation: InterpretationConfig = field(default_factory=InterpretationConfig)
@@ -140,6 +144,7 @@ class ReportConfig:
     fast_repeat_low_confidence: bool | None = None
     fast_repeat_max_ioi_sec: float = cal.FAST_REPEAT_MAX_IOI_SEC
     fast_run_max_ioi_sec: float = cal.FAST_RUN_MAX_IOI_SEC
+    edge_low_confidence_bars: int = 0
 
 
 @dataclass(eq=False)
@@ -580,6 +585,23 @@ def not_heard_runs(n_missed: Sequence[int], n_notes: Sequence[int],
     return [[graded[k] for k in r] for r in runs]
 
 
+def edge_bars(score: Any, n_notes: Sequence[int], k: int) -> list[int]:
+    """BL-37: measure rows of the first (last) ``k`` graded bars of a score trimmed to a recorded
+    span, on each side that was not recorded (``score.meta["recorded_span"]``); [] for a whole
+    recording, ``k = 0`` or no span record."""
+    rs = (getattr(score, "meta", None) or {}).get("recorded_span")
+    if k <= 0 or not rs or rs.get("whole", True):
+        return []
+    graded = [i for i, n in enumerate(n_notes) if n > 0]
+    pos = {d.get("position") for d in rs.get("not_recorded") or []}
+    out = set()
+    if "start" in pos:
+        out |= set(graded[:k])
+    if "end" in pos:
+        out |= set(graded[-k:])
+    return sorted(out)
+
+
 def expert_bar_limits(expert_tables: Sequence[pd.DataFrame], labels: Sequence[str],
                       extras: bool = True, q: tuple[float, float] = cal.EXPERT_CHECK_Q,
                       min_refs: int = cal.EXPERT_CHECK_MIN_REFS,
@@ -670,6 +692,11 @@ def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
     b["n_wrong_fast_run"] = np.bincount(c.notes["measure_index"].to_numpy(int)[wsel],
                                         minlength=nb)[:nb]
     b["n_missed_low_confidence"] = b["n_missed_fast_repeat"] if fast_repeat else 0
+    edge = edge_bars(ap.score, b["n_score_notes"].to_numpy(int), cfg.edge_low_confidence_bars)
+    b["edge_low_confidence"] = False
+    if edge:  # BL-37: missed notes next to an edge of the recording are low confidence
+        b.loc[edge, "n_missed_low_confidence"] = b.loc[edge, "n_missed"]
+        b.loc[edge, "edge_low_confidence"] = True
     b["n_missed_extra"] = b["n_missed"] - b["n_missed_low_confidence"] + \
         (b["n_extra"] if extras else 0)
     glim = global_correctness_limits(extras)
@@ -723,6 +750,9 @@ def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
                            "merge_gap": cfg.not_heard_merge_gap,
                            "gap_share": cfg.not_heard_gap_share}
     s["n_bars_not_heard"] = int(sum(len(r) for r in runs))
+    if cfg.edge_low_confidence_bars:
+        s["edge_low_confidence"] = {"n_bars": cfg.edge_low_confidence_bars,
+                                    "bars": [labels[i] for i in edge]}
     s["fast_repeat_low_confidence"] = bool(fast_repeat)
     s["fast_repeat_max_ioi_sec"] = cfg.fast_repeat_max_ioi_sec
     s["n_missed_fast_repeat"] = int(b["n_missed_fast_repeat"].sum())

@@ -99,6 +99,11 @@ def confidence_notes(rep: dict) -> list[str]:
                    "written on, and with four hands that split is arbitrary (DF-11).")
     nr = not_recorded_text(rep.get("recorded_span"))
     if nr:
+        el = (rep["correctness"].get("edge_low_confidence") or {}).get("bars") or []
+        if el:  # BL-37
+            nr += (" Missed notes in the bars next to where the recording starts or stops ("
+                   + ", ".join(el) + ") are shown but not ranked: a recording that starts or "
+                   "stops there often loses them.")
         out.append(nr)
     if conf.get("alignment_suspect"):
         mr = rep["correctness"].get("match_ratio")

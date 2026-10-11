@@ -249,22 +249,74 @@ def _same_path(a: Any, b: Any) -> bool:
 
 def restrict_to_score(ap: Any, score: Score) -> Any:
     """``ap`` (aligned to the whole score, same repeat path) cut to the notes of ``score`` (a
-    target's score trimmed to its recorded span, BL-36): pairs of score notes outside it are
-    dropped, and performed notes matched there become insertions. Returns a new
-    ``AlignedPerformance`` that shares ``score``."""
+    target's score trimmed to its recorded span, BL-36). Returns a new ``AlignedPerformance``
+    that shares ``score``.
+
+    BL-37 (the BL-36 version turned the notes below into extras of the first and last span
+    bars):
+
+    * pairs of score notes outside ``score`` are dropped, and so are the performed notes
+      matched there (they belong to bars that are not graded);
+    * performed notes the whole-score alignment left unmatched are kept only inside the time
+      window of the notes matched in the span;
+    * a note of ``score`` tied in from before the span (a separate note only in the trimmed
+      score) is matched to the performed note of its tie head, when ``ap.score.part`` shows
+      the tie and the head was matched.
+    """
+    import dataclasses
+
     from pianolens.data.types import AlignedPerformance, Alignment
 
     keep = set(score.notes["id"].astype(str).tolist())
-    pairs = []
-    for lab, sid, pid in ap.alignment.pairs.tolist():
-        if not sid or sid in keep:
+    perf = ap.performance
+    p_on = dict(zip(perf.notes["id"].astype(str), perf.notes["onset_sec"].astype(float),
+                    strict=True))
+    raw = ap.alignment.pairs.tolist()
+    match_of = {sid: pid for lab, sid, pid in raw if lab == "match" and sid}
+    inside = [p_on[pid] for lab, sid, pid in raw if lab == "match" and sid in keep and pid in p_on]
+    lo, hi = (min(inside), max(inside)) if inside else (np.inf, -np.inf)
+    pairs, drop = [], set()
+    for lab, sid, pid in raw:
+        if sid and sid not in keep:
+            if pid:
+                drop.add(pid)
+        elif not sid and pid and not (lo <= p_on.get(pid, np.nan) <= hi):
+            drop.add(pid)
+        else:
             pairs.append((lab, sid, pid))
-        elif lab == "match":
-            pairs.append(("insertion", "", pid))
+    have = {sid for _, sid, _ in pairs if sid}
+    for sid, pid in _tie_tail_matches(ap.score, keep - have, match_of).items():
+        pairs.append(("match", sid, pid))
+        drop.discard(pid)
+    pairs = [x for x in pairs if not x[2] or x[2] not in drop]
     al = ap.alignment
     new = Alignment(np.array(pairs, dtype=al.pairs.dtype), al.score_id, al.performance_id,
                     al.ground_truth, f"{al.source}+recorded_span")
-    return AlignedPerformance(performance=ap.performance, score=score, alignment=new)
+    notes = perf.notes[~np.isin(perf.notes["id"].astype(str), sorted(drop))]
+    return AlignedPerformance(performance=dataclasses.replace(perf, notes=notes.copy()),
+                              score=score, alignment=new)
+
+
+def _tie_tail_matches(full_score: Any, missing: set[str],
+                      match_of: dict[str, str]) -> dict[str, str]:
+    """Score note id -> performed note id for notes in ``missing`` that are tie continuations in
+    ``full_score.part`` whose chain head was matched (BL-37)."""
+    part = getattr(full_score, "part", None)
+    if part is None or not missing:
+        return {}
+    import partitura as pt
+
+    out = {}
+    for n in part.iter_all(pt.score.GenericNote, include_subclasses=True):
+        if str(n.id) not in missing or n.tie_prev is None:
+            continue
+        head = n
+        while head.tie_prev is not None:
+            head = head.tie_prev
+        pid = match_of.get(str(head.id))
+        if pid:
+            out[str(n.id)] = pid
+    return out
 
 
 def _capture_class(provenance: str) -> str:
