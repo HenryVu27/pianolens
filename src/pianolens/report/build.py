@@ -67,8 +67,8 @@ from pianolens.report import calibration as cal
 
 __all__ = ["SCHEMA", "ReportConfig", "ReportInputs", "bar_error_table", "build_report",
            "error_signatures", "expert_bar_limits", "expert_error_keys", "fast_repeat_notes",
-           "edge_bars", "fast_run_notes", "local_ioi", "not_heard_runs", "recorded_span_report",
-           "recurring_errors", "to_jsonable"]
+           "edge_bars", "edge_outside_notes", "fast_run_notes", "local_ioi", "not_heard_runs",
+           "recorded_span_report", "recurring_errors", "to_jsonable"]
 
 SCHEMA = "pianolens.report/1"
 TIERS = ("none", "notable", "strong")
@@ -120,6 +120,10 @@ class ReportConfig:
             (``align(..., partial=True)``): in the first (last) this many graded bars of a side
             that was not recorded, missed notes are low confidence, shown but not counted
             towards tiers (:func:`edge_bars`). 0 = off (the default until BL-37 is audited).
+        edge_low_confidence_rule: which missed notes of those bars are low confidence. ``"bar"``
+            (BL-37): all of them. ``"outside"`` (BL-39): only those due before the first note
+            matched in the bar on a start side (after the last one on an end side),
+            :func:`edge_outside_notes`, with ``edge_outside_basis`` / ``edge_outside_tol_sec``.
     """
 
     interpretation: InterpretationConfig = field(default_factory=InterpretationConfig)
@@ -145,6 +149,9 @@ class ReportConfig:
     fast_repeat_max_ioi_sec: float = cal.FAST_REPEAT_MAX_IOI_SEC
     fast_run_max_ioi_sec: float = cal.FAST_RUN_MAX_IOI_SEC
     edge_low_confidence_bars: int = 0
+    edge_low_confidence_rule: str = "bar"
+    edge_outside_basis: str = "score"
+    edge_outside_tol_sec: float = 0.0
 
 
 @dataclass(eq=False)
@@ -602,6 +609,73 @@ def edge_bars(score: Any, n_notes: Sequence[int], k: int) -> list[int]:
     return sorted(out)
 
 
+def edge_outside_notes(score: Any, cr: Any, k: int = 1, basis: str = "score",
+                       tol_sec: float = 0.0) -> np.ndarray:
+    """BL-39: score notes of the edge bars (:func:`edge_bars`, ``k`` per trimmed side) that lie
+    outside the part of the bar the recording shows: on a start side, notes due before the first
+    note matched in the bar (correct or wrong pitch); on an end side, after the last one. A bar
+    with no matched note is outside entirely. Boolean mask over ``cr.score_notes``.
+
+    ``basis``:
+
+    * ``"score"``: by score position, strictly before (after) the onset of the first (last)
+      matched note, so notes sounding together with it are inside;
+    * ``"score_le"``: the same with the matched note's onset included (a chord partner at the
+      boundary is outside);
+    * ``"time"``: by expected onset (``expected_onset_sec``, the tempo of the matched notes)
+      against the performed onset of the first (last) matched note, with ``tol_sec`` of slack.
+
+    Unit: score notes; ``tol_sec`` in seconds."""
+    sn = cr.score_notes
+    out = np.zeros(len(sn), bool)
+    n_notes = cr.bars["n_score_notes"].to_numpy(int)
+    rows = edge_bars(score, n_notes, k)
+    if not rows:
+        return out
+    rs = (getattr(score, "meta", None) or {}).get("recorded_span") or {}
+    pos = {d.get("position") for d in rs.get("not_recorded") or []}
+    graded = [i for i, n in enumerate(n_notes) if n > 0]
+    sides = {}
+    for r in rows:
+        if "start" in pos and r in graded[:k]:
+            sides.setdefault(r, set()).add("start")
+        if "end" in pos and r in graded[-k:]:
+            sides.setdefault(r, set()).add("end")
+    mi = sn["measure_index"].to_numpy(int)
+    lab = sn["label"].astype(str).to_numpy()
+    q = sn["onset_quarter"].to_numpy(float)
+    te = sn["expected_onset_sec"].to_numpy(float)
+    p_on = dict(zip(cr.notes["performance_id"].astype(str), cr.notes["onset_sec"].astype(float),
+                    strict=True))
+    pid = sn["performance_id"].astype(str).to_numpy()
+    for r, sd in sides.items():
+        inb = mi == r
+        matched = inb & np.isin(lab, ("correct", "wrong_pitch"))
+        if not matched.any():
+            out |= inb
+            continue
+        for side in sd:
+            if basis == "time":
+                t = np.array([p_on.get(x, np.nan) for x in pid[matched]], float)
+                t = t[np.isfinite(t)]
+                if not len(t):
+                    out |= inb
+                    continue
+                if side == "start":
+                    out |= inb & np.isfinite(te) & (te < t.min() - tol_sec)
+                else:
+                    out |= inb & np.isfinite(te) & (te > t.max() + tol_sec)
+            else:
+                le = basis == "score_le"
+                if side == "start":
+                    ref = q[matched].min()
+                    out |= inb & ((q <= ref) & ~matched if le else q < ref)
+                else:
+                    ref = q[matched].max()
+                    out |= inb & ((q >= ref) & ~matched if le else q > ref)
+    return out
+
+
 def expert_bar_limits(expert_tables: Sequence[pd.DataFrame], labels: Sequence[str],
                       extras: bool = True, q: tuple[float, float] = cal.EXPERT_CHECK_Q,
                       min_refs: int = cal.EXPERT_CHECK_MIN_REFS,
@@ -694,8 +768,20 @@ def _correctness_section(ap: Any, labels: list[str], extras: bool = True,
     b["n_missed_low_confidence"] = b["n_missed_fast_repeat"] if fast_repeat else 0
     edge = edge_bars(ap.score, b["n_score_notes"].to_numpy(int), cfg.edge_low_confidence_bars)
     b["edge_low_confidence"] = False
-    if edge:  # BL-37: missed notes next to an edge of the recording are low confidence
+    if edge and cfg.edge_low_confidence_rule == "bar":  # BL-37: every missed note in the bar
         b.loc[edge, "n_missed_low_confidence"] = b.loc[edge, "n_missed"]
+        b.loc[edge, "edge_low_confidence"] = True
+    elif edge:  # BL-39: only missed notes due outside the played part of the edge bar
+        sn = c.score_notes
+        mi = sn["measure_index"].to_numpy(int)
+        miss = (sn["label"].astype(str).to_numpy() == "missed") & (mi >= 0)
+        low = edge_outside_notes(ap.score, c, cfg.edge_low_confidence_bars,
+                                 cfg.edge_outside_basis, cfg.edge_outside_tol_sec)
+        if fast_repeat:  # union with the BL-25 notes, counted once
+            low = low | fast_repeat_notes(sn, cfg.fast_repeat_max_ioi_sec)
+        b["n_missed_low_confidence"] = np.bincount(mi[miss & low], minlength=nb)[:nb] if \
+            fast_repeat else b["n_missed_low_confidence"] + np.bincount(
+                mi[miss & low], minlength=nb)[:nb]
         b.loc[edge, "edge_low_confidence"] = True
     b["n_missed_extra"] = b["n_missed"] - b["n_missed_low_confidence"] + \
         (b["n_extra"] if extras else 0)

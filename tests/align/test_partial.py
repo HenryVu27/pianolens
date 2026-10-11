@@ -452,3 +452,52 @@ def test_played_opening_left_out_by_the_dtw_is_recovered_by_the_margin():
     late = [int(p) for bar in bars[20:] for p in bar]
     res2 = align(part, make_perf(np.arange(len(late)) * 0.5 + 1.0, late), partial=True)
     assert res2.recorded_span.first_row == 20 and res2.n_match == len(late)
+
+
+def test_edge_outside_notes_marks_only_notes_before_the_first_played_one():
+    """BL-39 narrow rule. Bar 21 holds 8 eighth notes; the recording starts on its third note,
+    omits its sixth, and plays bars 22-30. In bar 21, notes 1-2 are outside (due before the
+    first matched note), while the omitted sixth note is inside, so it still counts."""
+    from pianolens.features.correctness import correctness
+    from pianolens.report.build import edge_outside_notes
+
+    bars = _bars()
+    rng = np.random.default_rng(9)
+    dense = [int(p) for p in rng.integers(55, 80, 8)]
+    events = []
+    for b, bar in enumerate(bars):
+        if b == 20:
+            events += [(80 + 0.5 * i, [p]) for i, p in enumerate(dense)]
+        else:
+            events += [(4 * b + i, [int(p)]) for i, p in enumerate(bar)]
+    part = make_part(events)
+    played = [p for i, p in enumerate(dense) if i >= 2 and i != 5]
+    played += [int(p) for r in range(21, 30) for p in bars[r]]
+    sc, pf = _project_types(part, make_perf(np.arange(len(played)) * 0.4 + 1.0, played))
+    ap = align_performance(sc, pf, partial=True)
+    assert ap.score.meta["recorded_span"]["first_row"] == 20
+    cr = correctness(ap)
+    sn = cr.score_notes
+    for basis in ("score", "score_le", "time"):
+        out = edge_outside_notes(ap.score, cr, 1, basis, 0.05)
+        got = set(sn.loc[out, "score_id"].astype(str))
+        assert {"n80-1", "n81-1"} <= got, basis  # bar 21's first two notes
+        assert "n85-1" not in got, basis  # the omitted sixth note stays a mistake
+        assert not (set(sn.loc[out, "measure_index"]) - {0, len(ap.score.measures) - 1})
+    # the report path: only the 2 outside notes are low confidence in bar 21
+    from pianolens.report import ReportConfig, ReportInputs, build_report
+
+    rep = build_report(ReportInputs(ap=ap, provenance="synthetic", four_hands=False),
+                       ReportConfig(shaping=False, edge_low_confidence_bars=1,
+                                    edge_low_confidence_rule="outside"))
+    c21 = rep["bars"][0]["correctness"]
+    assert c21["n_missed"] == 3 and c21["n_missed_low_confidence"] == 2
+    off = build_report(ReportInputs(ap=ap, provenance="synthetic", four_hands=False),
+                       ReportConfig(shaping=False))
+    assert off["bars"][0]["correctness"]["n_missed_low_confidence"] == 0
+    # whole recording: nothing is outside
+    sc2, pf2 = _project_types(part, make_perf(np.arange(len(events)) * 0.4 + 1.0,
+                                              [e[1][0] for e in events]))
+    ap2 = align_performance(sc2, pf2, partial=True)
+    assert ap2.score.meta["recorded_span"]["whole"]
+    assert not edge_outside_notes(ap2.score, correctness(ap2), 1).any()
