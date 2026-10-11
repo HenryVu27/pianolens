@@ -74,6 +74,8 @@ def prefixed_piece_id(dataset: str, local_id: str) -> PieceId:
     return PieceId(f"{dataset}:{local_id}")
 
 
+_ANH5 = "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5/"
+
 PARTIAL_SCORES: dict[str, str] = {
     # DF-14: the score holds only part of the work its source title names. Checked against the
     # score itself (bars, metre, key) and the performances (DATASETS.md, DF-14 notes).
@@ -81,15 +83,37 @@ PARTIAL_SCORES: dict[str, str] = {
     "bach_bwv971": "2. Andante",  # 49 bars of 3/4, one flat; PianoCoRe uses the ASAP score
     "asap:Bach/Italian_concerto": "2. Andante",
     "chopin_op22": "Grande polonaise brillante",  # 278 bars of 3/4 in E flat; no Andante spianato
+    # BL-38: the source movement names a whole sonatina; the score is its first movement only
+    # (34 bars of 4/4 in G, credit "I. Moderato"; 71 bars of 2/4 in F, no tempo word). Raw
+    # files holding the whole sonatina continue in the same key after the score's span.
+    _ANH5 + "1._Sonatina_in_G_major": "1. Sonatina in G major: I. Moderato",
+    _ANH5 + "2._Sonatina_in_F_major": "2. Sonatina in F major: first movement",
+    # BL-38: whole-title Schwanengesang score = one song in a simplified arrangement (credit
+    # "Swan Song Seranade, D957, No.4", arranged by Hans-Gunter Heumann; 82 bars of 3/4, D
+    # minor). Separate id from ``schubert_d957_no4`` (a different arrangement of the song).
+    "schubert_d957": "4. Ständchen (simplified arrangement by H.-G. Heumann)",
 }
-"""Piece id -> the movement or part its score actually holds, for whole-work titles (DF-14)."""
+"""Piece id -> the movement or part its score actually holds, for titles naming more (DF-14)."""
+
+SCORE_VERSION_MISMATCH: dict[str, str] = {
+    # BL-38: the score is Chopin's autograph (credit "Manuscrit autographe, a Mlle Elise
+    # Gavard, Paris 1841", 55 bars); the performances play the published version (140 of 177
+    # tier A raw files hold over 1.65 times the score's notes). Refined alignments: median
+    # recall 0.827, 17.3% interpolated notes, lowest of the 16 Chopin waltzes (others 0.887-
+    # 0.959, 4.1-11.3%). Not a usable score or reference set for the piece people play.
+    "pianocore:Chopin,_Frédéric/Waltzes,_Op.70/Waltz_No.12_in_F_minor,_Tempo_giusto":
+        "score is the 55-bar autograph (Gavard copy); performances play the published version",
+}
+"""Piece id -> why its score is a different version from what the performances play. Such
+pieces are left out of the app catalogue, reference sets and raw-MIDI samplers (BL-38)."""
 
 
 def score_movement(piece_id: str, movement: str | None = "") -> str:
-    """The movement label to show for ``piece_id``: the source's own ``movement`` when it has
-    one, else the :data:`PARTIAL_SCORES` part (DF-14), else ``""``."""
+    """The movement label to show for ``piece_id``: the :data:`PARTIAL_SCORES` part when the
+    score holds less than the source names (DF-14, BL-38), else the source's own ``movement``,
+    else ``""``."""
     mv = "" if movement is None or movement != movement else str(movement)  # None / NaN
-    return mv or PARTIAL_SCORES.get(str(piece_id), "")
+    return PARTIAL_SCORES.get(str(piece_id), "") or mv
 
 
 def load_piece_id_table(path: Path | str = PIECE_ID_TABLE) -> pd.DataFrame:

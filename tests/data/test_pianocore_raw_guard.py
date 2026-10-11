@@ -8,7 +8,9 @@ import pytest
 
 from pianolens.data import pianocore as pc
 from pianolens.data.pianocore import (
+    MISLABELLED_ROWS,
     RAW_NOTE_RATIO_MAX,
+    RAW_NOTE_RULE_EXEMPT,
     RAW_PREFIX,
     RAW_SPAN_RATIO_MAX,
     RawLongerThanScore,
@@ -45,14 +47,14 @@ def test_missing_score_count_never_flags():
     assert raw_guard_reason(5000, float("nan")) == ""
 
 
-def test_span_rule_only_for_partial_scores():
+def test_span_rule_only_when_asked():
     long = {"raw_duration": 800.0, "refined_duration": 300.0}
     assert raw_guard_reason(1000, 1000, **long) == ""
-    assert "partial score" in raw_guard_reason(1000, 1000, partial_score=True, **long)
+    assert "span rule" in raw_guard_reason(1000, 1000, span_rule=True, **long)
     ok = {"raw_duration": RAW_SPAN_RATIO_MAX * 300.0, "refined_duration": 300.0}
-    assert raw_guard_reason(1000, 1000, partial_score=True, **ok) == ""
+    assert raw_guard_reason(1000, 1000, span_rule=True, **ok) == ""
     # tier C rows have no refined file: the span rule cannot apply
-    assert raw_guard_reason(1000, 1000, partial_score=True, raw_duration=800.0,
+    assert raw_guard_reason(1000, 1000, span_rule=True, raw_duration=800.0,
                             refined_duration=float("nan")) == ""  # fmt: skip
 
 
@@ -81,6 +83,26 @@ def test_partial_score_piece_gets_span_rule():
     ])  # fmt: skip
     r = raw_guard(idx, _table(("s/a.mxl", 1000, 1000)))
     assert list(r != "") == [True, False, False]
+
+
+def test_bl38_piece_rules():
+    waltz = "pianocore:Chopin,_Frédéric/Waltzes,_Op.70/Waltz_No.12_in_F_minor,_Tempo_giusto"
+    cum = next(iter(RAW_NOTE_RULE_EXEMPT))
+    anh5 = "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5/2._Sonatina_in_F_major"
+    idx = pd.DataFrame([
+        _row(1, piece_id=waltz),                                         # version mismatch
+        _row(2, piece_id=cum, perf_notes=4000),                          # tremolos: note rule off
+        _row(3, piece_id=cum, perf_notes=4000, raw_dur=200.0),           # but the span rule on
+        _row(4, piece_id=anh5, perf_notes=1000, raw_dur=280.0, refined_dur=80.0),
+        _row(5, piece_id=anh5),
+    ])  # fmt: skip
+    idx.loc[0, "id"] = next(iter(MISLABELLED_ROWS))
+    idx.loc[0, "piece_id"] = "chopin_op10_no1"
+    idx = pd.concat([idx, pd.DataFrame([_row(6, piece_id=waltz)])], ignore_index=True)
+    r = list(raw_guard(idx, _table(("s/a.mxl", 1000, 1000))))
+    assert r[0].startswith("mislabelled row")
+    assert r[1] == "" and r[2].startswith("span rule") and r[3].startswith("span rule")
+    assert r[4] == "" and r[5].startswith("score version mismatch")
 
 
 def test_guard_jobs_drops_after_draw_and_logs(caplog):
@@ -140,3 +162,12 @@ def test_df14_files_are_caught():
          "PERiScoPe_1686937457"])  # fmt: skip
     op22 = r[idx["piece_id"] == "chopin_op22"]
     assert 300 <= int((op22 != "").sum()) <= 360  # 330 measured on 2026-10-11 (BL-35)
+
+
+@pytest.mark.skipif(not data_available(), reason="data/raw/pianocore not downloaded")
+def test_mislabelled_op78_rows_dropped_from_index():
+    a = pc.pianocore_index(tier="a")
+    kept = pc.pianocore_index(tier="a", keep_mislabelled=True)
+    assert len(kept) - len(a) == 4  # 4 of the 7 mislabelled rows are tier A
+    assert "beethoven_op78" not in set(a["piece_id"])
+    assert set(kept.loc[kept["piece_id"] == "beethoven_op78", "id"]) <= set(MISLABELLED_ROWS)

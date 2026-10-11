@@ -30,7 +30,7 @@ from typing import Any
 __all__ = ["MIN_REFERENCES", "Piece", "build_catalog", "load_catalog", "resolve_score"]
 
 MIN_REFERENCES = 50
-CATALOG_VERSION = 3  # 2: four_hands (DF-11); 3: partial-score titles (DF-14)
+CATALOG_VERSION = 4  # 2: four_hands (DF-11); 3: partial-score titles (DF-14); 4: BL-38
 
 
 @dataclass(frozen=True)
@@ -71,7 +71,7 @@ def build_catalog(
 ) -> list[Piece]:
     """All supported pieces, most references first. Missing datasets contribute nothing."""
     from pianolens.data import asap, pianocore, pianocore_cache
-    from pianolens.data.piece_ids import score_movement
+    from pianolens.data.piece_ids import SCORE_VERSION_MISMATCH, score_movement
 
     pc_root = Path(pianocore_root or pianocore.DEFAULT_ROOT)
     c_root = Path(cache_root or pianocore_cache.DEFAULT_CACHE)
@@ -101,7 +101,7 @@ def build_catalog(
         for r in first.itertuples(index=False):
             pid = str(r.piece_id)
             n = counts.get(pid, 0)
-            if n < min_references:
+            if n < min_references or pid in SCORE_VERSION_MISMATCH:  # BL-38: wrong version
                 continue
             mv = score_movement(pid, _pretty(r.movement))  # DF-14: partial scores named
             title = " - ".join(t for t in (_pretty(r.composition), _pretty(mv)) if t)

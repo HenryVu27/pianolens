@@ -42,6 +42,7 @@ import partitura as pt
 
 from pianolens.data.piece_ids import (
     PARTIAL_SCORES,
+    SCORE_VERSION_MISMATCH,
     fold_accents,
     make_piece_id,
     prefixed_piece_id,
@@ -100,10 +101,36 @@ RAW_NOTE_RATIO_MAX = 1.65
 falls from the main mode at 1.0 to its minimum in (1.65, 1.70] and rises again to a second
 mode at 1.75-2.0 (raw precision about 1 / ratio: the score is found once, the rest is extra)."""
 RAW_SPAN_RATIO_MAX = 1.3
-"""For pieces in ``piece_ids.PARTIAL_SCORES`` only: raw duration / refined (cropped) duration.
+"""For pieces in :data:`SPAN_RULE_PIECES` only: raw duration / refined (cropped) duration.
 The note ratio cannot see Op. 22's Andante spianato (about 21% more notes); this ratio is
 bimodal for both partial-score pieces, with no file between 1.262 and 1.326 (Op. 22) or
 between 1.215 and 2.513 (BWV 971)."""
+
+RAW_NOTE_RULE_EXEMPT: dict[str, str] = {
+    # BL-38: the score writes 48 measured tremolos at the 32nd-note level, which the score count
+    # leaves unexpanded (BL-26 expands levels 1-2 only), so every one of the 33 tier A
+    # performances has 3.3-4.7 times the score's 321 notes in about the score's duration. 24
+    # are the piece alone (raw / refined duration 0.91-1.16); 9 also hold other material
+    # (1.66-2.46; in the files checked it comes before the score's span), which the duration
+    # rule catches.
+    "pianocore:Mussorgsky,_Modest/Pictures_at_an_Exhibition/Cum_mortuis_in_lingua_mortua":
+        "48 unexpanded 32nd-note tremolos in the score",
+}
+"""Piece id -> why the note rule cannot judge its raw files; the duration rule applies instead."""
+
+SPAN_RULE_PIECES = frozenset(PARTIAL_SCORES) | frozenset(RAW_NOTE_RULE_EXEMPT)
+"""Pieces whose raw files get the duration rule (:data:`RAW_SPAN_RATIO_MAX`)."""
+
+_OP78_PATHETIQUE = (
+    "whole-title Op. 78 score is 'Adagio cantabile from Piano Sonata No. 8, Pathetique' and "
+    "the performances are Pathetique ii (A flat), not Op. 78")
+MISLABELLED_ROWS: dict[str, str] = {f"PianoCoRe_0557{i}": _OP78_PATHETIQUE for i in range(80, 87)}
+"""PianoCoRe row id -> why the row's title names a different work from its score and
+performance (BL-38). ``pianocore_index`` drops these rows unless asked to keep them, and the
+cache readers skip them. The 7 rows are the whole of ``beethoven_op78`` in PianoCoRe (score
+``Beethoven,_Ludwig_van/Piano_Sonata_No.24_in_F_sharp_major,_Op.78_("A_Thérèse")/score.mxl``).
+They are not relabelled ``beethoven_op13_mv2``: that would give the piece a second score and
+remove it from every sampler's single-score eligibility, shifting their seeded draws."""
 
 
 class RawLongerThanScore(ValueError):
@@ -116,20 +143,23 @@ def raw_guard_reason(
     *,
     raw_duration: float | None = None,
     refined_duration: float | None = None,
-    partial_score: bool = False,
+    span_rule: bool = False,
+    note_rule: bool = True,
 ) -> str:
     """Why a raw performance must not be aligned to its score, or ``""`` when it may.
 
     ``score_notes`` should count the score's longest repeat reading (``unfolded_max`` in
     :data:`SCORE_NOTES_TABLE`), so a performance that plays every repeat is not flagged.
-    ``partial_score`` (the piece is in ``PARTIAL_SCORES``) adds the duration rule, which needs
-    the refined duration (tier A rows have it)."""
-    if score_notes and score_notes > 0 and perf_notes > RAW_NOTE_RATIO_MAX * score_notes:
+    ``span_rule`` (the piece is in :data:`SPAN_RULE_PIECES`) adds the duration rule, which needs
+    the refined duration (tier A rows have it); ``note_rule=False`` for
+    :data:`RAW_NOTE_RULE_EXEMPT` pieces."""
+    if (note_rule and score_notes and score_notes > 0
+            and perf_notes > RAW_NOTE_RATIO_MAX * score_notes):
         return (f"raw notes {int(perf_notes)} > {RAW_NOTE_RATIO_MAX} x score notes "
                 f"{int(score_notes)} (ratio {perf_notes / score_notes:.2f})")  # fmt: skip
-    if (partial_score and raw_duration and refined_duration and refined_duration > 0
+    if (span_rule and raw_duration and refined_duration and refined_duration > 0
             and raw_duration > RAW_SPAN_RATIO_MAX * refined_duration):
-        return (f"partial score: raw duration {raw_duration:.0f} s > {RAW_SPAN_RATIO_MAX} x "
+        return (f"span rule: raw duration {raw_duration:.0f} s > {RAW_SPAN_RATIO_MAX} x "
                 f"refined duration {refined_duration:.0f} s "
                 f"(ratio {raw_duration / refined_duration:.2f})")  # fmt: skip
     return ""
@@ -158,7 +188,8 @@ def raw_guard(index: pd.DataFrame, score_notes: pd.DataFrame | None = None) -> p
     ``performance_note_count`` (equal to the raw file's note-on count in 98.9% of tier A rows,
     at most 13 notes apart) by ``unfolded_max`` from ``score_notes`` (default
     :func:`score_note_table`); rows whose score is missing there, or failed to load, use the
-    metadata ``score_note_count``."""
+    metadata ``score_note_count``. Rows of ``piece_ids.SCORE_VERSION_MISMATCH`` pieces and
+    :data:`MISLABELLED_ROWS` are always flagged (BL-38)."""
     table = score_note_table() if score_notes is None else score_notes
     den = index["score_note_count"].astype(float)
     if table is not None:
@@ -166,13 +197,18 @@ def raw_guard(index: pd.DataFrame, score_notes: pd.DataFrame | None = None) -> p
         unf = index["score_xml_path"].map(
             dict(zip(ok["score_xml_path"], ok["unfolded_max"], strict=True)))
         den = unf.astype(float).fillna(den)
-    partial = index["piece_id"].astype(str).isin(set(PARTIAL_SCORES))
+    pids = index["piece_id"].astype(str)
     reasons = [
-        raw_guard_reason(n, s, raw_duration=d, refined_duration=rd, partial_score=p)
-        for n, s, d, rd, p in zip(index["performance_note_count"].astype(float), den,
-                                  index["performance_duration"].astype(float),
-                                  index["refined_performance_duration"].astype(float), partial,
-                                  strict=True)
+        (f"score version mismatch: {SCORE_VERSION_MISMATCH[p]}" if p in SCORE_VERSION_MISMATCH
+         else f"mislabelled row: {MISLABELLED_ROWS[i]}" if i in MISLABELLED_ROWS
+         else raw_guard_reason(n, s, raw_duration=d, refined_duration=rd,
+                               span_rule=p in SPAN_RULE_PIECES,
+                               note_rule=p not in RAW_NOTE_RULE_EXEMPT))
+        for i, p, n, s, d, rd in zip(index["id"].astype(str), pids,
+                                     index["performance_note_count"].astype(float), den,
+                                     index["performance_duration"].astype(float),
+                                     index["refined_performance_duration"].astype(float),
+                                     strict=True)
     ]  # fmt: skip
     return pd.Series(reasons, index=index.index, name="raw_guard", dtype=object)
 
@@ -326,14 +362,18 @@ def pianocore_performer_id(row: pd.Series) -> PerformerId:
 
 
 def pianocore_index(
-    root: Path | str = DEFAULT_ROOT, tier: str = "a", split: str | None = None
+    root: Path | str = DEFAULT_ROOT, tier: str = "a", split: str | None = None,
+    keep_mislabelled: bool = False,
 ) -> pd.DataFrame:
     """Metadata rows for a tier (``c``, ``b``, ``a`` or ``a_star``), with ``piece_id`` added.
 
     Piece ids are computed over all 250k rows (tier C) before filtering, so a piece gets the
-    same id whichever tier or split is loaded."""
+    same id whichever tier or split is loaded. :data:`MISLABELLED_ROWS` (7 rows, 4 tier A) are
+    dropped after that unless ``keep_mislabelled``."""
     md = pd.read_csv(Path(root) / "metadata.csv", usecols=_META_COLS, low_memory=False)
     md["piece_id"] = _piece_ids(md)
+    if not keep_mislabelled:
+        md = md[~md["id"].astype(str).isin(set(MISLABELLED_ROWS))]
     if tier != "c":
         md = md[md[f"tier_{tier}"].astype(bool)]
     if split is not None:

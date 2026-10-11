@@ -263,6 +263,51 @@ Record quirks here: missing files, id mismatches, alignment problems.
     of the ASAP take's note count; none of their rows is flagged. **Not wired:**
     `report/io.pianocore_expert_midis` (the app's expert check) and `eval_partial_bl36.py`
     (BL-35 could not touch `report/` or BL-36 during its audit); see BACKLOG BL-35.
+- **Score defects found by the guard's tail (BL-38, 2026-10-11).** Each follows the DF-14 rule
+  (the title is not the score's content); numbers are tier A unless stated.
+  - **Beethoven Sonatinas Anh. 5 Nos. 1 and 2:** the source movement names a whole sonatina, the
+    score holds its first movement (No. 1: 34 bars of 4/4 in G, credit "I. Moderato"; No. 2: 71
+    bars of 2/4 in F, no tempo word, so labelled "first movement"). In 8 sampled caught raw
+    files of each, 645-730 (No. 1) or 914-1,320 (No. 2) more notes follow the score's span in
+    the same key: the whole sonatina (the span starts the file in 14 of the 16; 2 No. 2 files
+    have 44 and 150 notes before it). Added to `PARTIAL_SCORES`; the label now wins over the
+    source movement (`score_movement` precedence changed; the three DF-14 entries have no source
+    movement, so their labels are unchanged). The duration rule catches the same rows as the
+    note rule (62 of 213 and 24 of 110): uncaught rows reach raw / refined duration 1.167 and
+    1.267 at most, caught rows start at 1.991 and 2.726. So 0 rows more.
+  - **Chopin Waltz Op. 70 No. 2** (`pianocore:...Waltz_No.12_in_F_minor,_Tempo_giusto`): the
+    score is the 55-bar autograph; the performances play the published version (140 of 177
+    caught by the note rule). Refined alignments compared with the other 15 Chopin waltzes in
+    tier A: median `refined_recall` 0.827 (others 0.887-0.959), 10th percentile 0.774, median
+    interpolated-note share 17.3% (others 4.1-11.3%); among the 1,048 tier A pieces with 20 or
+    more rows it ranks 37th lowest on recall (5th percentile 0.847) and 37th highest on
+    interpolation (95th percentile 15.3%). Verdict: not a usable score or reference set for the
+    piece people play. New `piece_ids.SCORE_VERSION_MISMATCH`; `raw_guard` flags all 177 rows
+    ("score version mismatch"). The app catalogue and the reference sets still list it until
+    `app/catalog.py` and `features/interpretation.py` consult the constant (BACKLOG BL-38).
+  - **Mussorgsky "Cum mortuis":** the score writes 48 measured tremolos at the 32nd-note level
+    that the score count leaves unexpanded (BL-26 expands levels 1-2), so all 33 performances
+    have 3.3-4.7 times the score's 321 notes in about its duration: the note rule was a false
+    positive. 24 performances are the piece alone (raw / refined duration 0.914-1.157); 9 hold
+    other material too (1.658-2.464; in the files checked it comes before the score's span,
+    which fits "Catacombae", the preceding number, but that was not confirmed). New
+    `pianocore.RAW_NOTE_RULE_EXEMPT`: the note rule is off for this piece and the duration rule
+    (1.3, in the gap 1.157-1.658) is on. 9 rows caught instead of 33.
+  - **Op. 78 whole-title rows** (`PianoCoRe_055780` to `_055786`, 7 rows, 4 tier A, the whole
+    of `beethoven_op78` in PianoCoRe) are Pathétique ii. They are **excluded**, not relabelled:
+    as `beethoven_op13_mv2` they would give that piece a second score (no tier A piece has two)
+    and remove it from every sampler's single-score eligibility, which shifts their seeded
+    draws. New `pianocore.MISLABELLED_ROWS`; `pianocore_index` drops them (`keep_mislabelled`
+    keeps them), so it now returns 157,203 tier A and 250,039 tier C rows. The cache readers
+    (`load_pieces`, `load_performances`, `load_piece_notes`) skip their 4 cached performances;
+    `beethoven_op78` leaves `pianocore_piece_counts.csv`, `pianocore_piece_map.csv` and
+    `piece_ids.parquet` (rebuilt: 7,038 rows; only this row and the 3 relabels changed).
+    Every BL-35 sampler re-draw is unchanged.
+  - **Schwanengesang whole-title score:** keeps its own id `schubert_d957` (the content differs
+    from the `schubert_d957_no4` arrangement); `PARTIAL_SCORES` labels it "4. Ständchen
+    (simplified arrangement by H.-G. Heumann)". It is not in the app catalogue (1 tier A row).
+  - Guard total after BL-38: 747 tier A rows in 71 pieces (734 + 37 Op. 70 No. 2 - 24 Cum
+    mortuis). No row drawn by a past sampler changes status.
 - **Schumann Op. 17 i, mm. 41-49 is the printed layout (DF-14, 2026-10-10).** All four Op. 17
   pieces (mv1-3 and the whole-title `schumann_op17`) use one MuseScore user score (`MS_8284988`,
   MuseScore 4.4.4, 2025-03-08). In mm. 41-48 the left hand's semiquaver figure is voice 2 on

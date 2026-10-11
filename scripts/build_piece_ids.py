@@ -11,9 +11,10 @@ Expert-Novice and NeuroPiano have free-text or local ids only and are not includ
 
 Columns: dataset, source_key, piece_id, canonical, composer, title, movement, n_performances.
 For PianoCoRe ``n_performances`` is the tier C row count and ``n_tier_a`` the tier A count
-(NaN for other datasets). ``movement`` is the source's own movement string; where the source
-has none but the score holds only part of the work (``piece_ids.PARTIAL_SCORES``, DF-14), it
-names that part. ``source_key`` always keeps the source's strings.
+(NaN for other datasets). ``movement`` is the source's own movement string, except where the
+score holds less than the source names (``piece_ids.PARTIAL_SCORES``, DF-14 and BL-38): then
+it names the part the score holds. ``source_key`` always keeps the source's strings.
+PianoCoRe rows in ``pianocore.MISLABELLED_ROWS`` (BL-38) are not counted.
 
 Usage: uv run python scripts/build_piece_ids.py
 """

@@ -426,10 +426,15 @@ def load_pianocore_references(
     Reads the R-02 per-piece curve cache (``curves_dir``, default :data:`R02_CURVES`) when the
     piece is there; otherwise rebuilds the curves from the PianoCoRe tier A cache (``match``
     rows only, grace notes out; about 0.1 s per performance). ``exclude``: performance ids or
-    source ids (e.g. ``ASAP_SunMeiting08``) to leave out.
+    source ids (e.g. ``ASAP_SunMeiting08``) to leave out. Raises ``ValueError`` for a piece
+    whose score is a different version from what its performances play
+    (``piece_ids.SCORE_VERSION_MISMATCH``, BL-38).
     """
     from pianolens.data import pianocore_cache as pc
+    from pianolens.data.piece_ids import SCORE_VERSION_MISMATCH
 
+    if piece_id in SCORE_VERSION_MISMATCH:
+        raise ValueError(f"{piece_id}: {SCORE_VERSION_MISMATCH[piece_id]} (BL-38)")
     cfg = config or InterpretationConfig()
     root = None if cache_root is None else str(cache_root)
     path = Path(curves_dir or R02_CURVES) / f"{pc.piece_slug(piece_id)}.npz"

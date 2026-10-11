@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pyarrow.parquet as pq
 import pytest
 
@@ -82,3 +83,26 @@ def test_cache_manifest_consistent():
     df = pcc.load_piece_notes(top["piece_id"], columns=["performance_id", "label"])
     assert len(df) == top["n_rows"]
     assert df["performance_id"].nunique() == top["n_performances"]
+
+
+def test_mislabelled_rows_are_skipped(tmp_path):
+    # BL-38: pianocore.MISLABELLED_ROWS never reach cache readers unless asked for
+    bad = "pianocore:PianoCoRe_055781"
+    pd.DataFrame({"piece_id": ["beethoven_op78", "chopin_op10_no3"], "n_performances": [1, 2],
+                  "n_rows": [2, 3]}).to_parquet(tmp_path / "pieces.parquet")  # fmt: skip
+    pd.DataFrame({"performance_id": [bad, "pianocore:PianoCoRe_000001",
+                                     "pianocore:PianoCoRe_000002"],
+                  "piece_id": ["beethoven_op78", "chopin_op10_no3", "chopin_op10_no3"]}
+                 ).to_parquet(tmp_path / "performances.parquet")  # fmt: skip
+    (tmp_path / "notes").mkdir()
+    pd.DataFrame({"performance_id": [bad, bad], "label": ["match", "match"]}).to_parquet(
+        tmp_path / "notes" / "beethoven_op78.parquet")
+    assert list(pcc.load_pieces(tmp_path)["piece_id"]) == ["chopin_op10_no3"]
+    assert len(pcc.load_pieces(tmp_path, keep_mislabelled=True)) == 2
+    assert bad not in set(pcc.load_performances(tmp_path)["performance_id"])
+    assert len(pcc.load_performances(tmp_path, keep_mislabelled=True)) == 3
+    assert pcc.load_piece_notes("beethoven_op78", tmp_path).empty
+    assert len(pcc.load_piece_notes("beethoven_op78", tmp_path, columns=["label"],
+                                    keep_mislabelled=True)) == 2  # fmt: skip
+    assert list(pcc.load_piece_notes("beethoven_op78", tmp_path, columns=["label"]).columns) == [
+        "label"]

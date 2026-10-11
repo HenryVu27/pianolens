@@ -3,25 +3,31 @@
 import pytest
 
 from pianolens.data import asap, pianocore
-from pianolens.data.piece_ids import PARTIAL_SCORES, score_movement
+from pianolens.data.piece_ids import PARTIAL_SCORES, SCORE_VERSION_MISMATCH, score_movement
 
 
-def test_score_movement_fills_only_missing_movements():
+def test_score_movement_names_the_part_the_score_holds():
     assert score_movement("bach_bwv971") == "2. Andante"
     assert score_movement("bach_bwv971", None) == "2. Andante"
     assert score_movement("bach_bwv971", float("nan")) == "2. Andante"
     assert score_movement("asap:Bach/Italian_concerto", "") == "2. Andante"
     assert score_movement("chopin_op22") == "Grande polonaise brillante"
-    # the source's own movement wins; unknown ids stay empty
-    assert score_movement("bach_bwv971", "3. Presto") == "3. Presto"
+    # BL-38: a partial score's label wins over a source movement that names more (Anh. 5)
+    anh5 = "pianocore:Beethoven,_Ludwig_van/2_Sonatinas_for_Piano,_Anh.5/1._Sonatina_in_G_major"
+    assert score_movement(anh5, "1._Sonatina_in_G_major") == "1. Sonatina in G major: I. Moderato"
+    assert score_movement("schubert_d957").startswith("4. Ständchen")
+    # other ids keep the source's own movement; unknown ids without one stay empty
     assert score_movement("chopin_op10_no3") == ""
     assert score_movement("chopin_op10_no3", "x") == "x"
 
 
 def test_partial_scores_ids_are_not_renamed():
-    # DF-14 relabels; it never introduces movement ids (DECISIONS 2026-10-10)
-    assert set(PARTIAL_SCORES) == {"bach_bwv971", "asap:Bach/Italian_concerto", "chopin_op22"}
+    # DF-14 / BL-38 relabel; they never introduce movement ids (DECISIONS 2026-10-10)
+    assert {"bach_bwv971", "asap:Bach/Italian_concerto", "chopin_op22",
+            "schubert_d957"} <= set(PARTIAL_SCORES)  # fmt: skip
+    assert len(PARTIAL_SCORES) == 6
     assert all("_mv" not in k for k in PARTIAL_SCORES)
+    assert not set(PARTIAL_SCORES) & set(SCORE_VERSION_MISMATCH)
 
 
 @pytest.mark.skipif(not asap.data_available(), reason="(n)ASAP not downloaded to data/raw/asap")

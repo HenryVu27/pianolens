@@ -191,14 +191,40 @@ def cache_available(root: Path | str = DEFAULT_CACHE) -> bool:
     return (Path(root) / "pieces.parquet").is_file()
 
 
-def load_pieces(root: Path | str = DEFAULT_CACHE) -> pd.DataFrame:
-    """The piece manifest (``pieces.parquet``)."""
-    return pd.read_parquet(Path(root) / "pieces.parquet")
+def _mislabelled_performance_ids() -> set[str]:
+    from pianolens.data.pianocore import DATASET, MISLABELLED_ROWS
+
+    return {f"{DATASET}:{i}" for i in MISLABELLED_ROWS}
 
 
-def load_performances(root: Path | str = DEFAULT_CACHE) -> pd.DataFrame:
-    """One row per cached performance (``PERFORMANCE_COLUMNS``)."""
-    return pd.read_parquet(Path(root) / "performances.parquet")
+def load_pieces(root: Path | str = DEFAULT_CACHE, keep_mislabelled: bool = False) -> pd.DataFrame:
+    """The piece manifest (``pieces.parquet``). Pieces whose cached performances are all
+    ``pianocore.MISLABELLED_ROWS`` (BL-38: ``beethoven_op78``) are left out, others' counts
+    lose those rows, unless ``keep_mislabelled``."""
+    pieces = pd.read_parquet(Path(root) / "pieces.parquet")
+    if keep_mislabelled:
+        return pieces
+    perf = pd.read_parquet(Path(root) / "performances.parquet", columns=["performance_id",
+                                                                         "piece_id"])
+    bad = perf[perf["performance_id"].isin(_mislabelled_performance_ids())]
+    if bad.empty:
+        return pieces
+    drop = bad.groupby("piece_id").size()
+    n = pieces["piece_id"].map(drop).fillna(0).astype(int)
+    pieces = pieces.assign(n_performances=pieces["n_performances"] - n)
+    return pieces[pieces["n_performances"] > 0].reset_index(drop=True)
+
+
+def load_performances(
+    root: Path | str = DEFAULT_CACHE, keep_mislabelled: bool = False
+) -> pd.DataFrame:
+    """One row per cached performance (``PERFORMANCE_COLUMNS``), without
+    ``pianocore.MISLABELLED_ROWS`` unless ``keep_mislabelled`` (BL-38)."""
+    perf = pd.read_parquet(Path(root) / "performances.parquet")
+    if keep_mislabelled:
+        return perf
+    return perf[~perf["performance_id"].isin(_mislabelled_performance_ids())].reset_index(
+        drop=True)
 
 
 def load_piece_notes(
@@ -206,6 +232,7 @@ def load_piece_notes(
     root: Path | str = DEFAULT_CACHE,
     columns: list[str] | None = None,
     labels: tuple[str, ...] | None = None,
+    keep_mislabelled: bool = False,
 ) -> pd.DataFrame:
     """Aligned note rows of every cached performance of one piece.
 
@@ -214,6 +241,7 @@ def load_piece_notes(
         columns: subset of ``NOTE_COLUMNS`` to read (all by default).
         labels: keep only these alignment labels, e.g. ``("match",)`` to drop interpolated
             (synthetic) notes and unmatched rows.
+        keep_mislabelled: keep ``pianocore.MISLABELLED_ROWS`` performances (BL-38).
     """
     path = Path(root) / "notes" / f"{piece_slug(piece_id)}.parquet"
     if not path.is_file():
@@ -222,6 +250,12 @@ def load_piece_notes(
     cols = columns
     if cols is not None and labels and "label" not in cols:
         cols = [*cols, "label"]
+    if not keep_mislabelled:
+        bad = sorted(_mislabelled_performance_ids())
+        if cols is not None and "performance_id" not in cols:
+            cols = [*cols, "performance_id"]
+        excl = ("performance_id", "not in", bad)
+        filters = [*filters, excl] if filters else [excl]
     df = pq.read_table(path, columns=cols, filters=filters).to_pandas()
     if columns is not None and cols != columns:
         df = df[columns]

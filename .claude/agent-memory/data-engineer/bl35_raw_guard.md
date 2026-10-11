@@ -18,11 +18,16 @@ Measured 2026-10-11 on all 157,207 tier A raw files (details in DATASETS.md, Pia
 - Op. 22 + Andante is only ratio ~1.21: no note cut can catch it. Rule 2 for PARTIAL_SCORES
   pieces only: raw duration / refined duration > 1.3 (gaps: Op. 22 none in 1.262-1.326,
   BWV 971 none in 1.215-2.513). 334 rows (330 not already caught by rule 1). Total 734 rows, 71 pieces.
-- New partial/version scores found by the tail (not relabelled, lead decides): Op. 70/2 score
-  is Chopin's 55-bar autograph (Gavard copy); Anh. 5 sonatinas = 1st movement only; Mussorgsky
-  "Cum mortuis" all 33 rows ~3.8x. Op. 78 whole-title score = Pathetique ii (credit words) and
-  its 7 performances are in A flat (Pathetique ii mislabelled). D.957 whole-title = Standchen
-  arr. Heumann (credit words; same 82 bars and opening as the `schubert_d957_no4` score).
+- BL-38 part 3 (2026-10-11) settled the tail's score defects: Anh. 5 Nos. 1-2 -> PARTIAL_SCORES
+  (label now wins over the source movement); Op. 70/2 autograph -> piece_ids.SCORE_VERSION_MISMATCH
+  (refined recall 0.827 / 17.3% interp vs 0.887-0.959 / 4-11% other waltzes); "Cum mortuis" was a
+  false positive from 48 unexpanded 32nd tremolos -> RAW_NOTE_RULE_EXEMPT + span rule (9 of 33);
+  Op. 78 whole-title rows (Pathetique ii) -> pianocore.MISLABELLED_ROWS, dropped from index and
+  cache readers. Relabelling to op13_mv2 was rejected: a 2nd score per piece breaks the samplers'
+  `len(sx) == 1` eligibility and shifts seeded draws. Guard total 747 rows. Leakage: only R-07
+  split has beethoven_op78, same side (train) as Pathetique ii.
+- R-02 (curves), R-07 (Anh. 5 in R10s test; Op. 70/2, Cum mortuis train) and R-10 (Anh. 5 dev)
+  used refined data of these pieces; refined Anh. 5 is fine (recall 0.99), Op. 70/2 is not.
 - Past samplers: 11 caught files drawn (BL-18 3, BL-18b/DF-13 dev/DF-15 dev/BL-27 dev/BL-36
   dev 1 shared, DF-13/DF-15 held-out 3, BL-27 held-out 3 = the DF-14 BWV 971 files, BL-36
   held-out 1). All 11 were `suspect` and excluded from every rate; only suspect counts move.

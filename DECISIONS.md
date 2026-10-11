@@ -737,3 +737,14 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   report is not a registered experiment, and dropping after the choice would leave Op. 22 with a
   quarter of its references. BL-38 score defects follow the DF-14 rule (the title is not the
   content); see BL-38.
+- **2026-10-11, lead: BL-38 part 3 score defects accepted.** Beethoven Anh. 5 Nos. 1-2 are first
+  movements only (`PARTIAL_SCORES`). Chopin Op. 70 No. 2's score is the 55-bar autograph while
+  performances play the published version (refined recall 0.827 median, lowest of 16 Chopin
+  waltzes): new `piece_ids.SCORE_VERSION_MISMATCH`, out of the app catalogue (805 to 804,
+  `CATALOG_VERSION` 4), refused by `load_pianocore_references`, and guarded for raw samplers.
+  "Cum mortuis" was a guard false positive (unexpanded 32nd-level tremolos), now exempt from
+  the note rule. The 7 whole-title Op. 78 rows (Pathetique ii) are dropped by default
+  (`MISLABELLED_ROWS`): relabelling would give Op. 13 ii a second score and shift seeded draws.
+  Leakage check: only R-07 held them, in train with Op. 13 ii, so no cross-split leak. Op. 70
+  No. 2's degraded refined data sits in R-02 and R-07 training sets; not re-run (one piece of
+  hundreds, no held-out role).

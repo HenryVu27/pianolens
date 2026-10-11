@@ -22,9 +22,11 @@ paths:
 - **A title is not the score's content.** Before using a whole-work title as the unit, check the
   score's bars, metres and keys. DF-14 found 3 catalogue scores holding one part of a
   multi-movement title. Record such scores in `piece_ids.PARTIAL_SCORES` (labels only, ids
-  stay). Raw PianoCoRe performance MIDI can hold more than the score (refined files are
-  cropped): any code that reads `performance_midi_path` goes through `pianocore.guard_jobs`
-  (after a seeded draw, never before) or `read_raw_performance` (BL-35).
+  stay); a score of a different version goes in `piece_ids.SCORE_VERSION_MISMATCH`, rows whose
+  title names another work in `pianocore.MISLABELLED_ROWS` (BL-38). Raw PianoCoRe performance
+  MIDI can hold more than the score (refined files are cropped): any code that reads
+  `performance_midi_path` goes through `pianocore.guard_jobs` (after a seeded draw, never
+  before) or `read_raw_performance` (BL-35).
 - **Much of the "MIDI" is transcribed from audio.** Tag every performance with
   `provenance: {disklavier, transcribed, sensor, synthetic}`. Validation that needs exact timing
   uses Disklavier or sensor MIDI only.

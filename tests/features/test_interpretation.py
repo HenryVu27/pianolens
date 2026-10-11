@@ -385,3 +385,13 @@ def test_end_to_end_from_aligned_performances():
     w2 = r2.windows.set_index("block")
     assert not w2.loc["tempo", "too_flat"] and w2.loc["tempo", "typicality_pct"] > 0.05
     assert r2.bars.loc[r2.bars["block"] == "tempo", "out_of_band"].sum() <= 1
+
+
+def test_load_pianocore_references_refuses_a_score_version_mismatch():
+    """BL-38: a piece whose score is another version gets no reference set."""
+    from pianolens.data.piece_ids import SCORE_VERSION_MISMATCH
+    from pianolens.features.interpretation import load_pianocore_references
+
+    pid = next(iter(SCORE_VERSION_MISMATCH))
+    with pytest.raises(ValueError, match="BL-38"):
+        load_pianocore_references(pid)
