@@ -179,7 +179,7 @@ def test_real_catalogue_has_exactly_the_three_duets():
 
     cat = build_catalog()
     duets = {p.piece_id for p in cat if p.four_hands}
-    assert len(cat) == 805
+    assert len(cat) == 804  # 805 before BL-38 (Op. 70 No. 2 left: score version mismatch)
     assert duets == set(KNOWN_FOUR_HANDS)
     # and the structure rule alone finds them (the list is only a fallback)
     from pianolens.data import pianocore
