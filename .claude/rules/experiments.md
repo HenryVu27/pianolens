@@ -405,3 +405,18 @@ paths:
 - **A false-match probe needs all pairs, not pairs matched on an easy attribute.** BL-37's
   same-key pairs (10) gave a maximum of 0.39 against a stop of 0.5. All 1,376 pairs gave 2
   at or above 0.5, both short excerpts.
+
+## Lessons from the BL-39 audit (2026-10-11)
+
+- **A rule anchored on a matched note needs an anchor check on the known-answer control.**
+  Compare the anchor's pairing with the uncut copy's alignment, and classify every residual unit
+  before naming a mechanism; one inspected unit is not a mechanism. In BL-39 the boundary note
+  was mis-paired in 32 of 33 residual bars. The stated mechanism ("notes lost inside the recorded
+  part") covered 1 of 394 counted notes.
+- **Report a disclosed-cost row on the units the policy can act on,** next to the pooled value.
+  BL-39's lead omissions were caught 20.8% vs 50.5% pooled, but 8.8% vs 58.4% on N's edge bars
+  (two thirds of the bars; no policy acts on the rest).
+- **A bite check must also be read on held-out, per piece.** A mean-based harm bar can pass a
+  near-miss sabotage while half its pieces fail on their own. BL-39's "one onset wider" rule passed
+  O1 at -6.94 against -8, with 7 of 15 pieces at or below -8. The harm row then bounds whole-bar
+  policies only.
