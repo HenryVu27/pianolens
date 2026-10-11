@@ -221,3 +221,105 @@ def test_report_grades_only_recorded_bars_and_lists_the_rest_once():
                                     four_hands=False), cfg)
     assert "recorded_span" not in off and len(off["bars"]) == N_BARS
     assert off["correctness"]["n_missed"] > 0
+
+
+# ---------------------------------------------------------------- report.io.restrict_to_score
+# A 16-bar section with a repeat sign (path AA) and a note tied from bar 8 beat 4 into bar 9
+# beat 1. The target plays bars 9-16 of the first pass and the whole second pass, so its span is
+# rows 8-31 of AA and the tie crosses the span's first edge.
+
+def _tied_repeat_part(bars: list[list[int]]):
+    import partitura as ptt
+
+    from tests.align.test_align import _SPELL
+
+    part = ptt.score.Part("P0", "piano", quarter_duration=4)
+    part.add(ptt.score.TimeSignature(4, 4), 0)
+    notes = {}
+    for b, bar in enumerate(bars):
+        for i, p in enumerate(bar):
+            q = 4 * b + i
+            step, alter = _SPELL[int(p) % 12]
+            n = ptt.score.Note(step=step, octave=int(p) // 12 - 1, alter=alter, id=f"n{q}",
+                               voice=1)
+            part.add(n, start=4 * q, end=4 * (q + 1))
+            notes[q] = n
+    notes[31].tie_next, notes[32].tie_prev = notes[32], notes[31]  # bar 8 beat 4 -> bar 9 beat 1
+    part.add(ptt.score.Repeat(), 0, 4 * 4 * len(bars))
+    ptt.score.add_measures(part)
+    return part
+
+
+def _tied_repeat_case():
+    bars = _bars(seed=11, n_bars=16)
+    bars[8][0] = bars[7][3]  # the tie tail has the head's pitch
+    part = _tied_repeat_part(bars)
+
+    def played(seq_bars):  # the tied note is struck once, at its head
+        out = []
+        for b in seq_bars:
+            out += [int(p) for i, p in enumerate(bars[b % 16]) if not (b % 16 == 8 and i == 0)]
+        return out
+
+    expert = played(range(32))
+    # the target starts at bar 9, so it strikes the tied note there
+    target = [int(p) for p in bars[8]] + played(range(9, 32))
+    sc, ref = _project_types(part, make_perf(np.arange(len(expert)) * 0.5, expert))
+    _, tgt = _project_types(part, make_perf(np.arange(len(target)) * 0.5 + 1.0, target))
+    ap = align_performance(sc, tgt, partial=True)
+    rap = align_performance(sc, ref)
+    return ap, rap
+
+
+def test_restrict_to_score_keeps_only_the_target_bars_on_a_repeat_path():
+    from pianolens.features.correctness import correctness
+    from pianolens.report.build import bar_error_table, bar_labels
+    from pianolens.report.io import _same_path, restrict_to_score
+
+    ap, rap = _tied_repeat_case()
+    rs = ap.score.meta["recorded_span"]
+    assert ap.score.meta["unfolded"] == "AA" and (rs["first_row"], rs["last_row"]) == (8, 31)
+    labels = bar_labels(ap.score)
+    assert labels[0] == "9" and labels[8] == "1 (2)" and labels[-1] == "16 (2)"
+    assert _same_path(rap, ap)
+    r = restrict_to_score(rap, ap.score)
+    assert r.score is ap.score and r.performance is rap.performance
+    keep = set(ap.score.notes["id"].astype(str))
+    pairs = [tuple(x) for x in r.alignment.pairs.tolist()]
+    assert all(sid in keep for _, sid, _ in pairs if sid)
+    # every match outside the span became an insertion; no performed note is lost
+    outside = [p for lab, s, p in rap.alignment.pairs.tolist() if lab == "match" and s not in keep]
+    assert len(outside) == 32  # bars 1-8 of the first pass (the tie head is in bar 8)
+    assert sorted(p for _, _, p in pairs if p) == sorted(
+        p for _, _, p in rap.alignment.pairs.tolist() if p)
+    # inside the span, away from its first bar, the restricted expert is exact
+    t = bar_error_table(correctness(r), labels)
+    inner = t[t["label"] != "9"]
+    assert inner["n_missed"].sum() == 0 and inner["n_extra"].sum() == 0
+    assert inner["n_wrong_pitch"].sum() == 0
+
+
+@pytest.mark.xfail(strict=True, reason="known issue (BL-36 audit fix 4): in the first span bar "
+                   "a note tied in from before the span is counted missed, and the performed note "
+                   "matched to the tie head outside the span becomes an extra there")
+def test_restrict_to_score_first_span_bar_is_exact_for_a_perfect_expert():
+    from pianolens.features.correctness import correctness
+    from pianolens.report.build import bar_error_table, bar_labels
+    from pianolens.report.io import restrict_to_score
+
+    ap, rap = _tied_repeat_case()
+    t = bar_error_table(correctness(restrict_to_score(rap, ap.score)), bar_labels(ap.score))
+    first = t[t["label"] == "9"].iloc[0]
+    assert first["n_missed"] == 0 and first["n_extra"] == 0
+
+
+@pytest.mark.xfail(strict=True, reason="known issue (found while testing BL-36 audit fix 4): "
+                   "_align_partial filters the widened alignment after the shrink instead of "
+                   "realigning, so a tie split at the new edge leaves the tail unmatched (missed) "
+                   "and its performed note an extra")
+def test_partial_alignment_first_bar_is_exact_when_a_tie_crosses_the_edge():
+    from pianolens.features.correctness import correctness
+
+    ap, _ = _tied_repeat_case()
+    s = correctness(ap).summary
+    assert s["n_missed"] == 0 and s["n_extra"] == 0

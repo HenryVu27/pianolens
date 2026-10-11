@@ -713,3 +713,14 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   strong, unplayed strong bars outnumber played ones in 244 of 572 copies, and a start cut can
   shift the played part onto an earlier repeat. A learner recording part of a piece would get a
   practice list dominated by bars they did not play. Measured on synthetic 5-25% cuts only.
+- **2026-10-11, lead: BL-36 partial recordings.** PASS by the pre-registered rule, Confirmed with
+  caveats (eval-auditor 2026-10-11). Span accuracy 0.997 vs 0.610, never-played bars tiered
+  0.27% vs 12.1%, played-bar agreement 0.996 vs 0.950 (held-out, 16 pieces); whole recordings
+  give identical output (measured, 93 of 93) and Henry's 10 takes are all whole.
+  **`PARTIAL_DEFAULT` stays False for now.** The audit found an unregistered harm: the first or
+  last recorded bar of a trimmed span is tiered strong 12.3% (uncut 1.1%), and two edge defects
+  (tie split in `_align_partial`, first-bar artefact in `restrict_to_score`) explain part of it.
+  These go to BL-37, pre-registered on a fresh held-out draw. Switching the flag on is Henry's
+  call after BL-37; the audit supports adoption either way, since today's pipeline is worse at
+  every bar position (edge bars 23.3%). Wrong-piece probe (384 wrong-score alignments): none
+  passed with the flag on; same-key, shared-material and under-8-bar excerpts untested.

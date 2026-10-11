@@ -44,3 +44,18 @@ Related: [[df15-bl27]], [[df13-pairing-window]], [[partitura-parangonar-traps]].
   removal by actual onset). Excerpts in literal repeats -> earliest occurrence.
 - Readout helper (CIs, pass share, LOO) was a scratch script; per-row values in
   `artifacts/heldout_readout.json`.
+
+## Audit (2026-10-11): Confirmed with caveats; flag off pending lead/Henry decision
+- My miss: I explained the 332 extra strong played bars as onset blur without checking; 327
+  lost NO notes. Real cause: N's alignment at span edges (first/last recorded bar strong 12.3%
+  vs 1.1% uncut, C 23.3%; agreement 0.907 there). Lesson: before naming a mechanism, test it on
+  the units (did those bars lose notes?) and break residual harm down by position.
+- My eval reused N as C for whole targets (`target_one`), so "byte-identical" and H1 Transkun 0
+  were by construction; say so in the README. Audit re-ran 93/93 identical.
+- I wrote "Transkun natural all whole even under sabotage": false on dev (v2 118/119, sabotage
+  99/119). Check claims against the table before writing.
+- Known defects (strict xfail tests, not fixed, lead's edge-bar follow-up):
+  `_align_partial` filters the widened alignment after the shrink instead of realigning -> a tie
+  split at the new edge: tail missed + performed note extra; `restrict_to_score` first span bar
+  same (tie tail missed, matched-before-span note lands as extra).
+- Do NOT build an edge-bar rule without a new pre-registration on a fresh held-out draw (lead).

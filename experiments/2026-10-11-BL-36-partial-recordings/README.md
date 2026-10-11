@@ -270,28 +270,39 @@ uv run python scripts/a01_henry_reports.py --partial --out data/interim/reports/
 - **No held-out data before the hash.** The literal-repeat flags of the eligible pool were
   computed inside the held-out draw, after the hash.
 - **Dev run times:** about 23 min each for 240 targets (14 alignments per target, 10 workers).
+- **C is not computed for whole targets** (corrected after the audit, fix 3). `target_one` reuses
+  N's alignment as C's when N's span is whole and was not refined. So for those targets C's
+  clean table, the truth and both natural rows are equal by construction; the run does not
+  measure them. The audit measured it instead (section 5): it re-ran 93 whole natural targets
+  with `partial=False` and `partial=True`, and all 93 were identical in alignment, score notes,
+  measures, correctness tables and summaries. This includes the 20 Schumann Op. 16 No. 7
+  targets where detection picks a different whole repeat path than "auto" and the span is
+  relabelled.
 
 ## Results
 
-**Held-out: every registered row passes.** Point estimates decide. Brackets give the piece
-bootstrap 95% CI. "Pass share" is the share of piece resamples that pass. LOO is the
-leave-one-piece-out range; no row flips on any single drop.
+**Held-out: every registered row passes.** Point estimates decide.
+- "Bootstrap 95%" is the piece-bootstrap interval; "t 95%" is the t-interval over the 16 pieces
+  (added after the audit, fix 5).
+- "Pass share" is the share of piece resamples that pass.
+- "LOO" is the leave-one-piece-out range; no row flips on any single drop.
+- "Worst piece" is the per-piece value furthest from the bar.
 
-| Row | N | Bar | C (baseline) | Bootstrap 95% | Pass share | LOO range |
-|---|---|---|---|---|---|---|
-| T1 span accuracy | **0.9967** | >= 0.97 | 0.610 | [0.9953, 0.9979] | 1.00 | 0.9965-0.9971 |
-| T2 never-played bars tiered | **0.0027** | <= 0.03 | 0.121 | [0.0013, 0.0043] | 1.00 | 0.0021-0.0029 |
-| T3 played-bar agreement (strict) | **0.9958** | >= 0.97 | 0.950 | [0.9940, 0.9972] | 1.00 | 0.9956-0.9963 |
-| F Transkun V2 (T1 / T2 / T3) | 0.9969 / 0.0023 / 0.9956 | 0.95 / 0.05 / 0.95 | | | 1.00 | |
-| F Aria-AMT (T1 / T2 / T3) | 0.9965 / 0.0032 / 0.9959 | 0.95 / 0.05 / 0.95 | | | 1.00 | |
-| R1 Na span accuracy | **0.9949** | >= 0.95 | | [0.9922, 0.9971] | 1.00 | 0.9946-0.9959 |
-| R2 Na never-played bars tiered | **0.0028** | <= 0.03 | | [0.0014, 0.0044] | 1.00 | 0.0022-0.0030 |
-| R3 Na agreement (equivalent) | **0.9968** | >= 0.97 | | [0.9951, 0.9980] | 1.00 | 0.9966-0.9973 |
-| H1 Transkun V2 strong / notable+ (pt) | **0 / 0** | ±0.15 / ±0.30 | | [0, 0] | 1.00 | 0 |
-| H1 Aria-AMT strong (pt) | **-0.089** | ±0.15 | | [-0.234, -0.004] | **0.79** | -0.095 to -0.023 |
-| H1 Aria-AMT notable+ (pt) | **-0.098** | ±0.30 | | [-0.236, -0.008] | 1.00 | -0.105 to -0.038 |
-| H2 evidently full: share whole | **0.9969** | >= 0.95 | | [0.9906, 1] | 1.00 | 0.9967-1 |
-| H2 evidently full: share of bars not recorded | **0.00004** | <= 0.002 | | [0, 0.00013] | 1.00 | 0-0.00005 |
+| Row | N | Bar | C (baseline) | Bootstrap 95% | t 95% | Pass share | LOO range | Worst piece |
+|---|---|---|---|---|---|---|---|---|
+| T1 span accuracy | **0.9967** | >= 0.97 | 0.610 | [0.9953, 0.9979] | [0.9953, 0.9980] | 1.00 | 0.9965-0.9971 | L. 117 No. 2, 0.9907 |
+| T2 never-played bars tiered | **0.0027** | <= 0.03 | 0.121 | [0.0013, 0.0043] | [0.0009, 0.0044] | 1.00 | 0.0021-0.0029 | Op. 28 No. 8, 0.0113 |
+| T3 played-bar agreement (strict) | **0.9958** | >= 0.97 | 0.950 | [0.9940, 0.9972] | [0.9940, 0.9975] | 1.00 | 0.9956-0.9963 | L. 117 No. 2, 0.9882 |
+| F Transkun V2 (T1 / T2 / T3) | 0.9969 / 0.0023 / 0.9956 | 0.95 / 0.05 / 0.95 | | | [0.9953, 0.9984] / [0.0009, 0.0036] / [0.9935, 0.9977] | 1.00 | | L. 117 No. 2: 0.9896 / 0.0087 / 0.9860 |
+| F Aria-AMT (T1 / T2 / T3) | 0.9965 / 0.0032 / 0.9959 | 0.95 / 0.05 / 0.95 | | | [0.9947, 0.9982] / [0.0008, 0.0056] / [0.9944, 0.9975] | 1.00 | | Op. 35/4 0.9894 / Op. 28 No. 8 0.0159 / L. 136 No. 3 0.9902 |
+| R1 Na span accuracy | **0.9949** | >= 0.95 | | [0.9922, 0.9971] | [0.9920, 0.9977] | 1.00 | 0.9946-0.9959 | Op. 2 No. 1/1, 0.9791 |
+| R2 Na never-played bars tiered | **0.0028** | <= 0.03 | | [0.0014, 0.0044] | [0.0011, 0.0045] | 1.00 | 0.0022-0.0030 | Op. 28 No. 8, 0.0113 |
+| R3 Na agreement (equivalent) | **0.9968** | >= 0.97 | | [0.9951, 0.9980] | [0.9952, 0.9983] | 1.00 | 0.9966-0.9973 | L. 136 No. 3, 0.9884 |
+| H1 Transkun V2 strong / notable+ (pt) | **0 / 0** | ±0.15 / ±0.30 | | [0, 0] | [0, 0] | 1.00 | 0 | (all 0; equal by construction, see Run record) |
+| H1 Aria-AMT strong (pt) | **-0.089** | ±0.15 | | [-0.234, -0.004] | [-0.233, 0.055] | **0.79** | -0.095 to -0.023 | Op. 28 No. 16, -1.087 |
+| H1 Aria-AMT notable+ (pt) | **-0.098** | ±0.30 | | [-0.236, -0.008] | [-0.235, 0.038] | 1.00 | -0.105 to -0.038 | Op. 28 No. 16, -1.009 |
+| H2 evidently full: share whole | **0.9969** | >= 0.95 | | [0.9906, 1] | [0.9902, 1.0035] | 1.00 | 0.9967-1 | Triana, 0.95 |
+| H2 evidently full: share of bars not recorded | **0.00004** | <= 0.002 | | [0, 0.00013] | [-0.00005, 0.00014] | 1.00 | 0-0.00005 | Triana, 0.0007 |
 
 **By kind** (pooled families; N, with C in brackets; Na is within 0.01 of N in every cell):
 
@@ -314,20 +325,50 @@ Information:
   - played bars left out of the span: 166 of 79,675;
   - not-heard bars kept in the span: 164 of 59,026;
   - 3 copies have span accuracy under 0.9.
-- **Played bars tiered strong:** clean copies 721, C 2,496, N 1,046.
-  - Of the 332 bars N tiers strong that the clean copy did not, 280 sit right next to the cut
-    and 33 two bars away (post hoc).
-  - The synthetic cut removes notes by actual onset while truth uses expected onsets, so a
-    neighbouring bar can lose notes that were played early.
-  - In the other direction, 7 bars are strong in the clean copy but not under N.
-- **Cut bars** (partly played) tiered: C 433, N 294.
-- **Na's repeat path:** it equals the clean path in 93.5% of copies. Where it differs, the bars
-  are content-equivalent (R3 0.997, strict 0.994).
+- **Played bars tiered strong:** clean copies 721, C 2,496, N 1,046. Of the 332 bars N tiers
+  strong that the clean copy did not, almost all sit on the first or last recorded bar. 7 bars
+  go the other way (strong in the clean copy, not under N).
+  - **Corrected after the audit (fix 1):** the onset-blur explanation was wrong. 327 of the 332
+    bars lost no performed note that the clean copy had matched in them (audit section 4).
+  - The cause is N's alignment at the edges of the recorded span. Strong rates by position, for
+    played bars that lost no notes (audit section 4):
+
+    | Position | Bars | Clean copy | N | C |
+    |---|---|---|---|---|
+    | First or last recorded bar | 2,418 | 1.1% | 12.3% | 23.3% |
+    | One bar in | 2,447 | 1.3% | 2.6% | 14.6% |
+    | More than 5 bars in | 65,066 | 0.85% | 0.85% | 1.35% |
+
+  - Strict agreement on the edge bar is 0.907 for N (C 0.546), 0.986 one bar in, and 0.9998 in
+    the interior.
+  - The edge rate varies but is never absent:
+    - by kind: excerpt 20.5%, both 13.1%, start 7.1%, end 5.2%;
+    - by family: Aria-AMT 12.2%, Transkun V2 10.6%;
+    - by piece: 4.6-19.3%; every piece has it.
+  - Excerpts are cut at bar lines and still have the highest rate, so this should carry over to
+    real takes that start or stop at a bar line.
+  - Mechanism, for the 276 newly strong edge bars: of the notes the clean copy matched there, N
+    keeps 54% in the same bar, matches 25% to another bar and leaves 21% unmatched.
+  - A minor part is tied notes split at the span edge: 227 notes in 139 of the 2,418 edge bars.
+    Testing `restrict_to_score` showed why. `_align_partial` filters the widened alignment after
+    the shrink instead of realigning, so a tie split at the new edge leaves its tail unmatched
+    (missed) and its performed note an extra. This is reproduced on a synthetic score and
+    recorded as a strict `xfail` test; it is not fixed (see "Corrections after the audit").
+  - The registered T rows cannot see this, because edge bars are about 3% of played bars.
+- **Cut bars** (partly played) tiered: N tiers 294 of the 1,044 cut bars (C 433). Read this next
+  to T2: cut bars are excluded from T1 and T2, so a cut inside a bar gets one bar of tolerance
+  there (audit section 3).
+- **Na's repeat path:** it equals the clean path in 93.5% of copies. On the two repeat-sign
+  pieces it equals it in 72.4% (Op. 2 No. 1/1, 76 copies) and 25.0% (Op. 16 No. 7, 80 copies).
+  Where it differs, the bars are content-equivalent (R3 0.997, strict 0.994).
 - **N alignments with match ratio below 0.8:** 1.2% of copies (C: 64.7%).
 - **Natural targets:**
-  - Transkun V2: all 160 whole, so C and N are byte-identical.
+  - Transkun V2: all 160 whole, so C's rows equal N's by construction (Run record). The audit's
+    re-run measured whole targets as identical (93 of 93).
   - Aria-AMT: 146 of 152 whole. The 6 trimmed targets are Aria-MIDI segments whose first bars
-    are 71-100% missed or whose last bars are 83-100% missed (C's alignment).
+    or last bars are mostly missed under C. Every bar N marks not recorded was at least 71%
+    missed under C, with one exception (fix 7): in Op. 2 No. 1/1 PianoCoRe_033144, bar 2 was 43%
+    missed (57% found) and is still marked not recorded.
   - "Passage not heard" runs: 6 under C, 3 under N.
   - Rule P pooled strong 1.095% to 1.070%, notable+ 6.27% to 6.24%.
 
@@ -340,7 +381,8 @@ harm:
   "passage not heard" run.
 - Under N they are "not recorded", leaving 1 strong flag.
 - Of the 6 trimmed natural targets, 5 changed rates, and all 5 lost strong or notable flags on
-  bars that were not recorded. The sixth (PianoCoRe_088563, last 5 bars 97-100% missed) kept its
+  bars N marks not recorded. For natural copies this is not a known answer; the C missed shares
+  above are the evidence. The sixth (PianoCoRe_088563, last 5 bars 97-100% missed) kept its
   rates.
 
 **Henry's A-01 takes** (information; `data/interim/reports/henry_bl36/`, flag off in
@@ -353,15 +395,25 @@ harm:
 - So his takes are not partial recordings, and his reports do not change.
 
 ## Verdict (Provisional)
+Audited status: **Confirmed with caveats** (eval-auditor 2026-10-11). The flag stays off pending
+the lead's and Henry's decision on adoption and on the edge bars (see "Corrections after the audit").
+
 **PASS by the pre-registered rule.** Every row passes on held-out (T1-T3, F, R1-R3, H1, H2).
 
 - On the truncation control, N grades almost only the recorded bars:
   - span accuracy 0.997 vs 0.610;
   - never-played bars tiered 0.27% vs 12.1%.
 - It aligns played bars to the same bars as the uncut copy (strict agreement 0.996 vs 0.950,
-  excerpts 0.976 vs 0.635).
-- It leaves full recordings as they are: byte-identical whenever the span is whole, which held
-  for every Transkun V2 natural target and 96% of Aria-AMT ones.
+  excerpts 0.976 vs 0.635). This holds in the interior, not at the edges: 0.907 on the first or
+  last recorded bar (audit; corrected after the audit).
+- **Unregistered harm (added after the audit):** the first or last recorded bar of a trimmed
+  span is tiered strong 12.3% of the time under N, against 1.1% for the same bar uncut (C
+  23.3%). These are false strong flags at the span edge. N is still better than C at every bar
+  position. The edge bars need a decision before the flag is switched on.
+- It leaves full recordings as they are: whenever the span is whole the output is today's
+  alignment. In the run this is true by construction (C reuses N); the audit measured it on 93
+  whole targets (93 of 93 identical). Every Transkun V2 natural target and 96% of Aria-AMT ones
+  were whole.
 
 The pre-registered action applies: N is recommended as the report default, but only after the
 eval-auditor signs off and the lead accepts it. Until then `align.partial.PARTIAL_DEFAULT` stays
@@ -373,8 +425,13 @@ job spec `"partial": true` (app).
   - Notes are removed by performance time at one or two cut points.
   - Real partial takes may start with noodling or a false start, stop mid-phrase, or skip
     inside the piece; skips are not covered.
-  - Truth uses expected onsets while removal uses actual onsets. This blurs the bar next to each
-    cut, and that is where N's remaining extra strong flags sit.
+  - Truth uses expected onsets while removal uses actual onsets. This was the original
+    explanation of N's extra strong flags, and the audit showed it wrong: 327 of the 332 bars
+    lost no notes (see the next item).
+- **Edge bars of a trimmed span** (added after the audit). The first or last recorded bar is
+  tiered strong 12.3% under N vs 1.1% uncut. The registered rows do not cover it. Every piece and
+  both families show it, and so do excerpts cut at bar lines, so real partial takes should show
+  it too. Part of it is a tie split at the span edge (`_align_partial`, strict `xfail` test).
 - **Literal repeats.** An excerpt inside literally repeated material cannot be placed by the
   recording alone.
   - N picks the earliest identical occurrence, which is why the excerpts' strict agreement is
@@ -383,8 +440,21 @@ job spec `"partial": true` (app).
     (BL-36 option) would remove that.
 - **Repeat signs:** only 2 held-out pieces have them (Op. 2 No. 1/1, Op. 16 No. 7). The
   literal-repeat stratum is mostly written-out repetition.
-- **H1 for Transkun V2 cannot bite:** every natural Transkun V2 target is whole, here and on
-  dev, even under the sabotage. The sabotage moved H2 and H1 Aria-AMT only.
+- **H1 for Transkun V2 cannot bite** (corrected after the audit, fix 2). The earlier wording was
+  wrong for dev:
+  - Under v2, 118 of 119 Transkun V2 dev targets were whole. Schubert D. 780 No. 2
+    PianoCoRe_222341 was trimmed at the end, and its strong flags went from 3 to 1. Its span
+    record marks bars 89-90 (2 bars) not recorded; the audit text says 3 bars.
+  - Under the sabotage, 99 of 119 were whole (0.832).
+  - H1 for Transkun V2 could not bite for a different reason. The sabotage trims mostly 1-2
+    untiered bars (rates -0.027 / -0.025 pt), and the mean over pieces dilutes them.
+  - On held-out, all 160 Transkun V2 natural targets were whole.
+  - The pre-registration's own wording ("almost all whole even under the sabotage") overstates
+    this too; it stays as registered.
+- **H1 is two-sided**, so it counts correct un-flagging of bars that were not recorded as a
+  change. Its fragile row (pass share 0.79) is in the correction direction. H2's "evidently
+  full" filter and N's shrink both read C's missed share in the edge bars, so H2 leans towards
+  passing (the bite check showed it can fail, 0.784).
 - **"Evidently full" is a proxy** from C's own edge bars. It called Triana PianoCoRe_000900
   full although its first two bars are 100% and 91% missed; N trimmed them, which is probably
   correct.
@@ -392,10 +462,15 @@ job spec `"partial": true` (app).
   the tightened H1 / H2 bars (disclosed above). Dev resampling said 99% pass; held-out passed
   with larger margins than dev on T2 / R2.
 - **Family equals corpus** (Transkun V2 = PERiScoPe, Aria-AMT = Aria-MIDI).
-- **The report wiring is tested on synthetic scores only.** Same-score and correctness
-  references are cut to the target's bars by `restrict_to_score`, which has no real-data run
-  here: the A-01 takes were all whole, and the evaluation scores alignment and rule P tiers,
-  not full reports.
+- **Report wiring** (corrected after the audit, fix 4). At the time of the run,
+  `restrict_to_score` had no test at all.
+  - A synthetic test now exists, covering a repeat path and a tie across the span edge.
+  - In the audit's real-data probe (19 same-path reference copies on 4 pieces), the restricted
+    per-bar counts equal the full-score alignment in every span bar except 10. All 10 are the
+    first span bar: 1-3 extras, and once a tie-split note counted as missed.
+  - The synthetic test reproduces both and records them as a strict `xfail`. Expert limits at
+    the span edge are therefore slightly looser.
+  - No full `report_from_files` run on a partial take has been made.
 
 ## For the lead
 1. Accept or reject making `partial=True` the default (`align.partial.PARTIAL_DEFAULT`) after
@@ -605,3 +680,66 @@ flag on.
   `docs/SCORING_MODEL.md` that they carry about 11% false strong flags. That would be a small
   follow-up with its own known-answer check on these cached copies.
 - Also add the `restrict_to_score` test (fix 4).
+
+### Corrections after the audit (2026-10-11)
+
+By `feature-engineer`, applying the audit's author fixes 1-7. Fix 8 is the lead's.
+- The pre-registration is not edited. The anchor hash was re-checked after every edit and is
+  still `10d5014637b555a3ce07e44e34b0c0ad944bf32693a254e67eefbe96055d51ae`.
+- The verdict is unchanged: PASS by the pre-registered rule, Confirmed with caveats. The flag
+  stays off pending the lead's (and Henry's) decision on adoption and on the edge bars.
+- No code under `src/` changed in these corrections. Only a test file was added to.
+
+1. **Edge bars, not onset blur** (fix 1). The Results item "Played bars tiered strong" now gives
+   the audit's position table:
+   - the first or last recorded bar is strong 12.3% under N, 1.1% for the same bar uncut, and
+     23.3% under C;
+   - 327 of the 332 extra strong bars lost no notes;
+   - strict agreement on the edge bar is 0.907.
+
+   The edge effect is also in the Verdict bullets and in Threats. The onset-blur sentence in
+   Threats is marked as wrong.
+2. **H1 for Transkun V2** (fix 2). Threats now gives the dev counts: v2 118 of 119 whole (one
+   D. 780 No. 2 target trimmed at the end; its span record marks 2 bars, the audit says 3), and
+   99 of 119 whole under the sabotage. H1 could not bite because the trimmed bars were mostly
+   untiered and diluted by the mean over pieces, not because every target was whole.
+3. **C reuses N for whole targets** (fix 3). This is in the Run record, the natural-target
+   results, the H1 Transkun V2 row and the Verdict. Equality there is by construction in the
+   run; the audit's re-run (93 of 93 identical, including the Op. 16 No. 7 path relabel) is the
+   measurement.
+4. **`restrict_to_score` test** (fix 4). It is in `tests/align/test_partial.py`.
+   - **Synthetic case:** a 16-bar section with a repeat sign (path AA), and a note tied from bar 8
+     into bar 9. The target plays bars 9-16 of the first pass and the whole second pass (span
+     rows 8-31, labels "9" ... "16 (2)"). A deadpan expert plays everything.
+   - `test_restrict_to_score_keeps_only_the_target_bars_on_a_repeat_path` (passes) checks:
+     - the path match;
+     - that only target score ids remain;
+     - that the 32 matches outside the span become insertions and no performed note is lost;
+     - that every span bar except the first is exact (0 missed, 0 extra, 0 wrong).
+   - `test_restrict_to_score_first_span_bar_is_exact_for_a_perfect_expert` (strict `xfail`)
+     reproduces the audit's probe finding in the first span bar: 1 missed (the tie tail) and
+     1 extra (the performed tie head, matched before the span).
+   - **A second defect found while writing it (reported, not fixed).** `align/core._align_partial`
+     filters the widened alignment after the shrink instead of realigning.
+     - In the widened alignment the tied note is one merged note starting before the new edge.
+       The target's performed note matches it.
+     - When the shrink removes that bar, the match becomes an insertion. The tie tail, now a
+       standalone score note in the first recorded bar, has no alignment entry and counts as
+       missed.
+     - A perfectly played synthetic target therefore gets 1 missed and 1 extra in its first
+       bar (`test_partial_alignment_first_bar_is_exact_when_a_tie_crosses_the_edge`, strict
+       `xfail`).
+     - This is the mechanism behind the audit's 227 tie-split notes in 139 edge bars.
+     - Not fixed, because it changes the registered method's output on partial copies and
+       belongs to the lead's planned edge-bar follow-up.
+     - Likely fixes: realign on the final trimmed part when the shrink moves an edge, or map a
+       match on a removed tie head to its tail inside the span.
+     - Whole recordings never reach this code, so their outputs are unaffected either way.
+5. **t-intervals and worst piece per row** (fix 5). Both are added to the Results table, from
+   `artifacts/heldout_readout.json`; they agree with the audit's section 2.
+6. **Cut bars and repeat-sign paths** (fix 6). Results now report the cut bars tiered next to
+   T2 (N 294 of 1,044, C 433), and Na's path agreement on the repeat-sign pieces (72.4% on
+   Op. 2 No. 1/1, 25.0% on Op. 16 No. 7), recomputed from `heldout_copies.csv`.
+7. **"Not recorded" wording** (fix 7). Natural targets now read "bars N marks not recorded", and
+   Op. 2 No. 1/1 PianoCoRe_033144 bar 2 (43% missed, 57% found) is named as the exception to
+   "at least 71% missed".
