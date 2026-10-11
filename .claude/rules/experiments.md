@@ -378,3 +378,16 @@ paths:
   a ratio of sums five hours after that lesson; one piece then held 34 of 44 failing bars.
 - **Report how many numerator units flip a ratio verdict.** BL-27's P1 failed by 1 bar (Aria-AMT)
   and 4 bars (pooled).
+
+## Lessons from the BL-36 audit (2026-10-11)
+
+- **Test a post hoc "artefact of the control" explanation before you write it.** Count whether
+  the affected units actually lost data. BL-36 blamed extra strong flags on cut-onset blur, but
+  327 of the 332 flagged bars had lost no notes. The flags came from the method's own alignment
+  at the span edge.
+- **Break a known-answer control down by distance from the cut** (edge bar, 1, 2, interior), not
+  only pooled. Edge bars were about 3% of played bars, so pooled agreement of 0.996 hid an edge
+  value of 0.907 and a strong-flag rate of 12.3% (1.1% in the uncut copy).
+- **An evaluation that reuses the baseline output where it is "identical by construction" makes
+  that harm row zero by construction.** Recompute the baseline on a sample and report the
+  identity as a measurement (BL-36: 93 of 93 identical, including a variant-relabel branch).
