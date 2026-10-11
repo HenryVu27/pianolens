@@ -41,6 +41,7 @@ import pandas as pd
 import partitura as pt
 
 from pianolens.data.piece_ids import (
+    PARTIAL_SCORES,
     fold_accents,
     make_piece_id,
     prefixed_piece_id,
@@ -72,12 +73,144 @@ _META_COLS = [
     "performer", "is_transcription", "capture_model", "quality_label", "is_refined",
     "refined_score_midi_path", "refined_performance_midi_path", "refined_alignment_path",
     "refined_recall", "refined_performance_interpolated_note_count",
+    # raw-MIDI guard (BL-35)
+    "score_note_count", "performance_note_count", "performance_duration",
+    "refined_performance_duration",
 ]  # fmt: skip
 
 
 def data_available(root: Path | str = DEFAULT_ROOT) -> bool:
     root = Path(root)
     return (root / "metadata.csv").is_file() and (root / REFINED_ZIP).is_file()
+
+
+# --------------------------------------------------------------------------- raw-MIDI guard
+
+# BL-35. Raw performance MIDI (``performance_midi_path``) can hold more music than its score:
+# a whole concerto against one movement, a recording that plays the work twice, a sonatina's
+# two movements against a one-movement score. The refined files the loader reads are cropped
+# to the score, so the loader and the cache are not affected; code that reads the raw files is.
+# Thresholds were measured on all 157,207 tier A raw files (DATASETS.md, PianoCoRe notes):
+SCORE_NOTES_TABLE = DEFAULT_ROOT.parents[1] / "processed" / "pianocore_score_notes.parquet"
+"""Per score MusicXML: folded and longest-repeat note counts.
+
+Built by ``scripts/build_pianocore_score_notes.py``."""
+RAW_NOTE_RATIO_MAX = 1.65
+"""Raw performance notes / notes of the score's longest repeat reading. The ratio's density
+falls from the main mode at 1.0 to its minimum in (1.65, 1.70] and rises again to a second
+mode at 1.75-2.0 (raw precision about 1 / ratio: the score is found once, the rest is extra)."""
+RAW_SPAN_RATIO_MAX = 1.3
+"""For pieces in ``piece_ids.PARTIAL_SCORES`` only: raw duration / refined (cropped) duration.
+The note ratio cannot see Op. 22's Andante spianato (about 21% more notes); this ratio is
+bimodal for both partial-score pieces, with no file between 1.262 and 1.326 (Op. 22) or
+between 1.215 and 2.513 (BWV 971)."""
+
+
+class RawLongerThanScore(ValueError):
+    """A raw performance MIDI holds much more than its score (``raw_guard_reason``)."""
+
+
+def raw_guard_reason(
+    perf_notes: float,
+    score_notes: float,
+    *,
+    raw_duration: float | None = None,
+    refined_duration: float | None = None,
+    partial_score: bool = False,
+) -> str:
+    """Why a raw performance must not be aligned to its score, or ``""`` when it may.
+
+    ``score_notes`` should count the score's longest repeat reading (``unfolded_max`` in
+    :data:`SCORE_NOTES_TABLE`), so a performance that plays every repeat is not flagged.
+    ``partial_score`` (the piece is in ``PARTIAL_SCORES``) adds the duration rule, which needs
+    the refined duration (tier A rows have it)."""
+    if score_notes and score_notes > 0 and perf_notes > RAW_NOTE_RATIO_MAX * score_notes:
+        return (f"raw notes {int(perf_notes)} > {RAW_NOTE_RATIO_MAX} x score notes "
+                f"{int(score_notes)} (ratio {perf_notes / score_notes:.2f})")  # fmt: skip
+    if (partial_score and raw_duration and refined_duration and refined_duration > 0
+            and raw_duration > RAW_SPAN_RATIO_MAX * refined_duration):
+        return (f"partial score: raw duration {raw_duration:.0f} s > {RAW_SPAN_RATIO_MAX} x "
+                f"refined duration {refined_duration:.0f} s "
+                f"(ratio {raw_duration / refined_duration:.2f})")  # fmt: skip
+    return ""
+
+
+_score_notes_cache: dict[str, pd.DataFrame | None] = {}
+
+
+def score_note_table(path: Path | str = SCORE_NOTES_TABLE) -> pd.DataFrame | None:
+    """The score note-count table, or None (with a warning) when it has not been built."""
+    key = str(path)
+    if key not in _score_notes_cache:
+        if Path(path).is_file():
+            _score_notes_cache[key] = pd.read_parquet(path)
+        else:
+            log.warning("%s missing: raw guard falls back to metadata score_note_count "
+                        "(run scripts/build_pianocore_score_notes.py)", path)  # fmt: skip
+            _score_notes_cache[key] = None
+    return _score_notes_cache[key]
+
+
+def raw_guard(index: pd.DataFrame, score_notes: pd.DataFrame | None = None) -> pd.Series:
+    """One reason string per row of a PianoCoRe index (``""``: the raw MIDI may be used).
+
+    ``index`` needs the columns of :func:`pianocore_index`. The note rule divides
+    ``performance_note_count`` (equal to the raw file's note-on count in 98.9% of tier A rows,
+    at most 13 notes apart) by ``unfolded_max`` from ``score_notes`` (default
+    :func:`score_note_table`); rows whose score is missing there, or failed to load, use the
+    metadata ``score_note_count``."""
+    table = score_note_table() if score_notes is None else score_notes
+    den = index["score_note_count"].astype(float)
+    if table is not None:
+        ok = table[table["unfolded_max"] > 0]
+        unf = index["score_xml_path"].map(
+            dict(zip(ok["score_xml_path"], ok["unfolded_max"], strict=True)))
+        den = unf.astype(float).fillna(den)
+    partial = index["piece_id"].astype(str).isin(set(PARTIAL_SCORES))
+    reasons = [
+        raw_guard_reason(n, s, raw_duration=d, refined_duration=rd, partial_score=p)
+        for n, s, d, rd, p in zip(index["performance_note_count"].astype(float), den,
+                                  index["performance_duration"].astype(float),
+                                  index["refined_performance_duration"].astype(float), partial,
+                                  strict=True)
+    ]  # fmt: skip
+    return pd.Series(reasons, index=index.index, name="raw_guard", dtype=object)
+
+
+def guard_jobs(
+    jobs: list, index: pd.DataFrame, *, id_key: str | int = "id", label: str = ""
+) -> list:
+    """Drop drawn jobs whose raw MIDI fails :func:`raw_guard`, logging each one.
+
+    Call it after a seeded draw, not before: filtering the pool first would shift every later
+    draw of the same generator. ``jobs`` are dicts (``id_key`` = ``"id"``) or tuples
+    (``id_key`` = the position of the PianoCoRe row id); ids not in ``index`` are kept."""
+    ids = {str(j[id_key]) for j in jobs}
+    rows = index[index["id"].astype(str).isin(ids)]
+    bad = {str(i): r for i, r in zip(rows["id"], raw_guard(rows), strict=True) if r}
+    kept = [j for j in jobs if str(j[id_key]) not in bad]
+    for i, r in sorted(bad.items()):
+        log.warning("raw guard%s: skipped %s: %s", f" ({label})" if label else "", i, r)
+    if bad:
+        log.warning("raw guard%s: %d of %d jobs skipped", f" ({label})" if label else "",
+                    len(jobs) - len(kept), len(jobs))  # fmt: skip
+    return kept
+
+
+def read_raw_performance(
+    row: pd.Series, z: zipfile.ZipFile | None = None, *, guard: bool = True,
+    root: Path | str = DEFAULT_ROOT,
+) -> bytes:
+    """Raw performance MIDI bytes of one index row; raises :class:`RawLongerThanScore` when
+    the row fails :func:`raw_guard` (pass ``guard=False`` to read it anyway)."""
+    if guard:
+        reason = raw_guard(row.to_frame().T).iloc[0]
+        if reason:
+            raise RawLongerThanScore(f"{row['id']}: {reason}")
+    if z is None:
+        with zipfile.ZipFile(Path(root) / RAW_ZIP) as zz:
+            return zz.read(RAW_PREFIX + str(row["performance_midi_path"]))
+    return z.read(RAW_PREFIX + str(row["performance_midi_path"]))
 
 
 # --------------------------------------------------------------------------- piece ids

@@ -724,3 +724,16 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   call after BL-37; the audit supports adoption either way, since today's pipeline is worse at
   every bar position (edge bars 23.3%). Wrong-piece probe (384 wrong-score alignments): none
   passed with the flag on; same-key, shared-material and under-8-bar excerpts untested.
+- **2026-10-11, lead: BL-35 raw-MIDI guard accepted.** `pianocore.raw_guard` / `guard_jobs`:
+  raw notes over the score's longest repeat reading > 1.65 (density minimum over all 157,207
+  tier A raw files), plus raw over refined duration > 1.3 for `PARTIAL_SCORES` pieces (needed
+  for Op. 22, whose Andante adds only about 21% notes). 734 rows in 71 pieces are skipped and
+  logged, not cropped. The 1.65 cut stays; there is no cleaner gap below it. Past samplers were
+  re-run: 11 guarded files had been drawn (BL-18, BL-18b / DF-13 / DF-15 / BL-27 / BL-36 dev,
+  DF-13 / DF-15 and BL-27 / BL-36 held-out), all already `suspect` and excluded from every rate,
+  so no published number moves; only suspect counts would change on a re-run. The guard is now
+  wired after the seeded draw in those scripts, so draws do not shift. BL-37 registers it. For
+  the app's expert references (BL-38), the guard will run **before** the seeded choice: an app
+  report is not a registered experiment, and dropping after the choice would leave Op. 22 with a
+  quarter of its references. BL-38 score defects follow the DF-14 rule (the title is not the
+  content); see BL-38.

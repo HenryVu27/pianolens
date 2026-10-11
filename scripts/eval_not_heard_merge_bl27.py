@@ -127,7 +127,9 @@ def heldout_jobs() -> tuple[list[dict], int]:
                              "role": "expert" if j < N_EXPERTS else "target", "order": j,
                              "id": str(r.iloc[i]["id"]),
                              "midi": str(r.iloc[i]["performance_midi_path"]), "score": sx})
-    return jobs, len(elig)
+    from pianolens.data.pianocore import guard_jobs  # BL-35: after the draw, not before
+
+    return guard_jobs(jobs, idx, label="BL-27 held-out"), len(elig)
 
 
 def dev_jobs() -> list[dict]:

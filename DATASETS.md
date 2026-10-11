@@ -197,6 +197,72 @@ Record quirks here: missing files, id mismatches, alignment problems.
     *Schwanengesang*, D.957 is one song (82 bars of 3/4, one flat, 1,220 notes; 3 rows, 1 tier
     A), and Beethoven Op. 78 is 73 bars of 2/4 (1,356 notes; 7 rows, 4 tier A), fewer notes than
     either PianoCoRe movement score (2,816 and 1,814). Which part each is was not identified.
+    **Identified (BL-35, 2026-10-11)** from the MusicXML credit words and the content, not
+    relabelled (lead decides):
+    - D.957 whole-title score (`PDMX_5925971`) = "Swan Song Serenade, D957, No.4", arranged by
+      Hans-Gunter Heumann: *Ständchen* in a simplified arrangement. D minor, 3/4, Moderato, 82
+      bars, the same opening (upper line of the first 24 eighth-note onsets identical) and bar
+      count as the `schubert_d957_no4` score (`PDMX_6212007`, 1,470 notes, octave-doubled bass).
+    - Op. 78 whole-title score (`PDMX_46274`) = "Adagio cantabile from Piano Sonata No. 8 in C
+      minor, Pathétique": a different work. Four flats, 2/4, 73 bars. Its 7 performances
+      (Aria-MIDI, all `quality_label` "low quality"; 4 tier A) are in A flat: their most common
+      pitch classes are E flat, A flat, B flat, as in the Pathétique ii performances (whose first
+      notes, A flat, C and E flat, they share), while Op. 78 i and ii performances lead with C
+      sharp and F sharp. So these rows are Pathétique ii mislabelled as Op. 78 in PianoCoRe.
+- **Raw-MIDI guard (BL-35, 2026-10-11).** Raw performance MIDI (`performance_midi_path`) can
+  hold more than its score; the refined files are cropped, so the loader and cache are not
+  affected. `pianocore.raw_guard(index)` gives one reason per row ("" = usable);
+  `guard_jobs(jobs, index)` drops flagged rows from a drawn job list (call it after the seeded
+  draw, so other draws do not shift); `read_raw_performance(row)` raises `RawLongerThanScore`.
+  `pianocore_index` now also returns `score_note_count`, `performance_note_count`,
+  `performance_duration`, `refined_performance_duration`.
+  - Inputs. `performance_note_count` equals the raw file's note-on count in 98.9% of the
+    157,207 tier A rows (counted from every file; at most 13 notes apart). Score notes come from
+    `data/processed/pianocore_score_notes.parquet` (`scripts/build_pianocore_score_notes.py`,
+    1,591 tier A score files: longest repeat reading through the aligner's `repeat_variants`
+    for 1,584, `unfold_part_maximal` for 5 whose path enumeration timed out, 2 do not load and
+    fall back to the metadata count). The metadata `score_note_count` is not a safe
+    denominator: it agrees within 1% with the folded partitura count for 45% of rows and with
+    the longest repeat reading for 52%, and using it instead would flag 44 more rows (pieces
+    with repeats or D.C. that the metadata count leaves out).
+  - Distribution of raw notes / longest-repeat score notes over all 157,207 tier A rows
+    (157,200 with a loadable score): 1% 0.503, 5% 0.756, 25% 0.935, median 0.979, 75% 1.006,
+    95% 1.121, 99% 1.341, 99.9% 2.029, max 5.928. With folded score counts the 95th percentile
+    is 1.721 (repeats), so folded counts would flag long-repeat performances. Counts per bin:
+    (1.2, 1.3] 2,019; (1.3, 1.4] 1,096; (1.4, 1.5] 386; (1.5, 1.6] 141; (1.6, 1.65] 39;
+    (1.65, 1.7] 24; (1.7, 1.75] 47; (1.75, 1.8] 73; (1.8, 2.0] 91; above 2.0 169. Raw
+    precision falls as about 1 / ratio above 1.7 (median 0.497 in (1.7, 1.8]): the score is
+    found once and the rest of the file is extra.
+  - **Rule 1 (all rows): ratio > 1.65** (`RAW_NOTE_RATIO_MAX`), the density minimum between
+    the main mode and the second mode at 1.75-2.0. 404 tier A rows.
+  - **Rule 2 (pieces in `PARTIAL_SCORES` only): raw duration / refined duration > 1.3**
+    (`RAW_SPAN_RATIO_MAX`). Rule 1 cannot see Op. 22's Andante spianato: with it, the ratio is
+    about 1.21 (median of the 453 rows 1.212), inside the main mode. The duration ratio is
+    bimodal in both partial-score pieces: Op. 22 has no row between 1.262 and 1.326, BWV 971
+    none between 1.215 and 2.513. 330 more tier A rows (all Op. 22).
+  - **Caught: 734 tier A rows in 71 pieces** (tier C: 818 rows). Op. 22 330 (DF-14 counted 326
+    over a 1.15 ratio); BWV 971 exactly the 4 DF-14 PERiScoPe files. Other pieces with many:
+    Chopin Waltz Op. 70 No. 2 (`pianocore:...Waltz_No.12_in_F_minor`) 140 of 177, whose score
+    is the 55-bar autograph version ("Manuscrit autographe, à Mlle Elise Gavard, 1841");
+    Beethoven Sonatinas Anh. 5 No. 1 62 of 213 and No. 2 24 of 110 (scores hold the first
+    movement; the caught rows hold about 2.3 and 3.4 times its notes); Mussorgsky "Cum mortuis"
+    33 of 33 (about 3.8 times the 21-bar score; content not identified); then 15 or fewer per
+    piece. Several Transkun V2 files hold about twice the score's notes in the same duration
+    (for example 1,748 notes against 881 in Debussy L. 123/9); they are neither duplicated
+    notes nor a repeated half, and their cause is not known. 48 app catalogue pieces have caught
+    rows (657 rows).
+  - **Not caught on purpose:** legitimate performances that play repeats the score encodes
+    (the denominator counts every repeat). Performances that play a repeat the score does not
+    encode (for example an exposition repeat missing from an ASAP score) mostly sit at 1.2-1.5
+    and pass; the aligner sees those notes as extra, as before.
+  - Wired into the draw functions of `calibrate_strong_tier_bl18[b].py`,
+    `eval_pairing_window_df13.py` (dev and held-out), `eval_not_heard_merge_bl27.py`
+    (held-out; dev reuses DF-13), `calibrate_expert_check_f08c.py` and `a01_henry_baseline.py`
+    (floor draws, reused by BL-23, A-01b, DF-15 and the DF-13 floor rebuild). D-10 pairs (and R-09,
+    which reuses them) need no guard: a pair is kept only when the transcription is within 2%
+    of the ASAP take's note count; none of their rows is flagged. **Not wired:**
+    `report/io.pianocore_expert_midis` (the app's expert check) and `eval_partial_bl36.py`
+    (BL-35 could not touch `report/` or BL-36 during its audit); see BACKLOG BL-35.
 - **Schumann Op. 17 i, mm. 41-49 is the printed layout (DF-14, 2026-10-10).** All four Op. 17
   pieces (mv1-3 and the whole-title `schumann_op17`) use one MuseScore user score (`MS_8284988`,
   MuseScore 4.4.4, 2025-03-08). In mm. 41-48 the left hand's semiquaver figure is voice 2 on

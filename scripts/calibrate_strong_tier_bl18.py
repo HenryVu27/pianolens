@@ -117,7 +117,9 @@ def draw_jobs() -> list[dict]:
                              "role": role, "order": j, "id": str(r.iloc[i]["id"]),
                              "midi": str(r.iloc[i]["performance_midi_path"]), "score": sx,
                              "score_in_zip": True})  # fmt: skip
-    return jobs
+    from pianolens.data.pianocore import guard_jobs  # BL-35: after the draw, not before
+
+    return guard_jobs(jobs, idx, label="BL-18")
 
 
 # ----------------------------------------------------------------------------- worker

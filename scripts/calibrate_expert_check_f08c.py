@@ -147,7 +147,9 @@ def floor_jobs(n_refs: int = 15, seed: int = 0) -> list[tuple]:
             take = rng.choice(len(r), size=min(n_refs, len(r)), replace=False)
             for i in sorted(take):
                 jobs.append((k, str(r.iloc[i]["id"]), str(r.iloc[i]["performance_midi_path"]), t))
-    return jobs
+    from pianolens.data.pianocore import guard_jobs  # BL-35: after the draw, not before
+
+    return guard_jobs(jobs, idx, id_key=1, label="F-08c floor")
 
 
 def floor_one(k: str, ref_id: str, rel: str, t: str) -> dict:

@@ -14,13 +14,13 @@ Facts measured 2026-10-10 (details and numbers in DATASETS.md, PianoCoRe and ASA
 - **Raw vs refined PianoCoRe:** raw performance MIDI can hold more than the score (whole
   concerto, Andante spianato); the refined files are cropped to the score's span (onsets start
   at 0). Cache/loader (refined) are fine; scripts reading `performance_midi_path` (BL-18/18b,
-  DF-13, F-08c, D-10 scripts) are exposed. Detect with `performance_note_count /
-  score_note_count > 1.5` and `raw_precision` ~0.16.
+  DF-13, F-08c, D-10 scripts) were exposed; BL-35 added `pianocore.raw_guard` (a plain 1.5
+  note-ratio cut misses Op. 22: its ratio is ~1.21; see [[bl35-raw-guard]]).
 - Fix mechanism: `piece_ids.PARTIAL_SCORES` + `score_movement()`; ids never renamed.
   `pianovam.SCORE_CANDIDATES` kind `mismatch` for Italian mvt 1/3 (entries kept so BL-19b's
   recording list and null pairing reproduce; removing them would shift the null pairs).
-- Not relabelled (outside catalogue, part unidentified): PianoCoRe whole-title Schwanengesang
-  D.957 (one song) and Op. 78 (73 bars 2/4).
+- Outside catalogue, identified in BL-35 from credit words + content: whole-title D.957 =
+  Standchen (No. 4) arr. Heumann; whole-title Op. 78 = Pathetique ii (wrong work). Not relabelled.
 - Op. 17 (all 4 PianoCoRe ids) = one MuseScore score `MS_8284988`. mm. 41-48 LH figure on
   staff 1 matches the Peters print (IA `31761040729832`, printed pp. 4-5): engraving choice.
 

@@ -77,7 +77,10 @@ def _quiet() -> None:
 def dev_jobs() -> list[dict]:
     rows = pickle.loads((CAL / "bl18b_tables.pkl").read_bytes())["rows"]
     keys = ("piece", "piece_id", "family", "role", "order", "id", "midi", "score")
-    return [{k: r[k] for k in keys} for r in rows]
+    from pianolens.data.pianocore import PianoCoRe, guard_jobs  # BL-35
+
+    return guard_jobs([{k: r[k] for k in keys} for r in rows], PianoCoRe().index,
+                      label="DF-13 dev")
 
 
 def heldout_jobs() -> tuple[list[dict], int]:
@@ -121,7 +124,9 @@ def heldout_jobs() -> tuple[list[dict], int]:
                              "role": "expert" if j < N_EXPERTS else "target", "order": j,
                              "id": str(r.iloc[i]["id"]),
                              "midi": str(r.iloc[i]["performance_midi_path"]), "score": sx})
-    return jobs, len(elig)
+    from pianolens.data.pianocore import guard_jobs  # BL-35: after the draw, not before
+
+    return guard_jobs(jobs, idx, label="DF-13 held-out"), len(elig)
 
 
 # ----------------------------------------------------------------------------- labelling

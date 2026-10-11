@@ -15,6 +15,7 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [rach3_takes_bl16.md](rach3_takes_bl16.md) — Hanon book structure, take-splitting DP, p3 asynchrony, no same-day beginner takes, BL-16 numbers
 - [pianovam_hands.md](pianovam_hands.md) — BL-24 hand labels: chord row order != notes (match pitch+onset), counts, Noinfo, catalogue candidates
 - [partial_scores_df14.md](partial_scores_df14.md) — DF-14: whole-work titles holding one part, raw vs refined PianoCoRe cropping, Op. 17 engraving, IA for PD prints
+- [bl35_raw_guard.md](bl35_raw_guard.md) — raw-MIDI guard: ratio distribution, 1.65 + span rule, sampler hits, Op. 78 / D.957 identities
 - [skypiano.md](skypiano.md) — SKY-Piano not released, license unclear; where to re-check (D-09, BL-11)
 - types.py contract lives in `src/pianolens/data/types.py`; builders `performance_from_partitura`,
   `score_from_partitura` are the only sanctioned way to wrap partitura objects. D-07 added
