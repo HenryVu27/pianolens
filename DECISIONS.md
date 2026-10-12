@@ -774,3 +774,10 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   recording starts or ends partway through are strong about 20% vs 1.3% uncut (replicated on two
   fresh draws). A text-only caveat for those bars is being added (no tier change). Still open
   before the app uses it: BL-40 (wrong-piece stop for excerpts); all evidence is synthetic cuts.
+- **2026-10-12, lead (Henry delegated the call): partial alignment on for the CLI.**
+  `scripts/pianolens_report.py --partial` now defaults on, with no edge policy (k = 0) and the
+  BL-39 text caveat; `--no-partial` restores the old behaviour. `PARTIAL_DEFAULT` stays False, so
+  the app and library calls are unchanged until BL-40 re-derives the wrong-piece stop for
+  excerpts. Basis: whole recordings identical (304 / 304, 310 / 310), never-played bars strong
+  0.08% vs 9.3%, at the disclosed cost of mid-bar starts strong about 20% vs 1.3%.
+  `docs/SCORING_MODEL.md` has the "Not recorded" paragraph.

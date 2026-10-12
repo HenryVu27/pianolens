@@ -50,9 +50,10 @@ def main() -> None:
     ap.add_argument("--note", action="append", default=[], help="extra provenance note")
     ap.add_argument("--filter-extras", choices=["off", "rule"], default="off",
                     help="remove likely transcription extras first (transcribed input only)")
-    ap.add_argument("--partial", action=argparse.BooleanOptionalAction, default=None,
+    ap.add_argument("--partial", action=argparse.BooleanOptionalAction, default=True,
                     help="BL-36: the recording may cover only part of the piece; grade only the "
-                         "recorded bars (default: pianolens.align.partial.PARTIAL_DEFAULT, off)")
+                         "recorded bars (default on for the CLI since 2026-10-12, lead decision; "
+                         "a whole recording gives the same report; --no-partial turns it off)")
     ap.add_argument("--out", required=True, help="output .html (the .json goes beside it)")
     args = ap.parse_args()
     warnings.filterwarnings("ignore")
