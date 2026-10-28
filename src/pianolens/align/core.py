@@ -36,6 +36,18 @@ AlignmentList = list[dict[str, str]]
 # partitura's unfolding recurses per segment; long sonatas exceed Python's default limit.
 _MIN_RECURSION_LIMIT = 100_000
 
+#: Repeat paths enumerated at most (DF-16). Every app-catalogue score but one has at most
+#: 65,536 (Handel HWV 432/6), enumerated in about 1.4 s; Mozart K. 265 has far more and its
+#: enumeration alone passed 3 GB (BL-40 audit). Above the cap a score gets two paths: the fully
+#: repeated reading and the shortest one.
+MAX_REPEAT_PATHS = 65_536
+
+#: ``align(..., partial=True)`` builds every repeat path to search for the recorded span; above
+#: this many paths it aligns as ``partial=False`` instead and says so in ``recorded_span``
+#: (DF-17). BL-36 to BL-40 tested partial alignment on scores with at most 16 paths; a score
+#: with 512 took 157 s and 2.5 GB for one 21-note excerpt (BL-40 audit).
+PARTIAL_MAX_PATHS = 16
+
 
 @dataclass
 class AlignResult:
@@ -130,6 +142,10 @@ class AlignResult:
         sp = self.recorded_span
         rec: dict[str, Any] = {**sp.as_dict(), "method": "subsequence onset DTW (BL-36)",
                                "not_recorded": []}
+        if sp.fallback:  # DF-17: too many repeat paths to search; aligned as a whole recording
+            rec["method"] = (f"partial alignment not applied: {sp.fallback} (it searches "
+                             f"at most {PARTIAL_MAX_PATHS}, DF-17); aligned as a whole recording")
+            rec["fallback"] = sp.fallback
         labels = self.variant_labels or []
         if sp.whole or not labels:
             return rec
@@ -170,23 +186,67 @@ def repeat_variants(part: Any) -> list[tuple[str, int]]:
 
     Returns ``[(variant_string, n_notes), ...]`` in partitura's path order (the first is the
     fully repeated reading). ``n_notes`` counts tied-merged notes, grace notes included,
-    whose onset falls in each traversed segment.
+    whose onset falls in each traversed segment. Past :data:`MAX_REPEAT_PATHS` paths only the
+    fully repeated and the shortest reading are listed (DF-16).
     """
     return [(v, n) for v, n, _ in _variants_with_paths(part)]
 
 
+class _TooManyPaths(Exception):
+    pass
+
+
+class _CappedPaths(list):
+    """The list partitura's ``unfold_paths`` appends finished paths to; stops past ``cap``."""
+
+    def __init__(self, cap: int) -> None:
+        super().__init__()
+        self.cap = cap
+
+    def append(self, item: Any) -> None:
+        if len(self) >= self.cap:
+            raise _TooManyPaths
+        super().append(item)
+
+
 def _variants_with_paths(part: Any) -> list[tuple[str, int, Any]]:
+    return _variants_info(part)[0]
+
+
+def _variants_info(part: Any, cap: int | None = None) -> tuple[list[tuple[str, int, Any]], bool]:
+    """``[(variant, n_notes, path), ...]`` and whether that is every repeat path.
+
+    Up to ``cap`` (default :data:`MAX_REPEAT_PATHS`) paths this is exactly
+    ``partitura.score.get_paths(part)`` in its order. Past the cap the enumeration stops (it
+    never lists every path) and the fully repeated and the shortest reading are returned
+    (``complete`` False)."""
     _raise_recursion_limit()
+    cap = MAX_REPEAT_PATHS if cap is None else cap
     # get_paths is stateful: it reuses segment objects left on the part by earlier calls, and a
     # second call can return a different (smaller) path set. Rebuild segments every time.
     pt.score.add_segments(part, force_new=True)
-    paths = pt.score.get_paths(part, no_repeats=False, all_repeats=False, ignore_leap_info=True)
+    segments = pt.score.get_segments(part)
+    acc = _CappedPaths(cap)
+    complete = True
+    try:  # = get_paths(part, no_repeats=False, all_repeats=False, ignore_leap_info=True)
+        pt.score.unfold_paths(pt.score.Path([chr(65)], segments), acc, ignore_leap_info=True)
+        paths = list(acc)
+    except _TooManyPaths:
+        complete, ids = False, []
+        for kw in ({"all_repeats": True}, {"no_repeats": True}):
+            pt.score.add_segments(part, force_new=True)  # each call on fresh segments
+            for p in pt.score.get_paths(part, ignore_leap_info=True, **kw):
+                if list(p.path) not in ids:
+                    ids.append(list(p.path))
+        # rebuilding segments detaches the old ones: rebind every path to the current ones
+        segments = pt.score.get_segments(part)
+        paths = [pt.score.Path(i, segments) for i in ids]
     segments = pt.score.get_segments(part)
     onsets = np.array([n.start.t for n in part.notes_tied])
     seg_counts = {
         sid: int(np.sum((onsets >= s.start.t) & (onsets < s.end.t))) for sid, s in segments.items()
     }
-    return [("".join(p.path), sum(seg_counts[s] for s in p.path), p) for p in paths]
+    return [("".join(p.path), sum(seg_counts[s] for s in p.path), p) for p in paths], complete
 
 
 _UNFOLDED_ID = re.compile(r".+-\d+$")
@@ -296,9 +356,15 @@ def align(
     """
     part = to_part(score)
     perf_na = to_performance_note_array(performance)
-    variants = _variants_with_paths(part)
+    variants, complete = _variants_info(part)
     by_name = {v: p for v, _, p in variants}
     n_variants = len(variants)
+    fallback = None
+    if partial and (not complete or n_variants > PARTIAL_MAX_PATHS):
+        # DF-17: searching every path for the span is unbounded on such scores; align whole
+        fallback = (f"{'more than ' if not complete else ''}"
+                    f"{MAX_REPEAT_PATHS if not complete else n_variants:,} repeat paths")
+        partial = False
 
     if n_variants <= 1:
         chosen = [v for v, _, _ in variants]
@@ -363,6 +429,13 @@ def align(
         raise ValueError("score has no notes to align")
     best.candidates = candidates
     best.load_notes = load_notes(part)
+    if fallback is not None:
+        from pianolens.align import partial as pa
+
+        best.variant_labels = _variant_labels(best.unfolded_part)
+        n = len(best.variant_labels)
+        best.recorded_span = pa.RecordedSpan(best.variant, 0, n - 1, n, True, float("nan"),
+                                             fallback=fallback)
     if span is not None:
         if best.variant != span.variant:  # "auto" picked another path for a whole recording
             labels = _variant_labels(best.unfolded_part)

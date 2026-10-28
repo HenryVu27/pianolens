@@ -102,6 +102,9 @@ class RecordedSpan:
             ``n_rows``, and score notes left out before / after the span).
         refined: True when step 2 ran (widen, note alignment on the trimmed score, shrink). A
             whole span with ``refined`` False is the unchanged ``align`` result.
+        fallback: set when the span was not searched because the score has too many repeat
+            paths (``core.PARTIAL_MAX_PATHS``, DF-17), e.g. ``"512 repeat paths"``; the span is
+            then the whole piece and the alignment is ``partial=False``'s.
     """
 
     variant: str
@@ -114,6 +117,7 @@ class RecordedSpan:
     dtw_rows: tuple[int, int] = (0, 0)
     candidates: dict[str, dict[str, Any]] = field(default_factory=dict)
     refined: bool = False
+    fallback: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {"variant": self.variant, "first_row": self.first_row, "last_row": self.last_row,

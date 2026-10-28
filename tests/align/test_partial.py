@@ -590,3 +590,80 @@ def test_edge_caveat_text_names_the_side():
         "The first recorded bar")
     assert edge_caveat_text({"not_recorded": [{"position": "end"}]}).startswith(
         "The last recorded bar")
+
+
+# ----------------------------------------------------------------------------- DF-16 / DF-17
+
+
+def _many_repeats(k: int = 5, seed: int = 9):
+    """k consecutive repeated 4-bar sections: 2**k repeat paths."""
+    import partitura as ptt
+
+    bars = _bars(seed=seed, n_bars=4 * k)
+    part = make_part(_events(bars))
+    for j in range(k):
+        part.add(ptt.score.Repeat(), j * 64, (j + 1) * 64)
+    return part, bars
+
+
+def test_repeat_path_enumeration_stops_at_the_cap():
+    """DF-16: past the cap the enumeration stops and keeps the full and the shortest reading;
+    at or under it, the list is partitura's get_paths, in its order."""
+    from pianolens.align import core
+
+    part, _ = _many_repeats()
+    full, complete = core._variants_info(part)
+    assert complete and len(full) == 32
+    assert [v for v, _, _ in full][0] == "AABBCCDDEE" and full[-1][0] == "ABCDE"
+    same, complete = core._variants_info(part, cap=32)
+    assert complete and [v for v, _, _ in same] == [v for v, _, _ in full]
+    capped, complete = core._variants_info(part, cap=31)
+    assert not complete
+    assert [(v, n) for v, n, _ in capped] == [("AABBCCDDEE", 160), ("ABCDE", 80)]
+
+
+def test_auto_above_the_cap_aligns_on_the_two_readings(monkeypatch):
+    from pianolens.align import core
+
+    part, bars = _many_repeats()
+    monkeypatch.setattr(core, "MAX_REPEAT_PATHS", 8)
+    assert core.repeat_variants(part) == [("AABBCCDDEE", 160), ("ABCDE", 80)]
+    res = align(part, _deadpan(bars, range(20)))
+    assert res.variant == "ABCDE" and res.n_variants == 2 and res.n_insertion == 0
+
+
+@pytest.mark.parametrize("cap", [None, 8])
+def test_partial_falls_back_to_whole_alignment_above_16_paths(monkeypatch, cap):
+    """DF-17: 32 repeat paths (> PARTIAL_MAX_PATHS): partial=True gives partial=False's
+    alignment, a whole recorded span and the fallback in its record and in the report."""
+    from pianolens.align import core
+    from pianolens.report import ReportConfig, ReportInputs, build_report
+
+    if cap:
+        monkeypatch.setattr(core, "MAX_REPEAT_PATHS", cap)
+    part, bars = _many_repeats()
+    perf = _deadpan(bars, range(4, 8))
+    on, off = align(part, perf, partial=True), align(part, perf)
+    assert on.alignment == off.alignment and on.variant == off.variant
+    assert off.recorded_span is None
+    rec = on.recorded_span_record()
+    paths = "more than 8 repeat paths" if cap else "32 repeat paths"
+    assert rec["whole"] and rec["fallback"] == paths and rec["not_recorded"] == []
+    assert rec["method"].startswith(f"partial alignment not applied: {paths}")
+    sc, pf = _project_types(part, perf)
+    rep = build_report(ReportInputs(ap=align_performance(sc, pf, partial=True),
+                                    provenance="synthetic", four_hands=False),
+                       ReportConfig(shaping=False))
+    assert rep["recorded_span"]["fallback"] == paths and rep["recorded_span"]["whole"]
+    notes = [n for n in rep["confidence"]["notes"] if n.startswith("This score has")]
+    assert notes and paths in notes[0] and not any(
+        n.startswith("Not recorded") for n in rep["confidence"]["notes"])
+
+
+def test_partial_still_searches_at_16_paths():
+    from pianolens.align import core
+
+    part, bars = _many_repeats(k=4)
+    assert len(core._variants_with_paths(part)) == 16 == core.PARTIAL_MAX_PATHS
+    res = align(part, _deadpan(bars, range(4, 8)), partial=True)
+    assert res.recorded_span.fallback is None and not res.recorded_span.whole

@@ -60,7 +60,9 @@ No new Python dependencies: the server is the standard library (`http.server`).
    chosen score this recording seems to cover"). Chosen on 32 dev pieces, where wrong-score
    excerpts of 75 or more notes reached at most 0.578 and right-score ones went down to 0.687;
    below 75 notes the two overlap (wrong up to 0.748, right down to 0.733). Held-out result:
-   `experiments/2026-10-27-BL-40-wrong-piece-stop/README.md`.
+   `experiments/2026-10-27-BL-40-wrong-piece-stop/README.md`. A score with more than 16 repeat
+   paths (18 catalogue scores, e.g. Mozart K. 331) is not searched for a span (DF-17): the
+   quick check aligns it whole and keeps the 0.5 stop, so an excerpt of it is stopped as today.
 5. **Results.** What to practise, each item with the A/B player of the passage that covers its
    bars (your recording, you on the reference piano, a typical expert, another expert) and the
    tempo and loudness curves of those bars against the expert band; all passages; and the full

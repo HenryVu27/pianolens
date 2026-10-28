@@ -97,6 +97,12 @@ def confidence_notes(rep: dict) -> list[str]:
                    "is analysed as one performance of everything written, and hand synchrony "
                    "is left out, because PianoLens tells the hands apart by the staff a note is "
                    "written on, and with four hands that split is arbitrary (DF-11).")
+    fb = (rep.get("recorded_span") or {}).get("fallback")
+    if fb:  # DF-17
+        out.append(f"This score has {fb}, too many to search for the part a recording covers, "
+                   "so the recording was aligned as a performance of the whole piece. If it is "
+                   "an excerpt, bars it does not cover show as missed and the findings are "
+                   "unreliable.")
     nr = not_recorded_text(rep.get("recorded_span"))
     if nr:
         ec = rep["correctness"].get("edge_low_confidence") or {}

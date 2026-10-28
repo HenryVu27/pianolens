@@ -38,3 +38,18 @@ Related: [[bl36-partial]], [[bl37-edge-bars]], [[bl39-narrow-edge]], [[app-p02]]
 - Second empty-span crash: parangonar `join_by` on an empty score array -> guard in
   `align_note_arrays` (all insertions). Henry's 10 takes: all whole under partial, decisions
   identical; A-01 reports identical old vs new except input paths.
+
+## Audit (2026-10-27): Confirmed with caveats; lead keeps mode "all" (no deviation)
+- My misses: (1) named the F 17-32 mechanism (span cut) without an oracle-span check: true span
+  gave 0.576 too (noisy Aria passage). Compute the oracle-span ratio before blaming the span.
+  (2) "all" rationale was not what dev showed (no short right excerpt < 0.733); H < 75 notes is 0
+  by construction under "all" -- say so in the prereg. (3) Pools had <= 16 repeat paths, so the
+  probe could not see the catalogue's 512-65,536-path scores: check the population's extremes.
+- DF-16/DF-17 (2026-10-28): `_variants_info` caps enumeration at 65,536 via a list subclass
+  whose append raises (partitura `unfold_paths` unchanged); partial falls back to whole above 16
+  paths. Fallback paths from separate `get_paths` calls must be rebound to the CURRENT segments
+  (add_segments(force_new) detaches old ones -> new_part_from_path AttributeError).
+- Catalogue path counts in `data/interim/df16_paths.csv`; check script
+  `scripts/check_repeat_paths_df16.py`. D. 935/3 report is slow from `expert_bar_tables`
+  (15 expert alignments x 6 variants), not from partial.
+- Henry 03 Aria report floats differ run to run at ~1e-10 (same code, off vs on): compare tiers.

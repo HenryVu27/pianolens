@@ -1695,6 +1695,8 @@ def recorded_span_report(rs: dict[str, Any], labels: Sequence[str]) -> dict[str,
            "bars_label": span_label(labels, list(range(len(labels)))),
            "not_recorded": [dict(d) for d in rs.get("not_recorded") or []]}
     out["n_bars_not_recorded"] = int(sum(d.get("n_bars", 0) for d in out["not_recorded"]))
+    if rs.get("fallback"):  # DF-17: too many repeat paths, the span was not searched
+        out["fallback"] = rs["fallback"]
     return out
 
 
