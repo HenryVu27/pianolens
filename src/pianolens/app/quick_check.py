@@ -24,8 +24,8 @@ wrong-score excerpts of 4-7 bars reached 0.5). For a trimmed span :func:`decide`
 
 Values chosen on dev and registered in BL-40
 (``experiments/2026-10-27-BL-40-wrong-piece-stop/README.md``). The app uses the partial branch
-only when the quick alignment runs with ``partial=True``, which
-``pianolens.align.partial.PARTIAL_DEFAULT`` keeps off.
+only when the quick alignment runs with ``partial=True``, the app default since 2026-10-28
+(``pianolens.app.pipeline.APP_PARTIAL_DEFAULT``).
 """
 
 from __future__ import annotations

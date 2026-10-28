@@ -50,8 +50,8 @@ No new Python dependencies: the server is the standard library (`http.server`).
    10/12 and Beethoven Op. 53/1 scored 0.960-0.984 and 0.083-0.314. An excerpt of a long piece
    also scores low, hence the override.
 
-   **With partial alignment** (`pianolens.align.partial.PARTIAL_DEFAULT`, still off in the app;
-   BL-40): the quick check trims the score to the span the recording covers, so an excerpt of
+   **With partial alignment** (on in the app since 2026-10-28, `pianolens.app.pipeline.APP_PARTIAL_DEFAULT`;
+   BL-40; scores with more than 16 repeat paths are aligned whole, DF-17): the quick check trims the score to the span the recording covers, so an excerpt of
    the right piece scores near 1. A recording the aligner takes as the whole piece keeps the
    rule above. For a trimmed span `pianolens.app.quick_check.decide` applies: a recording of
    fewer than 75 notes is too short to check, so the run stops with "too short to check that

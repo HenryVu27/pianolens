@@ -63,6 +63,11 @@ class Cancelled(Exception):
     pass
 
 
+#: The app aligns with ``partial=True`` unless a job says otherwise (lead decision 2026-10-28,
+#: after BL-40 and DF-16 / DF-17). The library default ``align.partial.PARTIAL_DEFAULT`` stays
+#: False so registered experiments reproduce.
+APP_PARTIAL_DEFAULT = True
+
 def same_score_references(piece_id: str | None, n_pianocore: int, provenance: str,
                           exclude: list[str], upload_bytes: list[bytes],
                           min_refs: int | None = None) -> list[Path]:
@@ -260,10 +265,9 @@ def run(job_dir: Path) -> None:
     sc_path = score or find_score(spec["piece_id"])
     if sc_path is None:
         raise FileNotFoundError("no score file for this piece")
-    from pianolens.align.partial import PARTIAL_DEFAULT
-
-    # BL-36: the recording may cover only part of the piece (off unless the job asks for it)
-    partial = bool(spec.get("partial", PARTIAL_DEFAULT))
+    # BL-36: the recording may cover only part of the piece. On in the app since 2026-10-28
+    # (lead, after BL-40 and DF-16 / DF-17); a job can still ask for "partial": false
+    partial = bool(spec.get("partial", APP_PARTIAL_DEFAULT))
     summary["partial"] = partial
     perf0 = load_performance(mids[0], provenance, spec.get("piece_id"))
     ap = align_performance(load_score(sc_path, spec.get("piece_id")), perf0, partial=partial)

@@ -791,3 +791,14 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   or did not finish. Partial is already on for the CLI (472f5fe), so a repeat-path cap is the
   priority fix; K. 265 fails even with partial off (path enumeration unbounded). The app flag
   stays off until both are fixed and checked on those scores.
+- **2026-10-28, lead: DF-16 / DF-17 accepted; partial alignment on in the app.** Repeat-path
+  enumeration is bounded (K. 265 works again) and partial alignment falls back to whole-score
+  alignment above 16 paths, with a note; all 18 such catalogue scores finish, `repeat_variants`
+  is identical on 824 scores and Henry's 10 reports are unchanged. The app now aligns with
+  `partial=True` by default (`app.pipeline.APP_PARTIAL_DEFAULT`), using the BL-40 stop as
+  registered and no edge policy (k = 0, with the BL-39 text caveat). The library default
+  `align.partial.PARTIAL_DEFAULT` stays False so registered experiments reproduce. Known costs,
+  disclosed in SCORING_MODEL and APP: a bar the recording starts or ends partway through is
+  strong about 20% vs 1.3% uncut; recordings under 75 notes are not checked against the score
+  (the learner confirms); excerpts of the 18 many-path scores are stopped as before; all evidence
+  is from synthetic cuts.

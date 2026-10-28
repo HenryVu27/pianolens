@@ -1,6 +1,6 @@
 # PianoLens status
 
-Last updated 2026-10-12 by the lead (BL-39, BL-37, BL-36 and BL-27 audited; BL-35, BL-38 data guards; DF-15, BL-26, BL-33, BL-28, DF-14 done). Before that 2026-10-10 (DF-13 and BL-19b audited; DF-11 fixed). Earlier refreshes 2026-10-06 (R-10) and 2026-09-29
+Last updated 2026-10-28 by the lead (BL-40, DF-16 / DF-17; partial alignment on in the app and CLI. Before that BL-39, BL-37, BL-36 and BL-27 audited; BL-35, BL-38 data guards; DF-15, BL-26, BL-33, BL-28, DF-14 done). Before that 2026-10-10 (DF-13 and BL-19b audited; DF-11 fixed). Earlier refreshes 2026-10-06 (R-10) and 2026-09-29
 (feature-engineer, DEFECTS DF-08) from `EXPERIMENTS.md`,
 `DECISIONS.md`, the `WORKBOARD.md` log and `docs/RESEARCH_LOG.md` Part 5). Details live in those
 files. This page is the short version.
@@ -30,6 +30,7 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 | BL-36 | Can the aligner find which bars a partial recording covers? | Yes: PASS by the pre-registered rule on 16 new pieces. Span found 99.7% (today 61%); never-played bars strong 0.27% (today 12.1%); whole recordings unchanged (measured). Audit: first / last recorded bar strong 12.3% vs 1.1% uncut (today 23.3%). Flag off until BL-37. |
 | BL-37 | Can the edge bars of a partial recording be graded like the same bars uncut? | Yes with fixes: first / last recorded bar within +0.27 pt of uncut (no policy); whole recordings identical. The k = 1 low-confidence rule fixes mid-bar starts (20.4% to 0.27% false strong) but hides skipped notes (ranked 60% to 17%): not adopted. BL-39 tests a narrower rule. |
 | BL-39 | Does a narrower edge rule (ignore only notes outside the played part of the edge bar) fix mid-bar starts without hiding skips? | No: FAIL by the pre-registered rule (cut bars +1.67 pt vs +1.5); it does keep inner skips caught. Audit: the leftover flags come from a mispaired anchor note, so a retry targets anchor robustness. No edge rule adopted. |
+| BL-40 | Can the app's wrong-piece check work for excerpts? | Yes: PASS by the pre-registered rule on 24 new pieces (6,864 alignments): no wrong excerpt passed silently at any length; right excerpts stopped at most 2.2%. Under 75 notes the learner confirms the piece. The audit found unbounded repeat-path costs (DF-16 / DF-17), now fixed. |
 | BL-16 | Can repeated takes estimate a learner's noise floor (Rach3 Hanon)? | Yes, within one sitting. Across days, takes carry structured drift, so timing noise uses same-sitting takes only (O-01 guidance: 2-3 takes in one sitting). A second beginner is still needed. |
 
 ## Engineering results accepted by the lead (tickets, not audited experiments)
@@ -87,7 +88,7 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 - **The report still uses the cadence detector for phrase boundaries,** not the LLM (DF-02).
 - **Pedal and evenness rarely tier:** they need at least 10 same-score references; the app supplies
   them only for key-captured MIDI of pieces without PianoCoRe references (DF-05, `docs/APP.md`).
-- **Partial recordings are not handled by default.** The tested fix (BL-36 / BL-37, `align(..., partial=True)`, CLI `--partial`) stays off: mid-bar starts are still falsely strong about 20% without an edge rule (BL-39 tests a narrower one), and the app's wrong-piece stop needs re-deriving for excerpts (BL-40). Skips and false starts inside a take are untested.
+- **Partial recordings are handled in the app and CLI (since 2026-10-28), with known costs:** a bar the recording starts or ends partway through is strong about 20% vs 1.3% uncut (two edge rules tested and not adopted, BL-37 / BL-39); recordings under 75 notes are not checked against the score; 18 scores with more than 16 repeat paths are aligned whole. All evidence is from synthetic cuts; skips and false starts inside a take are untested.
 - **Staff is not hand** for 6.66% of notes (BL-19b); hand synchrony is fragile, per-hand feedback is off.
 - **The strong flag on transcribed input stays interim:** on a second sample its clean rate is 1.49% / 1.86%, above the 1.25% band by point estimate (DF-13 side finding).
 - **Known untested gaps:** dense passages (BL-20), fast repeated notes in
@@ -96,7 +97,8 @@ All rows are Confirmed with caveats by `eval-auditor`; the caveats are in `EXPER
 ## In flight (2026-10-11)
 
 - **Running:** nothing.
-- **Next:** BL-40 (wrong-piece stop for excerpts); a re-pairing step for wrong pitches the aligner moved (DF-12) and a recheck of the interim strong rule on new pieces; retest the tight / key-aware ornament rules now that tremolos are expanded (BL-26).
+- **Next:** a re-pairing step for wrong pitches the aligner moved (DF-12) and a recheck of the interim strong rule on new pieces; retest the tight / key-aware ornament rules now that tremolos are expanded (BL-26).
+- **Done 2026-10-12/28:** BL-40 Confirmed with caveats; DF-16 / DF-17 fixed; partial alignment on in the CLI and app.
 - **Done 2026-10-10/11:** BL-37 and BL-36 Confirmed with caveats (flags off); BL-35 raw-MIDI guard (734 rows skipped, no published number moves) and BL-38 score defects (Op. 70 No. 2 out of the catalogue, Op. 78 rows dropped); DF-13 closed (100 ms stays), BL-19b and BL-27 Confirmed with caveats, DF-11 / DF-08 / DF-14 / DF-15 fixed, BL-26 / BL-33 score loading, BL-28 recalibration, BL-24 data loaded, R-07 author fixes, BL-31 protocol v1.3.
 - **R-10, R-11, R-07:** audited and closed (R-10 secondary arms audited 2026-10-10; R-11 follow-ups
   BL-32 (OWNER input) and BL-33 (in wave 2a); R-07 author fixes closed 2026-10-10).
@@ -115,7 +117,6 @@ Done 2026-10-05: O-03. The RTX 5080 box runs the R-07 job natively on Windows (C
 | O-04 | A cloud GPU budget (if any) | Runs too large for the 5080 |
 | Optional | Email the SKY-Piano authors; Globus access for MAESTRO-E; Zenodo request for CIPI | Better validation data |
 | CLAUDE.md research bet | R-10 falsified H1b. Proposed wording: "... a low-dimensional, piece-conditioned expressive space (anchored by expert performances of the piece; R-10: the score alone predicts only part of the expert consensus)" (DECISIONS 2026-10-06) | The project's stated bet matches the evidence |
-| BL-36 / BL-37 / BL-39 | Whether `partial=True` goes on with no edge rule (mid-bar starts falsely strong about 20% vs 1.3%, with a text caveat; never-played bars 0.08% vs 9.3% today; whole recordings identical). Lead recommends yes for the CLI, not the app until BL-40 | Reports on excerpts |
 | BL-34 | Priority of a hand-assignment model (PianoVAM labels, leave-piece-out) against the study and own-take tickets | Per-hand feedback; a sturdier hand-synchrony measure |
 | BL-29 tonebase files | Decide whether `src/pianolens/data/tonebase.py`, its test and `scripts/extract_tonebase.py` (code and file-to-piece metadata only) are committed | A complete repo on the box |
 

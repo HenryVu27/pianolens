@@ -100,7 +100,6 @@ def _excerpt_midi(src, lo: int, hi: int) -> bytes:
 
 
 def _run_excerpt(tmp_path, monkeypatch, piece_id: str, **rule) -> dict:
-    from pianolens.align import partial as pa
     from pianolens.app import pipeline
     from pianolens.app.catalog import load_catalog
     from pianolens.app.jobs import JobSpec, JobStore, Upload
@@ -109,7 +108,7 @@ def _run_excerpt(tmp_path, monkeypatch, piece_id: str, **rule) -> dict:
         pytest.skip(f"catalogue has no {piece_id}")
     (tmp_path / "catalog.json").write_text(
         (REPO / "data" / "interim" / "app" / "catalog.json").read_text())
-    monkeypatch.setattr(pa, "PARTIAL_DEFAULT", True)  # the app reads it at run time
+    monkeypatch.setattr(pipeline, "APP_PARTIAL_DEFAULT", True)  # read at run time
     for k, v in rule.items():
         monkeypatch.setattr(qc, k, v)
     store = JobStore(tmp_path)
