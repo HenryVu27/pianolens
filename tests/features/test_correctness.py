@@ -202,6 +202,17 @@ def test_no_matches_and_unknown_ids_do_not_crash():
     assert np.isnan(res.score_notes["expected_onset_sec"]).all()
 
 
+def test_empty_score_does_not_crash():
+    """BL-40: a partial alignment can trim a wrong score to a span with no notes; every
+    performed note is then extra and the match ratio is 0 (it crashed before)."""
+    _, pn, _, _ = build(n_bars=1)
+    sn = np.empty(0, dtype=S_DTYPE)
+    pairs = [("insertion", "", f"p{k}") for k in range(len(pn))]
+    res = correctness(aligned(sn, pn, pairs, n_bars=1))
+    assert res.summary["n_score_notes"] == 0 and res.summary["n_extra"] == len(pn)
+    assert res.summary["match_ratio"] == 0.0
+    assert (res.notes["score_id"] == "").all() and (res.notes["score_pitch"] == -1).all()
+
 def test_helpers():
     measures = np.array([(1, "1", 0.0, 4.0), (2, "2", 4.0, 8.0)], dtype=MEASURE_DTYPE)
     np.testing.assert_array_equal(measure_rows(measures, np.array([-1, 0, 3.9, 4, 7.9, 8])),

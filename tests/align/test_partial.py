@@ -426,6 +426,18 @@ def test_ornament_step_crash_without_unmatched_notes_falls_back():
     assert res.n_match == len(SCALE) and res.n_insertion == 0
 
 
+def test_empty_score_array_gives_insertions():
+    """BL-40: a partial alignment can trim a wrong score to a span with no notes; parangonar
+    crashed on the empty score array (``join_by``). Every performed note is an insertion."""
+    from pianolens.align.core import align_note_arrays, score_note_array
+
+    part = make_part(melody(SCALE))
+    sna = score_note_array(part)[:0]
+    perf = make_perf(np.arange(len(SCALE)) * 0.5, SCALE)
+    al = align_note_arrays(sna, perf, score_part=part)
+    assert [a["label"] for a in al] == ["insertion"] * len(SCALE)
+    assert {a["performance_id"] for a in al} == {str(i) for i in perf["id"]}
+
 def test_margin_needed_only_when_it_explains_otherwise_unmatched_notes():
     # the widened alignment matched p1..p4 in margin rows; the DTW-span alignment left p1..p3
     # unmatched -> the margin explains 3 notes nothing else does

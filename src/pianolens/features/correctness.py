@@ -542,17 +542,22 @@ def correctness(
 
     # bars
     s_bar = measure_rows(score.measures, sn["onset_quarter"])
-    p_q = np.where(p_partner >= 0, sn["onset_quarter"][np.maximum(p_partner, 0)],
+    # a partner index is valid only where p_partner >= 0; with no score notes (a partial
+    # alignment trimmed to an empty span, BL-40) every note is unpaired and nothing is gathered
+    def _at(a: np.ndarray, fill: Any) -> np.ndarray:
+        return a[np.maximum(p_partner, 0)] if len(a) else np.full(len(p_partner), fill)
+
+    p_q = np.where(p_partner >= 0, _at(np.asarray(sn["onset_quarter"], float), np.nan),
                    _interp(p_on, kt, kq) if len(kt) else np.nan)  # fmt: skip
     p_bar = measure_rows(score.measures, p_q)
 
     notes_df = pd.DataFrame({
         "performance_id": p_ids,
         "label": p_label.astype(str),
-        "score_id": np.where(p_partner >= 0, s_ids[np.maximum(p_partner, 0)], ""),
+        "score_id": np.where(p_partner >= 0, _at(s_ids, ""), ""),
         "onset_sec": p_on,
         "pitch": p_pitch,
-        "score_pitch": np.where(p_partner >= 0, s_pitch[np.maximum(p_partner, 0)], -1),
+        "score_pitch": np.where(p_partner >= 0, _at(s_pitch, -1), -1),
         "measure_index": p_bar,
     })  # fmt: skip
     score_df = pd.DataFrame({

@@ -66,3 +66,5 @@ Index. One line per note; details in topic files beside this one. Settled facts 
   tuning, harm bite check (tightened H1/H2), report wiring behind `PARTIAL_DEFAULT`.
 - [bl37-edge-bars.md](bl37-edge-bars.md) - BL-37 Confirmed w/ caveats (k=1 hides omissions: inject the error type a policy acts on), fixes, BL-38 guard.
 - [bl39-narrow-edge.md](bl39-narrow-edge.md) - BL-39 FAIL, Confirmed w/ caveats: residual = anchor mis-pairing (classify all units!), O2 on acting bars, 16 GB RAM.
+- [bl40-wrong-piece-stop.md](bl40-wrong-piece-stop.md) - BL-40 quick-check stop under partial: probe cost (all-pairs O(n^2), <= 32 pieces),
+  dev overlap below 75 notes, rule 0.625 / 75-note confirm, correctness empty-score crash, orphan workers.

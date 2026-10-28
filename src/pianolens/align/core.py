@@ -241,6 +241,10 @@ def align_note_arrays(
     ``score_part`` is only used to tag ornamented notes (trills, turns, mordents), which the
     matcher then allows to absorb extra performed notes. Ids are returned as plain ``str``.
     """
+    if len(score_na) == 0:
+        # BL-40: a partial alignment can trim a wrong score to a span with no notes; parangonar
+        # then crashes (``join_by`` on an empty array). Every performed note is an insertion.
+        return [{"label": "insertion", "performance_id": str(i)} for i in perf_na["id"]]
     matcher = matcher or DualDTWNoteMatcher()
     use_orn = process_ornaments and score_part is not None
     if not use_orn:

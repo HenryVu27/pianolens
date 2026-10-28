@@ -9,7 +9,10 @@ Steps (each recorded in ``status.json``):
 2. ``align``: the first take is aligned to the score once, as a fast check that the recording is
    the chosen piece before the long steps. A match ratio below ``WRONG_PIECE_MATCH`` stops the
    run (state ``stopped``, ``wrong_piece`` in the status) unless the user overrode the check;
-   between that and 0.8 (``alignment_suspect``) the run goes on with a warning.
+   between that and 0.8 (``alignment_suspect``) the run goes on with a warning. With partial
+   alignment on and a trimmed span the decision is :func:`pianolens.app.quick_check.decide`
+   (BL-40): a stop of its own and, for a short take, a request to confirm the piece
+   (``confirm_piece`` in the status).
 3. ``report``: ``pianolens.report.report_from_files`` (features, PianoCoRe references, per-bar
    expert check, practise items) and ``write_report`` -> ``report.html`` / ``report.json``.
    Same-score references (:func:`same_score_references`): only for key-captured MIDI of a piece
@@ -36,17 +39,12 @@ from pathlib import Path
 from typing import Any
 
 from pianolens.app.jobs import AUDIO_EXT, set_step, update_status
+from pianolens.app.quick_check import WRONG_PIECE_MATCH, decide  # noqa: F401 (re-exported)
 
 REPO = Path(__file__).resolve().parents[3]
 TRANSKUN_ENV = REPO / "data" / "interim" / "envs" / "transkun"
 TRANSKUN_CAPTURE_MODEL = "Transkun V2"  # PianoCoRe's name for the same model family (A-01 floor)
 
-#: Quick-check match ratio (Dice, ``pianolens.align.match_ratio``) below which the run stops as
-#: "probably another piece". Measured 2026-09-29 (DEFECTS DF-05): Henry's five Transkun takes
-#: (A-01) gave 0.818-0.939 on their own score and 0.163-0.280 on the 20 wrong-score pairs; one
-#: ASAP performance each of Chopin Op. 10/3, 10/4, 10/12 and Beethoven Op. 53/1 gave
-#: 0.960-0.984 on their own score and 0.083-0.314 on the 12 wrong-score pairs.
-WRONG_PIECE_MATCH = 0.5
 
 AUDIO_NOTE = ("Input: a transcription of an uploaded audio recording (Transkun). From phone or "
               "room audio, timing and tempo are trustworthy (A-01). Extra notes, velocity "
@@ -159,6 +157,18 @@ def filter_extras(mid: Path, dst: Path) -> dict[str, Any]:
 # =========================================================================== the run
 
 
+def _stop_message(ratio: float, trimmed: bool) -> str:
+    """The wrong-piece stop message; ``trimmed``: partial alignment cut the score to a span."""
+    if not trimmed:
+        return (f"Stopped: only {100 * ratio:.0f}% of the notes match the chosen score, so this "
+                "recording is probably another piece (in our tests the right piece matched 82% "
+                "or more, other pieces 31% or less). Check the piece and upload again, or choose "
+                "Analyse anyway if it is the right piece (for example a short excerpt).")
+    return (f"Stopped: only {100 * ratio:.0f}% of the notes match the part of the chosen score "
+            "this recording seems to cover, so it is probably another piece. Check the piece "
+            "and upload again, or choose Analyse anyway if it is the right piece.")
+
+
 def run(job_dir: Path) -> None:
     job = json.loads((job_dir / "job.json").read_text())
     spec = job["spec"]
@@ -255,34 +265,48 @@ def run(job_dir: Path) -> None:
     # BL-36: the recording may cover only part of the piece (off unless the job asks for it)
     partial = bool(spec.get("partial", PARTIAL_DEFAULT))
     summary["partial"] = partial
-    ap = align_performance(load_score(sc_path, spec.get("piece_id")),
-                           load_performance(mids[0], provenance, spec.get("piece_id")),
-                           partial=partial)
+    perf0 = load_performance(mids[0], provenance, spec.get("piece_id"))
+    ap = align_performance(load_score(sc_path, spec.get("piece_id")), perf0, partial=partial)
     cs = correctness(ap).summary
+    span = ap.score.meta.get("recorded_span") or {}
+    n_perf = len(perf0.notes)
     summary["align"] = {"match_ratio": float(cs.get("match_ratio", float("nan"))),
                         "error_rate": float(cs.get("error_rate", float("nan"))),
-                        "alignment_suspect": bool(cs.get("alignment_suspect", False))}  # fmt: skip
+                        "alignment_suspect": bool(cs.get("alignment_suspect", False)),
+                        "span_whole": bool(span.get("whole", True)),
+                        "n_performed_notes": n_perf}  # fmt: skip
     ratio = summary["align"]["match_ratio"]
+    # BL-40: with partial on and a trimmed span the stop is the registered partial rule
+    decision = decide(ratio, partial=partial, span_whole=summary["align"]["span_whole"],
+                      n_performed=n_perf)
+    summary["align"]["decision"] = decision
+    trimmed = partial and not summary["align"]["span_whole"]
     detail = f"{100 * ratio:.0f}% of notes matched"
-    if ratio < WRONG_PIECE_MATCH and not spec.get("ignore_wrong_piece"):
+    if decision == "stop" and not spec.get("ignore_wrong_piece"):
         set_step(job_dir, "align", "failed", detail + " - probably not this piece")
         update_status(job_dir, state="stopped", wrong_piece=True, summary=summary,
-                      finished=time.time(), message=(
-                          f"Stopped: only {100 * ratio:.0f}% of the notes match the chosen "
-                          "score, so this recording is probably another piece (in our tests "
-                          "the right piece matched 82% or more, other pieces 31% or less). "
-                          "Check the piece and upload again, or choose Analyse anyway if it "
-                          "is the right piece (for example a short excerpt)."))  # fmt: skip
+                      finished=time.time(), message=_stop_message(ratio, trimmed))
+        return
+    if decision == "confirm" and not spec.get("ignore_wrong_piece"):
+        set_step(job_dir, "align", "failed", detail + " - too short to check the piece")
+        update_status(job_dir, state="stopped", wrong_piece=False, confirm_piece=True,
+                      summary=summary, finished=time.time(), message=(
+                          f"This recording is short ({n_perf} notes), too short to check "
+                          "that it is the chosen piece. If it is, choose Analyse anyway; "
+                          "otherwise check the piece and upload again."))  # fmt: skip
         return
     if summary["align"]["alignment_suspect"]:
         detail += " - alignment suspect: is this the right piece?"
         notes.append(f"The quick alignment check matched only {100 * ratio:.0f}% of the notes "
                      "(below 80%): check that the recording is this piece; findings may be "
                      "unreliable.")  # fmt: skip
-    if ratio < WRONG_PIECE_MATCH:
+    if decision == "stop":
         notes.append(f"The quick alignment check matched only {100 * ratio:.0f}% of the notes, "
                      "which usually means another piece; the analysis ran because the check "
                      "was overridden.")  # fmt: skip
+    if decision == "confirm":
+        notes.append("The recording was too short to check automatically that it is this "
+                     "piece; the analysis ran because the piece was confirmed.")  # fmt: skip
     set_step(job_dir, "align", "done", detail)
     del ap
 

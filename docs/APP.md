@@ -49,6 +49,18 @@ No new Python dependencies: the server is the standard library (`http.server`).
    0.163-0.280 on the 20 wrong-score pairs; one ASAP performance each of Chopin Op. 10/3, 10/4,
    10/12 and Beethoven Op. 53/1 scored 0.960-0.984 and 0.083-0.314. An excerpt of a long piece
    also scores low, hence the override.
+
+   **With partial alignment** (`pianolens.align.partial.PARTIAL_DEFAULT`, still off in the app;
+   BL-40): the quick check trims the score to the span the recording covers, so an excerpt of
+   the right piece scores near 1. A recording the aligner takes as the whole piece keeps the
+   rule above. For a trimmed span `pianolens.app.quick_check.decide` applies: a recording of
+   fewer than 75 notes is too short to check, so the run stops with "too short to check that
+   it is the chosen piece" and the same **Analyse anyway** button (`confirm_piece` in the
+   status); otherwise the run stops below 0.625 ("only N% of the notes match the part of the
+   chosen score this recording seems to cover"). Chosen on 32 dev pieces, where wrong-score
+   excerpts of 75 or more notes reached at most 0.578 and right-score ones went down to 0.687;
+   below 75 notes the two overlap (wrong up to 0.748, right down to 0.733). Held-out result:
+   `experiments/2026-10-27-BL-40-wrong-piece-stop/README.md`.
 5. **Results.** What to practise, each item with the A/B player of the passage that covers its
    bars (your recording, you on the reference piano, a typical expert, another expert) and the
    tempo and loudness curves of those bars against the expert band; all passages; and the full
