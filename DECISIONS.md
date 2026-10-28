@@ -781,3 +781,13 @@ Append only. Each entry records the date, the decision, the reason, and who deci
   excerpts. Basis: whole recordings identical (304 / 304, 310 / 310), never-played bars strong
   0.08% vs 9.3%, at the disclosed cost of mid-bar starts strong about 20% vs 1.3%.
   `docs/SCORING_MODEL.md` has the "Not recorded" paragraph.
+- **2026-10-28, lead: BL-40 wrong-piece stop.** PASS by the pre-registered rule, Confirmed with
+  caveats (eval-auditor). The registered rule is kept as registered (mode "all": with partial
+  on and a trimmed span, under 75 performed notes ask the learner to confirm the piece, else stop
+  below 0.625; whole spans keep 0.5). "Confirm" is not a silent pass, so H being 0 under 75
+  notes by construction is accepted and disclosed; "high" and t = 0.65 are not adopted (no
+  deviation). **Blocking defect found by the audit:** `align(partial=True)` builds every repeat
+  path; 17 catalogue scores have more than 16 (up to 65,536) and a short excerpt took minutes
+  or did not finish. Partial is already on for the CLI (472f5fe), so a repeat-path cap is the
+  priority fix; K. 265 fails even with partial off (path enumeration unbounded). The app flag
+  stays off until both are fixed and checked on those scores.
