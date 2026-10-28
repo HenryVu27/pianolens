@@ -420,3 +420,20 @@ paths:
   near-miss sabotage while half its pieces fail on their own. BL-39's "one onset wider" rule passed
   O1 at -6.94 against -8, with 7 of 15 pieces at or below -8. The harm row then bounds whole-bar
   policies only.
+
+## Lessons from the BL-40 audit (2026-10-27)
+
+- **An abstain outcome ("ask to confirm") makes a "passed silently" harm row zero by
+  construction for the units it covers.** Also report how many wrong units get the abstain
+  instead of a stop. Compare with a rule that abstains only where the evidence is ambiguous.
+  BL-40's mode "all" asked to confirm 1,334 held-out wrong excerpts, 965 of them below 0.3.
+  Confirming only at or above the stop gave the same registered rows on dev and stopped all
+  but 3.
+- **A probe of an app path must cover the cost tail of the inputs the app accepts, not only
+  the drawn pools.** Before turning a path on, scan the catalogue for its cost driver and time
+  the extremes. In BL-40, `partial=True` builds every repeat path. The pools had at most 16
+  paths; the catalogue has scores with 512 to 65,536, where one quick check took 157 s or did
+  not finish.
+- **In-memory excerpts are not uploads.** Re-run a sample after writing each excerpt to a file,
+  as a user would upload it. In BL-40 a MIDI round trip moved wrong-score ratios by 0.02-0.15,
+  the size of the margin to the stop.

@@ -36,3 +36,4 @@ Index. One line per note; details in topic files beside this one. Settled facts 
 - [bl36-partial-audit-facts.md](bl36-partial-audit-facts.md): prereg/transcript recipe, recompute without overwrite, C:=N for whole targets, edge-bar false strong 12.3%, Op. 16/7 relabel branch, wrong-piece probe
 - [bl37-edge-bars-audit-facts.md](bl37-edge-bars-audit-facts.md): deviation reconstruction, recompute, omission probe (k=1 hides edge omissions), prod=eval tiers, H1 fails with policy, all-pairs probe
 - [bl39-narrow-edge-audit-facts.md](bl39-narrow-edge-audit-facts.md): prereg/timeline, 20-min recompute, DF-15 ASAP key overlap (benign), anchor mis-pairing probe + oracle E2 -0.58, O2 on N-edge, src-tree symlink trick
+- [bl40-wrong-piece-stop-audit-facts.md](bl40-wrong-piece-stop-audit-facts.md): prereg/code hash recipe, recompute, partial=True builds every repeat path (K331/D935 hang), confirm-mode zero by construction, F 17-32 = noisy passage

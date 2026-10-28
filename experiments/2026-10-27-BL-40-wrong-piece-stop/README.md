@@ -1,5 +1,5 @@
 # BL-40: wrong-piece stop with partial alignment
-Ticket: BL-40 (from the BL-37 audit)    Hypothesis: none from the plan (app rule)    Status: Provisional
+Ticket: BL-40 (from the BL-37 audit)    Hypothesis: none from the plan (app rule)    Status: Confirmed with caveats (eval-auditor 2026-10-27)
 
 ## Question
 The local app aligns the first take to the chosen score once (the quick check) and stops with
@@ -296,7 +296,7 @@ construction of `align`), 4 are trimmed (Chopin Op. 42 Transkun, Op. 63 No. 3 Ar
 No. 1 both families; ratio within 0.013 of `partial=False`) and pass under the trimmed rule;
 71 of 1,104 wrong whole alignments are whole spans, the rest trimmed; the highest is 0.406.
 
-## Verdict: PASS by the pre-registered rule (Provisional, awaiting eval-auditor)
+## Verdict: PASS by the pre-registered rule; Confirmed with caveats (eval-auditor 2026-10-27); app flag stays off until the repeat-path guard (Audit, section 7c)
 The registered rule passes every row on 24 fresh pieces: no wrong-score excerpt passes
 silently in any band (0 of 4,370), one right-score excerpt of 190 is stopped (17-32 bars,
 2.17% against 2.5%), whole recordings decide as today (0 of 48 worse, 0 of 1,104
@@ -344,3 +344,321 @@ until the lead switches it after the audit.
    item.
 4. Two crash fixes outside the app (`features/correctness.py`, `align/core.py`) for a partial
    alignment trimmed to an empty span, each with a regression test.
+
+## Audit (eval-auditor, 2026-10-27)
+
+**Verdict: Confirmed with caveats.** PASS by the pre-registered rule is the correct reading.
+Every registered number reproduces exactly from the cache. There is no pre-registration drift,
+no leakage between dev and held-out, and nothing was re-selected after the held-out results.
+The caveats concern what the result covers, and they bear on the lead's decision to switch the
+app to `partial=True`:
+- Under mode "all", "0 wrong excerpts passed" for takes under 75 notes holds by construction.
+- The F 17-32 mechanism is misnamed.
+- Some catalogue scores make the partial quick check hang (section 7c). This blocks switching
+  the app flag until it is guarded.
+
+**1. Pre-registration, timeline, drift.**
+- **Anchor.** It recomputes to `bab3e6e3...d656`, as in `artifacts/prereg_sha256.txt`.
+- **Code.** `git diff 472f5fe 8134800 -- src/pianolens ':!src/pianolens/align/core.py'
+  ':!src/pianolens/app/quick_check.py' | shasum -a 256` gives `30526ab7bba56ef4`, the hashed
+  value. So the only tracked change under `src/pianolens` after the hash is the
+  `align_note_arrays` guard.
+- **Post-hash edit (transcript 02:25:04Z).** Reversing it gives `quick_check.py` `e79f95a3...`
+  and the script `b1a77ae8...`, the hashed values. The committed files give `e09e261c...` and
+  `d0c83463...`, as in the run record. That edit only:
+  - set the three constants;
+  - added `decide_agrees`.
+
+  `rule_rows` / `verdict` use `REGISTERED` and `decisions()`, not the module constants. No
+  registered number depends on them.
+- **Timeline** (author transcript `subagents/agent-a3d462ef8a1d4f09c.jsonl`, UTC):
+  - 02:19:27 dev readout;
+  - 02:21:51 `correctness` empty-span fix (before the hash, inside `30526ab7`);
+  - 02:23:54-02:24:39 pre-registration written;
+  - 02:24:51 hash;
+  - 02:25:04 constants set;
+  - 02:25:24 held-out pool drawn;
+  - 02:25:41 takes and probe launched;
+  - 03:02:05 held-out readout;
+  - 03:03:28 `align_note_arrays` guard added;
+  - 03:04:08 Henry whole-take check.
+
+  No earlier call uses seed 4040 or reads a held-out file. An earlier BL-40 attempt
+  (`agent-a70a92dbfd7594c83`, 2026-10-12) only timed dev pieces and drew no held-out pieces.
+- **The rejected alternative** (`t = 0.65`, no minimum) is in the hashed text. So the choice
+  between the two was made before the held-out run.
+- **The dev cut** from 60 to 32 pieces happened before the dev probe whose numbers chose the
+  rule. The lead was messaged at 01:35:25Z.
+
+**2. Held-out draw.**
+- 24 pieces and 143 candidate ids.
+- None of them is in `SCORE_VERSION_MISMATCH`. `guard_jobs` dropped `PianoCoRe_033696`.
+- **Disjointness.** I scanned every `data/interim/*/{pkl,json,csv}` outside `bl40` for the 24
+  piece ids and the 143 transcription ids.
+  - Ids: 0 hits.
+  - Piece ids appear only in lists that are not draws:
+    - BL-36 / BL-37 `heldout_repeat_flags.json` (repeat flags over all 209 / 193 eligible
+      pieces);
+    - the app catalogue;
+    - the DCML Romantic piece list;
+    - MAJEPPA features.
+  - No earlier PianoCoRe draw overlaps.
+
+**3. Rule selection (dev, reproduced).** Gap = lowest right ratio minus highest wrong ratio,
+among takes with at least `n_min` notes:
+
+| `n_min` | dev gap | held-out gap |
+|---|---|---|
+| 0 / 25 | -0.061 / -0.061 | -0.400 / -0.046 |
+| 50 | +0.040 | -0.015 |
+| 75 | +0.109 | +0.034 (wrong 0.576, right 0.610) |
+| 100 / 150 | +0.113 / +0.184 | +0.034 / +0.129 |
+
+On dev, 75 is the smallest grid value with a gap of 0.10 or more. `t` is the midpoint
+(0.6325), rounded to 0.625. The rule followed its stated procedure. The held-out gap at 75 is a
+third of the dev gap.
+
+**4. Reproduction.**
+- **Read-only recompute.** I imported the script and ran `load_probe`, `rule_rows`, `verdict`,
+  `resample_pass`, `loo` and the bite rules on the cached probe CSVs, without running the
+  readout stage.
+  - Differences in any row statistic: 0 on held-out (6,864 rows) and 0 on dev (9,280).
+  - Resample shares: F 17-32 0.738, C 9-16 0.933.
+  - Leave-one-out flips: none.
+  - Every bite rule fails its row on held-out.
+  - `decide_agrees`: 0 rows differ in either set.
+- **Counts by band** (held-out, registered rule):
+
+| Band | H wrong passed | Hc wrong asked to confirm | F right stopped | C right asked to confirm |
+|---|---|---|---|---|
+| 2-4 | 0 / 1,104 | 943 / 1,104 | 0 / 48 | 41 / 48 |
+| 5-8 | 0 / 1,104 | 368 / 1,104 | 0 / 48 | 16 / 48 |
+| 9-16 | 0 / 1,104 | 23 / 1,104 | 0 / 48 | 1 / 48 |
+| 17-32 | 0 / 1,058 | 0 / 1,058 | 1 / 46 | 0 / 46 |
+
+  The whole-take rows reproduce too:
+  - W1: 0 of 48 worse.
+  - W2: 0 of 1,104 wrong whole takes passed.
+  - W3: 0 of 1,104.
+- **App-path re-run** (current code, 5 workers). I re-ran 45 held-out alignments:
+  - every right excerpt below 0.8;
+  - the 15 highest wrong ratios;
+  - the 5 highest wrong ratios at 75 notes or more;
+  - the failed alignment;
+  - 20 random rows.
+
+  45 of 45 have the same ratio and span flag as the cache. The failed row now gives 0.0.
+- **Henry's whole takes** (the author's `henry_quick.json`): 100 rows.
+  - Right takes are whole spans with partial on and off, 0.816-0.940.
+  - Wrong takes go up to 0.280 with partial off and 0.261 with it on.
+  - `decide` equals today's rule on all 100.
+
+**5. Crash guards.**
+- **The held-out crash.** Removing the `align_note_arrays` guard in-process reproduces the
+  recorded error: parangonar `join_by`, `IndexError: boolean index did not match`. With the
+  guard the ratio is 0.0.
+  - That take has 49 notes, so the registered rule asks to confirm whatever its ratio.
+  - No held-out decision depends on the fix.
+- **`correctness`, old (472f5fe) vs new.** I compared 48 full alignments: 6 held-out pieces,
+  whole takes and 9-16-bar excerpts, partial on and off. All 48 are identical in summary,
+  per-note and per-score-note tables.
+- **When the guards fire.**
+  - The `core.py` guard fires only when `len(score_na) == 0`.
+  - `_at` is the old positional gather whenever the array is non-empty. `sn` is a structured
+    numpy array, so `np.asarray` does not change the indexing.
+
+**6. The "confirm" outcome and the harm row.**
+- **What H can see.** H counts only silent passes, and mode "all" never passes a trimmed take
+  under 75 notes. So H for those takes is 0 by construction (BL-23 lesson). The registered
+  rows cannot tell mode "all" from mode "high" (confirm only at or above the stop, stop below
+  it).
+- **Decisions on wrong-score excerpts:**
+
+| | stop | confirm | pass |
+|---|---|---|---|
+| held-out, "all" (registered) | 3,036 | 1,334 | 0 |
+| held-out, "high" | 4,367 | 3 | 0 |
+| dev, "all" (registered) | 6,076 | 1,798 | 0 |
+| dev, "high" | 7,871 | 3 | 0 |
+
+  Of the 1,334 held-out wrong excerpts asked to confirm, 965 have a ratio below 0.3, 1,188
+  below 0.4, and 3 at or above 0.625.
+- **Mode "high" on the registered rows.**
+  - On dev every registered row is still 0.
+  - On held-out it still passes. It adds one false stop, F 2-4 2.08%: the Op. 49 No. 2 i Aria
+    take at 0.286.
+- **The pre-registration's reason for "all" is not what dev shows.** The reason given was
+  "below 75 notes a low ratio says as little as a high one". But the lowest dev right excerpt
+  under 75 notes was 0.733. So on dev, every short take below 0.625 was a wrong piece. Only a
+  high ratio was uninformative there.
+  - Held-out: 1 of 58 short right excerpts was below 0.625.
+  - Henry's takes (7b): 1 of 29.
+- **Is "passed silently" the right harm?** It is the right lower bound, but not the whole
+  harm.
+  - The confirm message gives the learner no evidence: "too short to check that it is the
+    chosen piece. If it is, choose Analyse anyway".
+  - A learner who chose the wrong score in good faith will click.
+  - "Analyse anyway" calls `_retry(ignore_wrong_piece=True)`. The job re-runs from the start,
+    the decision is again "confirm", and the run continues with the note "the piece was
+    confirmed". The learner gets a full report against the wrong score.
+- **Against today's app** (partial off): short excerpts score 0.006-0.57 on their own score
+  (BL-37). So today the app already stops nearly every short take, right or wrong, with
+  "probably another piece" and the same button. For takes under 75 notes, the registered rule
+  changes the wording, not the information. The gain is for takes of 75 notes or more.
+
+**7. Coverage probes.** These are information, not registered rows. Scripts were in scratch and
+are not kept. Partial alignment was on, decisions by the registered rule.
+
+- **a. ASAP catalogue scores as wrong scores.** All 190 held-out right excerpts went against 11
+  ASAP scores: `beethoven_op2_no1_mv1` (a sibling of two held-out movements), `liszt_s141_no6`
+  (a theme and variations, 2 repeat paths) and 9 seeded others. That is 2,090 alignments.
+  - Silent passes: 0.
+  - Highest ratio at 75 notes or more: 0.549 (margin 0.076). Under 75 notes: up to 0.740,
+    asked to confirm.
+  - Today's 0.5 stop with partial on would pass 20 of them.
+  - **Same piece, other source's score.** The 8 Liszt Rhapsody No. 6 PianoCoRe excerpts on the
+    ASAP S. 244/6 score: 6 pass, 2 are asked to confirm, lowest 0.714.
+  - A 12th score, Schubert D. 935/3, did not finish (see c).
+- **b. Henry's takes, cut into excerpts.** The 10 A-01 transcriptions were cut into 3
+  excerpts per band (seeded, same cutter): 120 excerpts against their own and the 4 other
+  scores, 600 alignments.
+  - **Wrong scores.** 0 passes. Highest 0.545 (under 75 notes); 0.452 at 75 notes or more.
+  - **Right scores.** 1 stop: Nocturne in C-sharp minor (04), Transkun, bars 40-44, 82 notes,
+    0.539.
+    - By band, stopped: 0, 1, 0 and 0 of 30 (2-4, 5-8, 9-16, 17-32). Asked to confirm: 23, 6,
+      1 and 0 of 30.
+    - Lowest right ratios at 75 notes or more: 0.539, 0.648, 0.73. On PianoCoRe held-out the
+      lowest was 0.610.
+  - **What causes that stop.** Not span detection: the span is exactly bars 40-44, and the
+    oracle-span ratio (Dice of the whole-take alignment over the excerpt's notes and bars) is
+    also 0.539. 62% of the excerpt's notes are unmatched extras in the whole-take alignment.
+  - **Reading.** Room-audio transcription noise is local. Whole takes at 0.816-0.939 hide
+    passages where a right excerpt falls below the stop. This is one event on 5 pieces by one
+    pianist. On this source the false-stop side is the risk; the wrong-piece side has margin.
+- **c. Repeat paths: the partial quick check hangs on some catalogue scores.**
+  `align(partial=True)` builds every repeat path of the score (`core.py`, `built = {...}` over
+  all variants). `partial=False` builds only the `max_candidates` closest.
+  - **Catalogue** (804 scores) by number of paths:
+    - 1 path: 588;
+    - 2-4: 168;
+    - 5-16: 30;
+    - 17-64: 11;
+    - 65-256: 2;
+    - more than 256: 4 (Handel HWV 432/6 Passacaille 65,536; Mozart K. 331 i 8,192; Schubert
+      D. 935/3 2,048; Mozart K. 331 iii 512);
+    - not counted: Mozart K. 265, where enumerating the paths alone passed 3 GB in 23 s.
+  - BL-40's dev and held-out pieces have at most 16 paths.
+  - **Cost of one 21-note wrong excerpt, partial off vs on:**
+
+| Score | Paths | partial off | partial on |
+|---|---|---|---|
+| K. 331 iii | 512 | 0.9 s | 157 s, peak 2.5 GB |
+| K. 331 i | 8,192 | 2.6 s | not finished after 300 s, killed at 3.1 GB |
+| D. 935/3 | 2,048 | 2.5 s | not finished after 400 s, killed at 3.9 GB |
+
+  - In the batch probe, one worker on D. 935/3 reached 11 GB, and one on a PianoCoRe theme and
+    variations (K. 331 i or K. 265) reached 25 GB before I stopped them.
+  - K. 265 also fails with partial off: path enumeration alone passed 3 GB in 23 s. That is a
+    defect of today's app, outside BL-40.
+  - K. 331 iii, the Rondo alla Turca, has 707 references in the catalogue.
+  - **Consequence.** With partial on, the app's quick check would sit for minutes and use
+    gigabytes on these scores. BL-40's pools could not show this, because they had no such
+    score.
+- **d. A real upload is a file.** I wrote 37 sampled excerpts to MIDI with the first onset at 0
+  and loaded each as an upload.
+  - 34 ratios were identical. 3 wrong-score ratios moved: 0.576 -> 0.424, 0.128 -> 0.238,
+    0.543 -> 0.533.
+  - **The 0.576 case** (the held-out wrong maximum at 75 notes or more):
+    - shifting in memory changes nothing;
+    - an unshifted file gives 0.598;
+    - a shifted file gives 0.424.
+  - So a MIDI round trip moves wrong-score ratios by 0.02-0.15. That is the order of the 0.049
+    margin to the stop. Right-score ratios in the sample did not move.
+- **e. Theme and variations, right score.**
+  - Beethoven Op. 57 ii (1 path): 24 excerpts, all pass or are asked to confirm; lowest 0.899
+    at 75 notes or more.
+  - Schumann Op. 1 had no candidate at 0.8 or more.
+  - K. 331 i and K. 265 cannot run (c).
+
+**8. F 17-32: the residual is a noisy passage, not span detection.**
+- **The take:** Op. 49 No. 2 i, Aria-AMT. Re-running it confirms the author's span readings:
+  - 21-bar excerpt (graded bars 3-23): DTW span rows 3-17, refined span 3-12, 125 of 231
+    notes extra.
+  - 16-bar excerpt (bars 3-18): DTW span 3-15.
+  - 2-4-bar excerpt (bars 20-22): span row 16.
+- **But the ratio is low because of the passage, not the span.** The oracle-span ratio of the
+  21-bar excerpt is 0.576, below both its partial ratio (0.610) and the stop.
+  - In the whole-take alignment (partial off), 76 of the excerpt's 231 notes (33%) are
+    unmatched extras. Many lie 2-3.5 octaves below the nearest matched note. The whole take
+    has 9.9% extras.
+  - Oracle vs partial for the other two: 16-bar 0.654 vs 0.713; 2-4-bar 0.237 vs 0.286.
+  - The short span helps here: it drops part of the noise.
+- **The stated mechanism is wrong.** The README says "the residual is the BL-36 span detection
+  cutting a real excerpt short, not the stop". With the right span this excerpt is stopped
+  too. This is the BL-39 lesson again: classify the unit before naming the mechanism.
+- **Across all 190 held-out right excerpts,** partial ratio minus oracle ratio:
+  - median 0.000;
+  - 5th percentile -0.004;
+  - 3 below -0.05, the lowest -0.109 (a 2-4-bar Liszt excerpt, 0.847 vs 0.956).
+
+  Span detection costs ratio rarely, and never near the stop.
+- **Ticket?** The early span end on a noisy passage is real, but it did not cause a wrong
+  decision here. A backlog note is enough, not a ticket. F 17-32 measures source noise
+  (Aria-AMT on one passage), and section 7b shows the same failure mode on Henry's room audio.
+
+**9. Statistics.**
+- The bootstrap resamples source pieces with wrong scores fixed. n (pieces, alignments) is
+  reported per row.
+- 16 of the 24 held-out pieces are 8 sibling pairs, resampled as independent pieces. A work
+  bootstrap would be somewhat wider. That changes no reading, because the verdict is on point
+  estimates and only F 17-32 and C 9-16 are below a resample share of 1.0.
+
+**Required fixes (author)**
+1. Results / Threats: add the mode table from section 6. State that H for takes under 75 notes
+   is 0 by construction of mode "all". State that dev did not support the "all" rationale (no
+   dev right excerpt under 75 notes below 0.733).
+2. Fragile row: replace "the residual is the BL-36 span detection ... not the stop" with the
+   oracle reading from section 8: true span 0.576, 33% extras, so the stop fires on a noisy
+   passage.
+3. Threats: add the repeat-path hazard (section 7c), with the catalogue counts and timings,
+   and the pool's maximum of 16 paths.
+4. Threats: replace "Excerpts of phone takes ... untested" with the section 7b numbers
+   (1 of 120 right excerpts stopped, lowest 0.539 at 75 notes or more; wrong at most 0.545).
+5. Margins: give the dev and held-out gaps (0.109 vs 0.034) and the MIDI round-trip movement
+   (section 7d).
+6. Run record: the failed held-out alignment had 49 notes, so its decision is "confirm" with or
+   without the fix.
+7. BACKLOG: open DF items for:
+   - the repeat-path enumeration and build cost under `partial=True`;
+   - the K. 265 enumeration blow-up with partial off. This one affects today's app.
+
+**Note for the lead**
+- **Is switching the app to `partial=True` supported?** Not yet; BL-36, BL-37, BL-39 and BL-40
+  together support it only with one engineering guard first.
+  - **The stop works.** BL-40 shows it works on PianoCoRe-like scores and transcriptions. It
+    also held on 11 ASAP scores and on Henry's excerpts on the wrong-piece side (0 passes).
+  - **Reports.** The app would get the CLI's k = 0 partial reports (DECISIONS 2026-10-12). Their
+    basis is unchanged: whole recordings are identical; mid-bar starts are strong about 20% vs
+    1.3% (disclosed).
+  - **The guard.** The partial quick check is unbounded on scores with many repeat paths
+    (section 7c): K. 331 iii took 157 s and 2.5 GB for one 21-note excerpt; K. 331 i and
+    D. 935/3 did not finish. Before the flag goes on, cap the paths `partial=True` builds, or
+    fall back to `partial=False` above the tested range (16 paths). A cap is a code change
+    outside BL-40's registration. Confirm on the 17 counted catalogue scores above 16 paths, and on
+    K. 265, that the quick check finishes and that whole recordings are unchanged.
+- **Confirm mode.** Registered "all" vs "high" is a product call. The registered rows cannot
+  separate them (section 6).
+  - "high" turns about 1,330 held-out "too short to check" messages for wrong-piece excerpts
+    into "probably another piece" stops.
+  - Its cost is about one false stop per 30-60 short right excerpts (Op. 49 No. 2 i 0.286;
+    Henry 0.600).
+  - Either way the learner can override.
+  - Switching to "high" is a deviation from the registration and should be recorded as such
+    in DECISIONS, with these numbers.
+  - The same applies to `t = 0.65` with no minimum, which also passed held-out.
+- **What to tell the learner:**
+  - Recordings under 75 notes (most 2-4-bar and a third of 5-8-bar excerpts) are not checked
+    against the score.
+  - For an excerpt, the first and last bars are less reliable (BL-36 / BL-39 caveat, k = 0).
+  - "Analyse anyway" on a "probably another piece" stop is expected for some phone-audio
+    excerpts of the right piece (section 7b: 1 of 120).
